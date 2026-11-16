@@ -1,6 +1,6 @@
 # Progress
 
-**Current stage:** Checkpoint B **complete**. Waiting for the user's go-ahead to start checkpoint C (`docs/UI.md` + `src/ui/theme.json`).
+**Current stage:** Checkpoint C **complete**. Waiting for the user's approval before checkpoint D (`docs/HANDOFF.md`).
 
 > ⚠ **ANT ART: the reference is in `art/source/`, but final art is not drawn or approved yet.** The user's Gemini images in `art/source/` are now **the** design reference for the ants (see "Ant art reference" below). They replace `art/reference/ant-concept.webp` as the main reference. The preview still shows the old placeholder cut-outs (DR-007a). Draw the final ant art only when the user asks, from these images.
 **Branch:** `claude/eager-mccarthy-jpc952` on `rainbowblurry-book/Ants`.
@@ -26,6 +26,17 @@
   - npm pins: phaser 3.90.0, vite 8.3.5, typescript 5.9.3, vitest 5.0.5, biome 2.6.4
   - GitHub Actions majors: checkout v7, setup-node v7, configure-pages v6, upload-pages-artifact v5, deploy-pages v5
 
+
+**Checkpoint C:**
+- `docs/UI.md`: the full UI spec. It covers design language, palette with verified contrast pairs, type, spacing, touch, motion, safe area, focus and keys, 23 components with states, the screen map, every screen with rects, the Battle HUD rect table, the asset list (ant sprites mapped to `art/source/`), acceptance checks, and open items. Every item cites a Decision ID.
+- `src/ui/theme.json`: three-layer tokens (primitive, semantic, component), with text colour and contrast ratio per fill.
+- `docs/DECISIONS.md`: 81 new records (DR-080 to DR-183) from ten Sonnet debate subagents at medium effort, one per screen or system. The planner's judging table J27–J56 is binding, and each record has a judge line.
+- Small sync edits:
+  - `CREATIVE.md` §3: new action colour, 6 px shadow, 18 px text floor, self-hosted fonts.
+  - `PLAN.md` §3: the two-player colour swap is removed (J46).
+- **Verified:** I recomputed every text-on-fill contrast ratio (WCAG 2.x) with a script on 2026-11-16. The old raspberry `#E8456B` failed. The new `action` `#EE6083` with plum text gives 4.90, and the scrim was raised to 70% (60% gave 3.79).
+- **Process note:** the HUD and Settings agents hit a rate limit before saving their files. I copied their records from their reports. No screenshots were taken in C (it is a spec only).
+
 ## Key decisions so far
 - **Look:** DR-001 Flash vector world · DR-002 Seed Spitter / Dewdrop Bounce / Pollen Pod · DR-003/003a jelly UI, no glints · DR-004 Phaser 3.90.0 · DR-007/007a ant concept (placeholder art) · DR-008 biome order and rhythm.
 - **Tech:** DR-010 60 Hz fixed step, rules in plain TS · DR-011 sfc32 streams, banned APIs, 0.1° trig table · DR-013 960x540 FIT with 2x crisp canvas (needs spike) · DR-014 96 MB texture budget · DR-017 Actions to Pages.
@@ -38,6 +49,23 @@
   - DR-071: L1–10 are quick (about 28 min in total) with a cosmetic reward on every clear.
 - **New weapons (haiku debate, DR-009):** Tunnel Grub (digs, L14), Pill Roller (rolls, L24) and Mound Plop (builds terrain, L34). DR-072: each level fixes its own kit, and two-player has all 6 weapons.
 - **Bot AI:** DR-061 human-like input errors · DR-062 lethal radius = 0.5·blast radius from the hurtbox · DR-063/064 calibrated curve with a floor at L90+ (95%) · DR-065 `tests/ai-cap.test.ts`.
+
+- **UI (checkpoint C):**
+  - DR-080: `action` `#EE6083` with plum text; blue is the only fill with white text; scrim 70%.
+  - DR-081: Lilita One bakes F56, F64, F80 and F128; Nunito body 22; floor 18.
+  - DR-082: hit areas at least 64 (72 preferred); FIRE 120.
+  - DR-085: safe-area margins from the overlap, not padding.
+  - DR-086: focus ring is white plus ink.
+  - DR-120/J33: Battle HUD rects, with no fullscreen button in Battle.
+  - DR-121: dial, power slider, steppers and slingshot; power keys `+`/`-`/PgUp/PgDn.
+  - DR-124: 3x2 weapon tray with Sneak chips.
+  - DR-125: wind gauge plus an effects row (Up/Down swirl, Updraft, wave strip).
+  - DR-126: boss "Next" chip plus ghost chevrons.
+  - DR-140–145: Results, rewards and the skip offer (never "failed").
+  - DR-150–154: Level 0.
+  - DR-160–164: album, Wardrobe, and presets-only nicknames.
+  - DR-170: HTML Settings, with Text size Normal/Large (J34).
+  - DR-183/J46: two-player team frame plus a button gate.
 
 ## Ant art reference (`art/source/`, uploaded by the user 2026-11-16)
 These are AI-generated (Gemini) images, used **as reference only**. They are never shipped and never traced. Final art is original flat SVG in `/art`, drawn by hand from these images (DR-007 licensing note, CREATIVE §7).
@@ -65,15 +93,22 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 **When the art is drawn:** add a Decision Record (DR-007b) that marks DR-007a's placeholders as replaced. Re-run the preview screenshots, and check the side pose reads clearly at 88x63 and at 667x375.
 
 ## Open items carried forward
-- Ant art: the reference images are in `art/source/` (see above). Final SVG ant art is not drawn yet and waits for the user's go-ahead. The UI.md asset list (checkpoint C) should list the ant sprites against these files.
-- UI.md (checkpoint C) must decide:
-  - touch target sizes at 667x375 (FIT 0.69)
-  - keyboard power keys
-  - the vertical wind chevron for the Garden swirl
-  - boss telegraph HUD (icon plus ghost wind arrow)
-  - a 6-slot weapon tray, Sneak Shot chips, reward pop-ups, the sticker album, the Wardrobe and the nickname picker (DR-009, DR-070, DR-071)
-- Build-time checks listed in PLAN §12: the S=2 render spike, device memory and blast ms, and refitting bot-cap constants against the real sim.
-- GitHub Pages: **done by the user** (Settings → Pages → Source: "GitHub Actions"). The site appears once code reaches `main`.
+- **Ant art:** the reference images are in `art/source/`. The final SVG ant art is not drawn yet and waits for the user's go-ahead. UI.md §5 maps each sprite key to its reference file.
+- **Real-device checks** (UI.md §7, PLAN §12):
+  - the S=2 render spike
+  - safe-area `env()` values in landscape
+  - Hop-row thumb reach
+  - device memory and blast ms
+  - refitting the bot-cap constants against the real sim
+- **Save and level-data schema additions from J48:** goal bits, `losses`, `settings.twoPlayer`, `wardrobe`, and `name`/`tagline`/`windHint`/`hint`. These must be in the D build plan.
+- The "Made by" credit name is to be supplied by the owner.
+- **GitHub Pages:** done by the user (Settings → Pages → Source: "GitHub Actions").
 
 ## Next step
-Checkpoint C: `docs/UI.md` + `src/ui/theme.json`. Cover the palette, fonts, spacing, every screen, and components with states and an asset list, each linked to a Decision ID. Use Sonnet debate subagents (medium effort), one per screen. Then commit, push, update this file and stop.
+Checkpoint D, after the user approves C: `docs/HANDOFF.md`.
+- It starts with a one-page Decisions Summary ("we chose X over Y because Z").
+- Then a stage-by-stage build plan: files and acceptance tests per stage, each stage tagged hard (Fable, high effort) or routine (Sonnet subagent, medium effort).
+- Stage 0 is the S=2 spike.
+- The builder follows the decisions and logs any deviation as an `OVR-###` record.
+
+Draft records for D's process questions already exist from an earlier debate this session: stage order, the hard/routine rule, the test stack, the Pages workflow, the override tiers, src layout, and placeholder art. They were run without PLAN.md and are not committed. Re-run them against PLAN.md before use; for example, they pinned Actions v4, where PLAN.md says v5–v7.

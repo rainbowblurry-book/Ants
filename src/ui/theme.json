@@ -1,0 +1,205 @@
+{
+  "$schema-note": "ANTS! UI theme tokens. Three layers: primitive -> semantic -> component. Code reads semantic or component tokens only, never primitives and never colour literals (DR-088). Every group cites its Decision ID. Sizes are logical px at 960x540 (DR-013); durations are ms.",
+  "meta": {
+    "version": 1,
+    "logical": { "width": 960, "height": 540, "decision": "DR-013" },
+    "contrastRule": { "text": 4.5, "nonText": 3.0, "note": "No large-text exemption below 35 logical px at FIT 0.69 (DR-080). CI recomputes every pair in component.*.text (DR-088)." }
+  },
+
+  "primitive": {
+    "color": {
+      "plum-900": "#2E1A47",
+      "plum-700": "#4A2F6B",
+      "plum-300": "#9C8BB5",
+      "butter-100": "#FFF1D0",
+      "butter-300": "#FFD978",
+      "butter-500": "#F7B932",
+      "rasp-400": "#EE6083",
+      "rasp-600": "#C03055",
+      "rasp-700": "#B52A4C",
+      "teal-500": "#1FA38A",
+      "teal-700": "#137463",
+      "blue-500": "#0072B2",
+      "blue-700": "#00527F",
+      "amber-500": "#E69F00",
+      "amber-700": "#A66F00",
+      "stone-400": "#B7AFC4",
+      "stone-600": "#8E869C",
+      "leaf-200": "#C8F27A",
+      "leaf-400": "#7CCB3E",
+      "leaf-600": "#3E9A3A",
+      "leaf-800": "#22662C",
+      "soil-400": "#C98545",
+      "soil-600": "#94592B",
+      "soil-800": "#5E3519",
+      "sky-100": "#EAFBD8",
+      "sky-400": "#8EE0CC",
+      "white": "#FFFFFF"
+    },
+    "space": { "1": 4, "2": 8, "3": 12, "4": 16, "6": 24, "8": 32, "12": 48 },
+    "radius": { "sm": 8, "md": 16, "lg": 24, "pill": 9999 },
+    "outline": { "thin": 2, "base": 4, "frame": 6 },
+    "shadowY": { "sm": 4, "md": 6, "lg": 8 },
+    "font": {
+      "display": { "family": "Lilita One", "license": "SIL OFL 1.1", "source": "self-hosted woff2 + baked bitmap (DR-081, DR-174)" },
+      "body": { "family": "Nunito", "license": "SIL OFL 1.1", "source": "self-hosted woff2 (DR-174)" },
+      "fallback": "ui-rounded, system-ui, sans-serif"
+    }
+  },
+
+  "semantic": {
+    "color": {
+      "_decision": "DR-080, DR-003, DR-003a, J29",
+      "ink": "{plum-900}",
+      "ink-soft": "{plum-700}",
+      "panel": "{butter-100}",
+      "action": "{rasp-400}",
+      "action-shade": "{rasp-600}",
+      "info": "{teal-500}",
+      "info-shade": "{teal-700}",
+      "secondary": "{butter-300}",
+      "secondary-shade": "{butter-500}",
+      "team-a": "{blue-500}",
+      "team-a-shade": "{blue-700}",
+      "team-b": "{amber-500}",
+      "team-b-shade": "{amber-700}",
+      "disabled": "{stone-400}",
+      "disabled-shade": "{stone-600}",
+      "danger": "{rasp-700}",
+      "success": "{leaf-800}",
+      "acorn": "{soil-400}",
+      "acorn-shade": "{soil-600}",
+      "acorn-cap": "{soil-800}",
+      "gold": "{butter-500}",
+      "meaning-white": "{white}",
+      "scrim": { "color": "{plum-900}", "alpha": 0.7 },
+      "letterbox": "{plum-900}"
+    },
+    "onColor": {
+      "_decision": "DR-080 (ratios verified 2026-11-16)",
+      "panel": { "text": "{plum-900}", "ratio": 13.83 },
+      "action": { "text": "{plum-900}", "ratio": 4.9 },
+      "info": { "text": "{plum-900}", "ratio": 4.92 },
+      "secondary": { "text": "{plum-900}", "ratio": 11.4 },
+      "team-a": { "text": "{white}", "ratio": 5.19 },
+      "team-b": { "text": "{plum-900}", "ratio": 6.88 },
+      "disabled": { "text": "{plum-700}", "ratio": 5.21 },
+      "danger": { "text": "{white}", "ratio": 6.18 },
+      "success": { "text": "{white}", "ratio": 6.99 },
+      "ink": { "text": "{butter-100}", "ratio": 13.83 },
+      "scrim": { "text": "{butter-100}", "ratio": 5.22, "note": "worst case over white world" }
+    },
+    "type": {
+      "_decision": "DR-081, J34",
+      "display": { "font": "display", "size": 64, "lineHeight": 1.0, "letterSpacing": 1, "bake": "F128" },
+      "title": { "font": "display", "size": 40, "lineHeight": 1.05, "letterSpacing": 0.5, "bake": "F80" },
+      "label": { "font": "display", "size": 28, "lineHeight": 1.1, "letterSpacing": 0.5, "bake": "F56" },
+      "numeral": { "font": "display", "size": 32, "lineHeight": 1.0, "letterSpacing": 1, "bake": "F64" },
+      "body": { "font": "body", "weight": 700, "size": 22, "lineHeight": 1.3, "letterSpacing": 0 },
+      "caption": { "font": "body", "weight": 800, "size": 18, "lineHeight": 1.25, "letterSpacing": 0.2, "floor": true },
+      "shrinkFloor": { "display": 48, "title": 32, "label": 22, "body": 20, "caption": 18 },
+      "textSizeSetting": { "normal": 1.0, "large": 1.2, "appliesTo": ["body", "caption", "html"] },
+      "bakes": {
+        "F56": { "px": 56, "charset": "ASCII + Latin-Ext used by locale files", "layers": ["fill"] },
+        "F64": { "px": 64, "charset": "0-9 % ° / : x + - − . ∞", "layers": ["fill", "stroke"] },
+        "F80": { "px": 80, "charset": "ASCII + Latin-Ext used by locale files", "layers": ["fill"] },
+        "F128": { "px": 128, "charset": "A-Z 0-9 ! ? . '", "layers": ["fill", "stroke"] }
+      }
+    },
+    "touch": {
+      "_decision": "DR-082, J28",
+      "hitMin": 64,
+      "hitPreferred": 72,
+      "fireHit": 120,
+      "fireVisual": 104,
+      "visualInMin": 48,
+      "visualInPreferred": 56,
+      "gapMin": 8,
+      "cancelSlop": 16,
+      "tapSlop": 12
+    },
+    "layout": {
+      "_decision": "DR-085, J32",
+      "marginMin": 16,
+      "insetExtra": 8,
+      "formula": "margin(side) = max(16, max(0, inset_css - letterbox_css) / fitScale + 8)",
+      "snap": { "S1": 1, "S2": 0.5 }
+    },
+    "shape": {
+      "_decision": "DR-083",
+      "shadeBand": { "base": 8, "small": 6 },
+      "textStroke": { "display": 6, "numeral": 4 },
+      "pressed": { "dy": 4, "dySmall": 2, "shadowY": 2, "scaleX": 1.03, "scaleY": 0.95 }
+    },
+    "motion": {
+      "_decision": "DR-084, J35",
+      "press": { "ms": 60, "ease": "Quad.easeOut" },
+      "release": { "ms": 140, "ease": "Back.easeOut" },
+      "hover": { "ms": 100, "ease": "Sine.easeOut", "scale": 1.04 },
+      "panelOpen": { "ms": 220, "ease": "Back.easeOut", "alphaMs": 120, "fromScale": 0.9 },
+      "panelClose": { "ms": 140, "ease": "Quad.easeIn" },
+      "scrim": { "ms": 160 },
+      "screenOut": { "ms": 220, "ease": "Sine.easeInOut" },
+      "screenIn": { "ms": 260, "ease": "Sine.easeInOut" },
+      "toastIn": { "ms": 180, "ease": "Back.easeOut", "fromY": -24 },
+      "toastHold": { "ms": 2000, "perCharOver40": 40 },
+      "toastOut": { "ms": 160, "ease": "Quad.easeIn" },
+      "rewardPop": { "ms": 360, "ease": "Back.easeOut", "overshoot": 2.2, "stagger": 120 },
+      "countUp": { "ms": 600, "ease": "Cubic.easeOut" },
+      "deny": { "ms": 160, "ease": "Sine.easeInOut", "px": 4 },
+      "reduced": { "maxMs": 120, "ease": "Sine.easeOut", "maxTranslate": 8, "noScale": true, "noShake": true, "transitionMs": 120, "rewardMs": 160 }
+    },
+    "focus": {
+      "_decision": "DR-086, J31",
+      "gap": 2,
+      "inner": { "color": "{white}", "width": 4 },
+      "outer": { "color": "{plum-900}", "width": 2 },
+      "followsRadius": true,
+      "pulse": false
+    }
+  },
+
+  "component": {
+    "button": {
+      "_decision": "DR-003, DR-082, DR-083",
+      "radius": "{lg}", "outline": "{base}", "shadowY": "{md}", "shadeBand": 8,
+      "sizes": { "md": { "h": 64, "minW": 160 }, "lg": { "h": 72, "minW": 216 }, "xl": { "h": 96, "minW": 240 } },
+      "variants": {
+        "primary": { "fill": "action", "shade": "action-shade", "text": "ink" },
+        "secondary": { "fill": "secondary", "shade": "secondary-shade", "text": "ink" },
+        "info": { "fill": "info", "shade": "info-shade", "text": "ink" },
+        "destructive": { "fill": "danger", "shade": "ink-soft", "text": "meaning-white", "icon": "bin" },
+        "disabled": { "fill": "disabled", "shade": "disabled-shade", "text": "ink-soft" }
+      },
+      "states": ["default", "hover", "pressed", "focus", "disabled", "selected", "queued", "hidden"]
+    },
+    "iconButton": { "_decision": "DR-082, DR-090", "visual": 56, "hit": 64, "fill": "secondary", "icon": 32 },
+    "panel": { "_decision": "DR-003", "fill": "panel", "radius": "{lg}", "outline": "{base}", "shadowY": "{md}", "padding": 16 },
+    "modal": { "_decision": "DR-172, J30", "x": 220, "w": 520, "padding": 32, "shadowY": "{lg}", "button": { "w": 216, "h": 72, "gap": 24 } },
+    "chip": { "_decision": "DR-124, DR-125", "h": 40, "radius": "{md}", "text": "body" },
+    "pillNew": { "_decision": "DR-124", "w": 44, "h": 24, "fill": "action", "text": "ink", "type": "caption" },
+    "fire": { "_decision": "DR-122, J29", "fill": "action", "shade": "action-shade", "text": "ink", "ring": "secondary", "hit": 120, "visual": 104 },
+    "levelNode": {
+      "_decision": "DR-101, J29",
+      "size": 64, "hit": 72, "bossSize": 88, "bossHit": 96, "number": "label",
+      "status": {
+        "locked": { "fill": "disabled", "text": "ink-soft", "icon": "lock" },
+        "next": { "fill": "action", "text": "ink", "ring": "panel" },
+        "cleared": { "fill": "success", "text": "meaning-white" },
+        "skipped": { "fill": "secondary", "text": "ink", "icon": "sticky-note" }
+      },
+      "type": { "rest": "hammock-badge", "boss": "crown" }
+    },
+    "acorn": { "_decision": "DR-105, J42", "sizes": [28, 32, 40, 64], "filled": "acorn", "empty": "disabled", "gold": "gold", "goldTwinkle": "secondary" },
+    "weaponSlot": { "_decision": "DR-124", "size": 64, "gap": 8, "icon": 40, "badge": 28, "selected": "secondary", "lift": 6 },
+    "windGauge": { "_decision": "DR-125", "rect": [300, 80, 360, 48], "fill": "info", "chevronOn": "meaning-white", "chevronOff": "info-shade", "slots": 5, "slotW": 28, "hubW": 64 },
+    "antTag": { "_decision": "DR-128", "w": 76, "h": 32, "activeW": 96, "activeH": 40, "fill": "panel", "outline": 3, "badge": 24, "number": 22, "lowHp": "danger", "activeOutline": "action" },
+    "teamFrame": { "_decision": "DR-183, J46", "width": 8, "radius": "{lg}" },
+    "dotBubble": { "_decision": "DR-131, J38", "w": 392, "h": 112, "avatar": 64, "fill": "panel" },
+    "notice": { "_decision": "DR-131", "rect": [240, 184, 480, 72], "toastMs": 1600, "queue": 3 },
+    "aimPreview": { "_decision": "DR-033, DR-129", "dots": 8, "dotR": 6, "stepS": 0.06, "ringR": 16, "ringStroke": 5, "assistS": 1.0, "fill": "meaning-white", "outline": "ink" },
+    "trinket": { "_decision": "DR-162, J26", "inGame": 24, "source": 48, "heroMin": 24, "heroMax": 64 },
+    "comicFrame": { "_decision": "DR-111, J51", "rect": [40, 28, 880, 420], "outline": "{frame}", "radius": "{lg}", "shadowY": "{lg}", "bg": "ink-soft" },
+    "settingsHtml": { "_decision": "DR-170", "maxWidthCss": 600, "headingCss": 28, "bodyCss": 18, "minCss": 16, "controlCss": 44 }
+  }
+}

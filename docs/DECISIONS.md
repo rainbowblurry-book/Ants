@@ -1336,3 +1336,1208 @@ The user clarified the Level 0 request. Part 1 should add **one trial shot each 
 - **Judge's ruling:** Accepted, with DR-009's unlock levels (Grub L14, Roller L24, Plop L34) and DR-009's ammo table. Rivals use the level's kit, but the bot never chooses the Mound Plop (DR-009 bot note). Two-player: all 6 weapons from the start, plus a "Starter kit only" toggle.
 
 
+
+
+---
+
+# Checkpoint C · Planner's judging summary (UI, DR-080 to DR-183)
+
+Ten Sonnet debate subagents (medium effort) ran one compact debate per screen or system, with PLAN.md and DR-001 to DR-072 as required reading: tokens, title and boot, level select, comic, battle HUD, results and rewards, Level 0, album and wardrobe, settings and pause, two-player setup. I judged every record. Where records disagreed with each other or with earlier decisions, I ruled as below. **These rulings are binding and win over the record text that follows.** `docs/UI.md` already applies them.
+
+Process note: the battle HUD (DR-120 to DR-131) and settings (DR-170 to DR-175) agents hit a rate limit before saving their files. I copied their records from their reports and normalised colour names to the DR-080 tokens (for example "raspberry" became `action`). I changed no values other than those the rulings below name.
+
+| # | Conflict | Ruling |
+|---|---|---|
+| J27 | DR-003 loads fonts from Google Fonts; DR-018 needs offline play and OFL files must ship | Self-host Lilita One and Nunito as woff2 with their OFL texts (DR-174). |
+| J28 | Touch targets: DR-003/DR-015 say 48 (56 preferred); DR-082 says 64 hit (72 preferred) | DR-082. The 48 and 56 values now describe the drawn visual inside the hit rect. |
+| J29 | The preview raspberry `#E8456B` fails contrast for both white and plum text | DR-080: `action` is `#EE6083` with **ink** text (4.90). Every "white on raspberry" in the records becomes ink: FIRE label, timer numeral at ≤ 5 s, gate and button labels. Level-node numbers use the fill's `onColor` text. A cleared node uses `success` `#22662C` with white text, because leaf-600 fails with both (ink 4.35, white 3.57). |
+| J30 | Scrim alpha 50% / 60% (DR-140, DR-153, DR-171, DR-172, DR-131) vs 70% (DR-080) | 70% ink everywhere. At 60%, butter text over white world art drops to 3.79. |
+| J31 | Focus rings: teal (DR-170, DR-172, DR-140, DR-160), butter (DR-150), white+ink (DR-086) | DR-086 everywhere: 4 px white, 2 px gap, 2 px ink, no pulse. HTML uses the same through `:focus-visible`. |
+| J32 | DR-013 pads the canvas parent by the safe-area insets; DR-085 uses overlap margins | DR-085. It amends DR-013, because padding shrinks FIT on notched phones. |
+| J33 | Fullscreen on the Battle HUD (DR-120, DR-151) vs "never on the Battle HUD" (DR-095) | DR-095. Battle top-right is **Pause 880,16,64,64**, **Find-my-ant 880,88,64,64** and the Level 0 **Next 800,16,72,64**. The F key still toggles fullscreen. |
+| J34 | Text size setting: DR-012 lists it, DR-170 drops it, DR-081 scales Nunito and HTML | Keep it, as **Normal / Large (1.0 / 1.2)** in Settings > Display. It scales Nunito runtime text and HTML only, never the bitmap bakes. DR-087 sizes boxes for +30%, so Large fits. |
+| J35 | Reduced motion: DR-164 uses the OS query only; DR-170 has Auto/On/Off | DR-170's setting applies everywhere, including dances (DR-164) and comics. |
+| J36 | Back button: hit 72 at (16,16) (DR-090), 64 at (M,12) (DR-100), 64 elsewhere | One spec: visual 56, hit 64x64, at (M, M) on every screen. The level-select header row aligns to y = 16. |
+| J37 | Level 0 sign position (DR-100 vs DR-150) and panel rect (DR-150 656,96 vs DR-102 672,88) | Sign hit (40,160,80,88) from DR-100, with the visuals and states from DR-150. The Level 0 panel uses the DR-102 card rect (672,88,272,412), so the card never jumps. |
+| J38 | Dot tip placement: DR-151 slots at y 120, DR-131 bubble 16,148; both overlap the effects row (y 132..172) | One Dot bubble component: **392x112 at (16,180)**, or mirrored at **(552,180)** when the active ant is on the left. Level 0 tip cards (DR-151) use it, with DR-151's timing and collapse-to-chip rules. |
+| J39 | Sneak chip tray anchor x=336 (DR-152) vs the tray grid at 408,372 (DR-124) | DR-124 geometry. DR-152 chip looks, labels ("Unlocks at Level 14 / 24 / 34") and states stay. 3 trial shots **per team**. |
+| J40 | Level 70 Preview pause: n=3 buttons (DR-171) vs the Restart slot becoming a caption row (DR-153) | DR-153. The panel keeps its n=4 size, so players do not hunt for a missing button. |
+| J41 | Skip and hint flow: DR-104 (panel above the buttons) vs DR-143 (rows inside the defeat card) | DR-143 layout and copy. The hint is DR-104's definition: same seed, Assist preview 1.0 s for that attempt, the level's `hint` as a turn-1 Dot card, and the suggested weapon pulsing. DR-104's map trace (the sticky-note thwap, then peel-off on clear) stays. |
+| J42 | Gold variant: twinkle dots (DR-105), a butter band sweeping twice (DR-141), a 4-point sparkle (DR-162) | DR-105's twinkle dots everywhere. The sweep and the sparkle read as glints and break DR-003a. |
+| J43 | L3 nickname reward: random auto-names (DR-141) vs the picker (DR-163, DR-071) | The reward row shows a "Pick names" chip that opens the DR-163 picker. Ants stay "Ant N" until named. Nickname "Pip" becomes "Peanut", because Captain Pip is a story hero. |
+| J44 | Free-text names: "Write my own" (DR-180) vs no free text (DR-163) | No free text anywhere (kid safety, no on-screen keyboard, no blocklist to maintain). Two-player names come from a 12-entry locale preset list. DR-012's HTML list stays unchanged. DR-180's preset "Pip" also becomes "Peanut". |
+| J45 | Team copy: "Blue/Amber Colony" (DR-045, DR-180, DR-182) vs "Blue/Amber Caps" (DR-131, DR-145) | **"Blue Caps" / "Amber Caps"** are the defaults (STORY names the player colony the Blue Caps). Campaign rivals use their STORY colony names. |
+| J46 | Two-player who-is-up: DR-131 full-screen gate with dimming vs DR-183 button gate, frame and turn chip | DR-183's 8 px team frame, coin-flip pop, and a button-only gate with a 400 ms lockout, placed in the clear zone at **300,212,360,96** (DR-183's 300,404 overlaps the tray). There is no dimming (DR-045: nothing hidden). The DR-127 turn plate is the banner, so DR-183's extra turn chip is dropped (the top-left belongs to the team pills). The "swap colours" button in DR-045 and PLAN §3 is removed. |
+| J47 | Epilogue flow: DR-113 (comic to LevelSelect) vs DR-144 (adds "The End" card) | L100 Results, then the DR-144 boss sequence, then the epilogue comic (DR-113), then the "The End" card, then LevelSelect. DR-012 gains a Results to Comic(epilogue) edge. |
+| J48 | The save stores an acorn count only, and has no loss counter; the level data lacks UI strings | The save keeps **3 goal bits per level** (won, no ant knocked out, par), with the count derived by DR-055's cumulative rule, and adds `losses` per level, `settings.twoPlayer` (DR-182) and `wardrobe` (DR-161). Level data adds `name`, `tagline`, `windHint` and `hint` locale keys. This amends J18 and DR-056. |
+| J49 | DR-046 follows the projectile, but J6 lets the ant retreat for 3 s at zoom 1.2 | During the retreat the camera eases to zoom 1.0 (the whole 960x540 world), so the ant and the shot both stay visible. The edge indicators (DR-130) are the fallback. |
+| J50 | Ants can spawn under HUD controls | The level linter fails a level whose spawn feet fall inside any DR-120 hit rect, in either handedness. This amends DR-025 and DR-056. |
+| J51 | Comic frame outline 6 and radius 34 (reference) vs tokens 4 and 24 | Outline 6 is allowed as the single frame exception (`outline.frame`). Radius is 24. Panels stay at 1024x576 (DR-014). |
+| J52 | Two-player W4–W6 ammo: 1 each (DR-072c) vs Grub 1 / Roller 2 / Plop 2 (J24) | J24. |
+| J53 | Key map: DR-015's list vs DR-121's | DR-121 is the full map. Tab cycles weapons in Battle only and moves focus everywhere else (DR-086). |
+| J54 | Comic replay entry: a book button in the header (DR-110) vs a "Story" button in the left strip (DR-100) | DR-100's left strip. |
+| J55 | The audio gate is in Boot (DR-012, DR-018), but the bar is fed by Preload (DR-091) | Confirmed as written: Boot owns the gate state, and Preload only feeds the shared HTML splash. |
+| J56 | Pause music duck 25% (DR-171) vs DR-047 | DR-171. |
+
+Records and rulings were checked against the pillars: pillar 2 (one-glance HUD, shape plus colour), pillar 4 (telegraphs, no hidden state, a skip offer never says "failed") and pillar 5 (no glints, rounded everything).
+
+---
+
+# Checkpoint C · Foundation tokens (DR-080 to DR-088)
+
+## DR-080 · Final palette and contrast
+- **Question:** Which exact hexes and text colours for every UI fill, with WCAG AA at 0.69 FIT?
+- **Options:** (1) keep preview hues, fix only failing fills · (2) white text on all fills, darken fills · (3) plum text on all light fills, white only on blue and dark fills
+- **Debate (compact):** GD: Text must read in sunlight, so the contrast rule is 4.5:1 for every text pair, because at 0.69 nothing below 35 logical px bold counts as large. / AD: Raspberry `#E8456B` fails (plum 4.06, white 3.82). Darkening it for white text turns it brick, so lighten it for plum text and keep the candy feel. / TL: A script computes every pair from `theme.json` and fails CI under 4.5, so the table cannot drift.
+- **Winner:** (3). Computed with WCAG 2.x relative luminance. Fill / shade / text colour / ratio:
+  - panel `#FFF1D0` / (none) / ink `#2E1A47` 13.83; ink-soft `#4A2F6B` 9.81
+  - action `#EE6083` (was `#E8456B`) / shade `#C03055` / ink 4.90
+  - info and wind `#1FA38A` / `#137463` / ink 4.92 (always with an arrow)
+  - secondary `#FFD978` / `#F7B932` / ink 11.40
+  - team A blue `#0072B2` / `#00527F` / **white** 5.19 (ink 2.99 fails)
+  - team B amber `#E69F00` / `#A66F00` / ink 6.88
+  - disabled `#B7AFC4` / `#8E869C` / ink-soft 5.21 (was `#5B5266`, 3.50 fails)
+  - danger `#B52A4C` / white 6.18; on panel as text 5.51
+  - success `#22662C` / white 6.99; on panel as text 6.24
+  - ink as a fill (toast, letterbox, bars): butter 13.83, secondary 11.40, teal 4.92, amber 6.88
+  - **scrim** = ink at **0.70** alpha. Butter text on it is 5.22 worst case over white. At 0.60 it is 3.79 and fails.
+  - **letterbox** = ink `#2E1A47`. Sky, terrain, soil, leaves are world art, not UI tokens.
+  - Shade bands carry no text. Non-text 3:1 is met by the 4 px ink outline. The blue badge always has a white ring (blue on ink is 2.99).
+- **Reason:** One light-text rule (plum) plus one exception (blue) is easy to enforce.
+- **Rejected:** (1) leaves `#E8456B` failing; (2) muddy brick action; white-on-amber (2.25).
+- **Revisit if:** The action fill clashes with Team Amber in playtests (try `#F0698B`, plum 5.24).
+- **Builds on:** DR-003, DR-003a, DR-007
+- **Judge:** Accepted. Action `#EE6083` with ink text; scrim 70% (J29, J30).
+
+## DR-081 · Type scale
+- **Question:** Which roles, sizes, weights and baked fonts?
+- **Options:** (1) all bitmap, many sizes · (2) all Nunito runtime · (3) few Lilita bakes for display roles, Nunito runtime for body
+- **Debate (compact):** GD: Numbers and verbs must pop. Body copy must reflow for translations. / AD: Lilita is one weight, so hierarchy comes from size. Small text is Nunito 800, because heavier is clearer at 0.69. / TL: A bake must be 2x its logical size (DR-013) or it blurs. Each bake costs atlas area, so only four exist.
+- **Winner:** (3). Roles (logical px / line height / letter spacing):
+  - display 64 Lilita / 1.0 / +1 · title 40 Lilita / 1.05 / +0.5 · label 28 Lilita / 1.1 / +0.5
+  - HUD numerals 32 Lilita / 1.0 / +1 · body 22 Nunito 700 / 1.3 / 0 · caption 18 Nunito 800 / 1.25 / +0.2 (floor)
+  - Four bakes: **F56** (label, ASCII + Latin-Ext used in locale files, fill only) · **F64** (numerals `0-9 % ° / : x + - .`, fill + stroke) · **F80** (title, fill only) · **F128** (display, caps + digits + `!?.'`, fill + stroke).
+  - Stroke layer = second BitmapText tinted ink, same metrics. Plain plum text on buttons and panels needs no stroke.
+  - Use a bake only at 0.9 to 1.1 of its size at S=2.
+  - Nunito: self-hosted woff2, Phaser `Text` with `resolution` = S, created once per scene. Settings text size scales Nunito and HTML by 1.0/1.2/1.4 and never the baked fonts.
+  - Bake area is about 1.7 MP (6.8 MB). This is an estimate.
+- **Reason:** Four bakes cover every number and verb. Body text stays flexible.
+- **Rejected:** (1) 8 or more bakes; (2) Nunito for numerals.
+- **Revisit if:** Wind digits shimmer at S=1 (bake F64 at 32).
+- **Builds on:** DR-003, DR-013, DR-012
+- **Judge:** Accepted. The text size setting is Normal/Large 1.0/1.2, not 1.4 (J34).
+
+## DR-082 · Touch targets
+- **Question:** Hit sizes, padding, gaps, clamping?
+- **Options:** (1) 48 min · (2) 64 min, 72 preferred, padded hit rects · (3) 88 min
+- **Debate (compact):** GD: A thumb mis-tap during a turn costs a shot. At 0.69, 64 logical is 44 CSS px, the Apple minimum. / AD: Visuals stay 48 to 56 inside the hit rect, so the HUD stays light. / TL: A hit rect is a separate invisible zone object. It can be larger than the art, and a test asserts rects never overlap or leave the safe rect.
+- **Winner:** (2). Hit min **64x64**, preferred **72x72**.
+  - Visual 48 in a 64 hit (8 pad) or 56 in a 72 hit (8 pad). FIRE visual 96, hit **112x112**.
+  - Gap between hit rects at least 8, so visual gaps are 24. No overlaps.
+  - Hit rects (not visuals) are clamped inside the safe rect (DR-085). Margin from visual edge = max(16, inset + 8), so the hit edge sits at least 8 from the screen edge.
+  - Menu buttons act on pointer-up inside the rect. Moving more than 16 logical px out cancels. FIRE and aim steppers act on pointer-down (DR-033).
+  - States: default, pressed, disabled (still hit-tested for a deny nudge), selected, focus.
+- **Reason:** Sets 44 CSS px on the smallest phone and keeps the thumbs apart.
+- **Rejected:** (1) 32 CSS px, too small; (3) fills the screen.
+- **Revisit if:** Playtesters mis-tap on neighbours (raise the gap to 12).
+- **Builds on:** DR-003, DR-015, DR-033
+- **Judge:** Accepted. Supersedes the DR-003/DR-015 48 px seeds (J28).
+
+## DR-083 · Spacing, radii, outlines, shadows
+- **Question:** Scale values and the press offset?
+- **Options:** (1) 4 px grid · (2) 8 px grid · (3) the working scale
+- **Debate (compact):** GD: Consistent gaps keep the HUD calm. / AD: Radius 24 for buttons and panels matches CREATIVE §3. Smaller radii are for inner pieces. / TL: Three radius sets times three nine-slice layers is the whole atlas cost.
+- **Winner:** (3).
+  - Spacing 4/8/12/16/24/32/48.
+  - Radius 8 (tags), 16 (inner cards, 32-high chips), 24 (buttons, panels), pill = h/2.
+  - Outline 4 (2 under 40 visual px). Text stroke 6 on display, 4 on numerals.
+  - Hard plum shadow, no blur, offset y: **4** (chips, icon buttons), **6** (buttons, panels), **8** (dialogs, toasts).
+  - Shade band 8 high (6 on small).
+  - **Pressed**: face moves down 4 (2 on small), shadow shrinks to 2, scale 1.03 x 0.95.
+- **Reason:** CREATIVE says "5 px shadow". This record picks 6 for buttons and keeps 5 out of the scale.
+- **Rejected:** Blur or soft shadows (DR-003).
+- **Revisit if:** Shadows are lost against dark terrain (add a 2 px butter rim).
+- **Builds on:** DR-003, DR-003a
+- **Judge:** Accepted. Button shadow 6 replaces CREATIVE §3's 5.
+
+## DR-084 · Motion tokens
+- **Question:** Durations and easings?
+- **Options:** (1) linear, short · (2) bouncy everywhere · (3) bouncy on rewards and releases, quick elsewhere
+- **Debate (compact):** GD: Input must never wait for an animation. / AD: Jelly = squash and release overshoot. Rewards get one big pop. / TL: UI tweens use scene tween time, not sim ticks, so pause menus animate.
+- **Winner:** (3):
+  - press 60 ms `Quad.easeOut`
+  - release 140 ms `Back.easeOut` (action fires at pointer-up, not at the end)
+  - hover 100 ms `Sine.easeOut`, scale 1.04
+  - panel open 220 ms `Back.easeOut` + alpha 120 ms; close 140 ms `Quad.easeIn`; scrim 160 ms
+  - screen transition 220 ms fade out + 260 ms in, `Sine.easeInOut`, to ink
+  - toast in 180 ms `Back.easeOut` from y -24; hold 2000 ms (+40 ms/char over 40); out 160 ms `Quad.easeIn`
+  - reward pop 360 ms `Back.easeOut` (overshoot 2.2), stagger 120 ms; count-up 600 ms `Cubic.easeOut`
+  - deny nudge ±4 px, 160 ms `Sine.easeInOut`
+  - **Reduced motion** (`prefers-reduced-motion` or the Settings toggle): durations capped at 120 ms, `Sine.easeOut` or linear only, no overshoot, scale or shake, only alpha and at most 8 px translate. Transition 120 ms fade. Reward = 160 ms fade, instant count. Press keeps a translate.
+- **Reason:** Matches CREATIVE §4 and the reduced-motion line.
+- **Rejected:** Elastic (long ring-out), gating input on animation.
+- **Revisit if:** Release overshoot reads as lag on slow phones.
+- **Builds on:** DR-003, DR-015, DR-033
+- **Judge:** Accepted. The reduced-motion switch is the DR-170 setting (J35).
+
+## DR-085 · Safe area and layout anchors
+- **Question:** How do CSS insets become logical margins under FIT at S=1/2?
+- **Options:** (1) pad the canvas parent by the insets · (2) full-viewport canvas, HUD margins computed from overlap · (3) ignore insets
+- **Debate (compact):** GD: Thumb controls must never sit under the home bar. / AD: Wide phones already letterbox, and padding would shrink the whole UI. / TL: With padding, FIT on an 812x375 phone drops from 0.694 to 0.655. Computing the overlap avoids that.
+- **Winner:** (2). **This amends DR-013's "safe-area padding" on `#game`.**
+  - `viewport-fit=cover`. `#game` is fixed to the full viewport with no padding.
+  - A probe element reads `env(safe-area-inset-*)` on resize and orientation change.
+  - scale = canvasCssWidth / 960. For each side, letterbox = (viewport − canvas) / 2.
+  - overlap = max(0, inset − letterbox). Margin(side) = max(16, overlap / scale + 8).
+  - Example: an 812x375 phone has 72 CSS letterbox per side, so side insets of 47 are absorbed. Bottom inset 21 overlaps, giving 21 / 0.694 + 8 = **38**.
+  - A `Layout` service exposes `safeRect`, nine anchors (TL TC TR ML C MR BL BC BR) and a `resize` event. UI camera zoom = S. Snap to 0.5 logical px at S=2, whole px at S=1.
+  - Letterbox = ink `#2E1A47` (also `theme-color` and the DR-013 `backgroundColor`).
+- **Reason:** Keeps the largest scale and still protects the thumbs.
+- **Rejected:** (1) smaller UI; (3) controls under the bezel.
+- **Revisit if:** A device report shows `env()` returning 0 in landscape.
+- **Builds on:** DR-012, DR-013
+- **Judge:** Accepted. Amends DR-013 (J32).
+
+## DR-086 · Focus ring and keyboard navigation
+- **Question:** What shows focus, and how does keyboard navigation work in canvas scenes?
+- **Options:** (1) single butter ring · (2) two-tone ring · (3) none (pointer only)
+- **Debate (compact):** GD: Menus must work with a keyboard, but Battle keys stay as DR-015. / AD: A white ring then an ink ring reads on butter, plum and world. / TL: One shared `Focus` manager with a registry of focusables.
+- **Winner:** (2). Ring = 4 px white (`#FFFFFF`) outside a 2 px gap, then 2 px ink outside it, following the button's radius. Static, no pulse. White carries meaning, so DR-003a allows it.
+  - Shown only after keyboard input (like `:focus-visible`). Pointer-down hides it.
+  - Arrows move to the nearest focusable in that direction (primary distance + 2 × cross distance), optional explicit neighbours. Tab and Shift+Tab follow registration order.
+  - Enter and Space activate (press visual on keydown, act on keyup). Esc = back or close.
+  - Initial focus on the primary action. Dialogs trap focus and restore it on close. Disabled items are skipped.
+  - **Battle:** the ring is off. Tab cycles weapons (DR-015). Esc opens Pause, which has the ring.
+  - A DOM live region `#sr` announces scene changes and selections. Canvas has an `aria-label`.
+  - HTML Settings uses native `:focus-visible`: `outline: 4px solid #fff; outline-offset: 2px; box-shadow: 0 0 0 8px ink` (values from theme CSS vars).
+- **Reason:** Visible on every background, small code.
+- **Rejected:** Butter ring (1.21 on panel).
+- **Revisit if:** Gamepad support is added (map the d-pad to arrows).
+- **Builds on:** DR-003a, DR-012, DR-015
+- **Judge:** Accepted. Used on every screen and in HTML (J31).
+
+## DR-087 · i18n text fitting
+- **Question:** How do strings fit, and how do we test it?
+- **Options:** (1) truncate · (2) shrink, then wrap, then ellipsis for non-critical text · (3) size boxes for the longest language
+- **Debate (compact):** GD: A verb or number is never cut. / AD: Shrinking is allowed only to a floor, not into mush. / TL: A `fitText()` helper has one contract for all roles, with a dev-only warning.
+- **Winner:** (2):
+  - Boxes are sized for EN × 1.3. Budgets (chars EN, 30% spare): standard button 192x64 → 9 (Lilita 28 ≈ 14 px/char); panel body 432 inner → 38 per line (Nunito 22 ≈ 11.4); caption 18 ≈ 9.4 px/char.
+  - Order: shrink in 1 px steps to the floor (display 48, title 32, label 22, body 20, caption 18 never shrinks), then wrap to the component's `maxLines` (buttons 1, or 2 on tall 72 variants, panels per spec), then ellipsis.
+  - Ellipsis is allowed only for names and level titles. Never on verbs, numbers, wind or cost. A dev build throws on forbidden ellipsis.
+  - All strings from locale files with ICU-style placeholders, `Intl.PluralRules`, `Intl.NumberFormat`. No text baked in art.
+  - **Pseudo-locale** `en-XA`: accents, +40% padding of `~`, wrapped in `⟦ ⟧`. A Playwright test opens every scene in it and asserts no overflow and no forbidden ellipsis.
+  - Glyphs outside the bake charset make the build fail or route to Nunito (Cyrillic, Vietnamese). CJK and RTL are out of scope.
+- **Reason:** Predictable and testable.
+- **Rejected:** (1) hides verbs; (3) wastes space in English.
+- **Revisit if:** A target language needs CJK or RTL.
+- **Builds on:** DR-012, DR-081
+- **Judge:** Accepted.
+
+## DR-088 · UI asset pipeline
+- **Question:** How do SVG sources become atlas frames and tokens reach code?
+- **Options:** (1) hand-exported PNGs · (2) build script from SVG · (3) runtime-drawn Graphics
+- **Debate (compact):** GD: Fast iteration on button looks. / AD: SVG with token variables, one source of truth. / TL: A deterministic script and tests catch drift. Graphics shapes cost draw calls and are blurry at S=1.
+- **Winner:** (2).
+  - Sources in `/art/ui/*.svg`: icons (32 viewbox, `currentColor`), badges, three nine-slice sets (radius 24/16/8), each with 3 white silhouette layers: outline (also the shadow, tinted ink), fill, band.
+  - `tools/build-ui.ts`: substitutes `var(--token)` from `src/ui/theme.json`, rasterises at 2x with resvg, packs into the shared atlas (DR-014). No hex in SVG except `#fff`.
+  - UI budget at most 2 MP (8 MB) of the 32 MB shared pages. The CI report prints it.
+  - Nine-slices use `add.nineslice`, corner slice = radius. Pill heights fixed per variant.
+  - `tools/bake-fonts.ts`: opentype.js plus resvg, charset from locale files, BMFont XML with kerning, fill and stroke layers (DR-081).
+  - `theme.json` (primitive → semantic → component) generates `theme.ts` (0xRRGGBB), `theme.css` (vars for HTML).
+  - **No colour literals in code.** A Vitest scan of `src/**` and CSS/HTML fails on `#hex`, `0x......`, `rgb(`, outside `theme.json` and generated files. A second test recomputes contrast for every component text-on pair (4.5 text, 3 non-text).
+- **Reason:** One token file drives canvas, HTML and art.
+- **Rejected:** (1) drift; (3) blur and cost.
+- **Revisit if:** Atlas UI area exceeds 2 MP.
+- **Builds on:** DR-003, DR-013, DR-014, DR-016
+- **Judge:** Accepted. Fonts are self-hosted (J27).
+
+## Conflicts found
+- DR-003 says touch targets at least 48 (56 preferred). The foundation values (64 hit, 72 preferred) supersede it. 48 and 56 now describe visuals.
+- DR-013 says the canvas parent has safe-area padding. DR-085 replaces that with overlap-based margins, because padding shrinks FIT on notched phones.
+- CREATIVE §3 says button shadow 5 px and minimum text 16 px, body 20. DR-083 uses 6, and DR-081 uses 18 and 22.
+- DR-015 uses Tab to cycle weapons, which conflicts with Tab as focus. DR-086 gives Tab to weapons in Battle only.
+- The preview's action `#E8456B` fails contrast. DR-080 changes it to `#EE6083`.
+
+---
+
+# Checkpoint C · Title, boot and system screens (DR-090 to DR-096)
+
+## DR-090 · Screen map and back navigation
+- **Question:** How do scenes connect, and what does one `goBack()` do on every screen for the UI back button, browser/Android back and Esc?
+- **Options:** (1) each scene handles its own back · (2) one `Nav` module: history entry per forward step, all back sources funnel into `goBack()` · (3) no history integration, Esc and UI button only
+- **Debate (compact):** GD: kids hit Android back by reflex, so it must never dump them out of a match or lose a result. AD: one back button look (round jelly, left arrow) on every screen, always top-left. TL: use `history.pushState` for depth only (no URL change), and make the UI button call `history.back()` so there is exactly one code path (popstate).
+- **Winner:** (2). `Nav.goBack()` rules, topmost layer first (HTML dialog, confirm, Level card, Dot card, Pause), else the scene rule:
+  - Boot, Preload: ignored (re-push guard).
+  - Title: not handled. Browser/Android back leaves the page or PWA. Esc does nothing.
+  - LevelSelect: to Title. 2P Setup: to Title. Settings (HTML): close.
+  - Comic: skip, mark seen, replace with Battle or LevelSelect (the one that launched it).
+  - Battle (incl. 2P ready gate): open Pause (re-push guard, sim frozen). Pause: Resume. Quit confirm: cancel.
+  - Results: to LevelSelect (campaign) or 2P Setup (hot-seat).
+  - Battle, Results, Comic exits use `replaceState`, so history never contains a finished match.
+  - UI back button: hit 72x72 at (16,16), visual 56 (butter-300, plum outline 4, arrow). Shown on LevelSelect, 2P Setup, Comic ("Skip" pill). States: default, pressed (+4 y, shadow 0), focus ring, hidden on Title/Battle/Pause. Not shown in Battle, where Pause owns the corner (DR-047).
+  - Esc and P both open Pause in Battle. Forward popstate (depth too high) is ignored.
+- **Reason:** One path means replays, tests and all three devices agree.
+- **Rejected:** per-scene handlers (drift); back leaving mid-match (lost match).
+- **Revisit if:** playtests show Android back at Title exits too easily.
+- **Builds on:** DR-012, DR-047, DR-018, DR-015
+- **Judge:** Accepted. The back button is 64 hit at (M,M) (J36). Results gains the epilogue edge (J47).
+
+## DR-091 · Boot and Preload screen
+- **Question:** What shows during load, with what progress, minimum time and failure state?
+- **Options:** (1) canvas-only bar in Preload · (2) HTML `#splash` from first paint, fed by Preload progress events · (3) spinner only
+- **Debate (compact):** GD: no blank screen, ever, and no flash on fast loads. AD: plum `#2E1A47` field, wordmark, one chunky pill bar. TL: DR-012 says loading is HTML and Lilita One is CSS-loaded, so the splash works before Phaser exists.
+- **Winner:** (2). Splash fills the viewport, bg `ink` #2E1A47.
+  - Wordmark "ANTS!" in HTML text (Lilita One 64 logical equiv, butter-300, plum 8 stroke), centred at y=150.
+  - Bar: track (240,320,480,32), pill, plum-700 fill, plum 4 outline. Fill butter-300 with a 4 px shade band `butter-500`. A 28 px ant head rides the fill end.
+  - Label below (y=372, caption 22 body, butter-100): "Gathering the colony…".
+  - Progress is smoothed (lerp, never goes backward) and is bytes-weighted: shared atlas 70%, biome 0 25%, fonts 5%.
+  - Min display 600 ms. Bar hits 100% only after create.
+  - Error: any file fails: auto-retry 2x (500 ms, 1500 ms), no progress for 20 s counts as fail. Panel butter-100 (280,230,400,150): "Couldn't load the ants." (label 28) + caption "Check your connection." + raspberry "Try again" 72 high reloading the failed files only. States: loading, ready, error, retrying (bar dim). WebGL failure uses the DR-012 HTML message.
+- **Reason:** Instant first paint, no layout shift, works offline via the service worker.
+- **Rejected:** canvas bar (blank until Phaser boots); spinner (no progress feel).
+- **Revisit if:** cold load on 3G exceeds 8 s (split biome 0 off).
+- **Builds on:** DR-012, DR-014, DR-018, DR-003
+- **Judge:** Accepted (J55).
+
+## DR-092 · Audio unlock gate
+- **Question:** Tap-to-play: combined with Preload or separate?
+- **Options:** (1) separate screen before Preload · (2) same `#splash`: the bar becomes the button when loaded · (3) unlock silently on the first Title tap
+- **Debate (compact):** GD: one tap total, and the "pop" confirms sound works. AD: the bar morphs into the raspberry jelly button, no new screen. TL: DR-012 gives Boot the gate: Boot owns the gate state, Preload only feeds the bar, so the contract holds.
+- **Winner:** (2). When loading completes (and min time passes), the bar fades 150 ms and a button appears at (300,310,360,80): raspberry, label "Tap to play" (28). Handler on `pointerup`, `keydown` Enter/Space: `game.sound.context.resume()`, silent-buffer play (iOS), then the first-tap "pop" SFX, splash fades 250 ms, start `Title`. Always shown, even on desktop, even if muted (the tap is also the user gesture for later fullscreen). Splash pulses scale 1.0 to 1.04 every 1.2 s (static under reduced motion). If the context is already `running`, skip the silent buffer only. States: default, pressed, focus. No disabled state (not shown until ready).
+- **Reason:** One screen, one tap, satisfies autoplay rules everywhere.
+- **Rejected:** separate gate (extra tap); silent first-tap unlock (first sounds missing).
+- **Revisit if:** autoplay is allowed on all target browsers.
+- **Builds on:** DR-012, DR-018, DR-091, CREATIVE §5
+- **Judge:** Accepted (J55).
+
+## DR-093 · Title screen layout
+- **Question:** What is on Title, and how does a new save reach Level 0?
+- **Options:** (1) 4 buttons incl. a "Training Grounds" button · (2) 3 buttons, Play routes a new save to Level 0 offer · (3) Campaign label as in the reference
+- **Debate (compact):** GD: DR-058 says Level 0 is offered on a new save with Skip always visible, so it needs no Title slot. AD: keep the reference composition: logo top-left, signpost buttons right, two ants duelling. TL: label "Play"/"Continue" is data from the save.
+- **Winner:** (2). Rects at 960x540 (right column shifts left by safe inset):
+  - Logo "ANTS!" (48,24,460,180), tilt -4°, butter-300, plum 8, shadow 8. Tagline "Small ants. Big shots." label 28, butter-100 + plum 4 stroke, at (56,232).
+  - Buttons 320x72, x=608, y=168 / 252 / 336 (gap 12): Play or Continue (raspberry), 2 Players (teal + people icon), Settings (butter-300 + gear, opens HTML dialog).
+  - Corner: sound toggle hit (16,16,72,72) visual 56; fullscreen hit (872,16,72,72) (DR-095). Version caption 18 at (16,506).
+  - Hero ants 112 px tall, feet y=430: Blue circle-cap at x=150, Amber triangle-cap at x=470, 8-dot arc and seed every 6 s, amber ant ducks ("eep"). Static under reduced motion.
+  - No save: "Play" routes to LevelSelect and opens the Level 0 card (Start Training / Skip to Level 1). Level 0 is later reached from the "0" leaf sign (DR-058).
+  - Save: "Continue" plus pill "Lv N" (56x28) inside the button, opens LevelSelect on the frontier level. If `ants.match.v1` exists, Dot card first: "Resume your match?" Resume / Map. Storage blocked: Play, plus notice "Saves are off".
+  - Button states: default, pressed (+4 y, shadow 0), focus (4 px butter-100 ring + 2 plum), disabled (stone-400, not used on Title). Keys: arrows/Tab move, Enter/Space activate.
+- **Reason:** Keeps the approved look and puts the new player on the shortest path.
+- **Rejected:** a 4th Training button (clutter); "Campaign" label (no Continue state).
+- **Revisit if:** testers miss the Level 0 card.
+- **Builds on:** DR-003, DR-012, DR-055, DR-058, DR-070, DR-047
+- **Judge:** Accepted.
+
+## DR-094 · Rotate overlay
+- **Question:** What does the portrait overlay show and what pauses?
+- **Options:** (1) full-screen plum overlay with animated phone · (2) small banner over a squashed game · (3) auto-lock only
+- **Debate (compact):** GD: pausing must be automatic and lossless, no Pause menu popping up. AD: one big phone icon turning, short copy. TL: pure HTML/CSS so it works before Phaser; the media query must not trigger on narrow desktop windows.
+- **Winner:** (1). `#rotate`, z-index max, shown by `@media (orientation: portrait) and (pointer: coarse)`. Bg `ink`, centred column: phone icon 96 CSS px (butter-300 body, plum outline 4) rotating 0 to -90° over 1.2 s ease-in-out, hold 1.2 s, loop; heading Lilita One 40 "Turn your phone sideways"; body Nunito 22 "ANTS! plays in landscape." in butter-100; ant peeks from one edge. Reduced motion: static landscape phone plus arrow. Side gutters 16 plus safe inset.
+  - Sets `paused-by-orientation`: sim tick and turn timer frozen, music and SFX paused (`sound.pauseAll`), input ignored. No Pause scene, no history entry. Shows within 1 frame; hides after landscape holds 250 ms (debounce), then resumes with 400 ms input grace. In hot-seat the ready gate is unaffected. Covers splash and Settings too.
+  - States: shown, hidden. No buttons.
+- **Reason:** iOS ignores manifest `orientation`; this is the safe net.
+- **Rejected:** banner (game unreadable); showing on desktop portrait windows.
+- **Revisit if:** foldables report wrong orientation.
+- **Builds on:** DR-012, DR-018, DR-045
+- **Judge:** Accepted. The `pointer: coarse` refinement of DR-012 is approved.
+
+## DR-095 · Fullscreen button, iOS fallback, install hint
+- **Question:** Where does fullscreen live and what do iPhone and non-installed users see?
+- **Options:** (1) fullscreen in Battle HUD · (2) Title corner + Settings row + F key, iOS shows install hint · (3) auto-prompt on load
+- **Debate (compact):** GD: Battle HUD is crowded, never add a button there. AD: icon swaps, same corner as the reference. TL: iPhone Safari has no element Fullscreen API; iPad does. Standalone launch needs none.
+- **Winner:** (2). Title top-right hit (872,16,72,72) visual (880,24,56,56); Settings dialog has a "Full screen" row and an "Install" row; F toggles.
+  - Supported: `requestFullscreen` on `pointerup`, icon swaps enter/exit on `fullscreenchange`, then `scale.refresh()`; try `screen.orientation.lock('landscape')`, errors swallowed.
+  - iPhone Safari (no API): same corner button shows a phone-plus icon, opens an HTML sheet (butter-100, plum 4, 440x260): "Add to Home Screen for full screen" and steps "Tap Share, then Add to Home Screen". Close button 72 high.
+  - Android Chrome: `beforeinstallprompt` is kept and the Settings "Install" row calls it.
+  - Standalone/fullscreen launch (`display-mode` or `navigator.standalone`): fullscreen button hidden, Install row hidden. No automatic nagging.
+  - States: default, pressed, active (exit icon), hint-variant, hidden, focus.
+- **Reason:** Never fails silently, never nags kids.
+- **Rejected:** HUD placement; auto-prompt.
+- **Revisit if:** iOS ships element fullscreen.
+- **Builds on:** DR-012, DR-018, DR-093
+- **Judge:** Accepted. Binding over DR-120 and DR-151: no fullscreen button in Battle (J33).
+
+## DR-096 · PWA manifest UI fields and icon set
+- **Question:** Which manifest fields and icon sizes?
+- **Options:** (1) 192/512/maskable only · (2) plus apple-touch 180, favicons, screenshots · (3) full iOS splash set
+- **Debate (compact):** GD: the home-screen icon sells the game. AD: ant face on butter-300, plum outline, readable at 48. TL: maskable needs content inside the 80% safe circle; iOS fills transparent areas black.
+- **Winner:** (2). Manifest: `name` "ANTS!", `short_name` "ANTS!", `description` "Small ants. Big shots. A turn-based ant artillery game.", `id` and `start_url` and `scope` `/Ants/`, `display` fullscreen (override fullscreen, standalone), `orientation` landscape, `background_color` and `theme_color` #2E1A47, `lang` en, `categories` ["games"], 2 wide screenshots 1280x720 (title, battle).
+  - Icons: 192 and 512 `any` (rounded plate, radius 22%, transparent corners); 512 `maskable` (full-bleed bg butter-300 #FFD978, ant face inside the central 410 px circle, i.e. 80%); apple-touch 180 (full-bleed opaque, same art as maskable); `favicon.svg` plus 32 PNG.
+  - Art: blue-cap ant face, plum outline 4% of size, no text, no glint. Meta: `apple-mobile-web-app-capable`, status bar `black-translucent`, `theme-color` #2E1A47.
+- **Reason:** Covers Android, iOS, desktop install UIs with 5 files.
+- **Rejected:** iOS splash image set (many sizes; plum body bg is enough).
+- **Revisit if:** store listings need 1024 art.
+- **Builds on:** DR-018, DR-003, DR-012
+- **Judge:** Accepted.
+
+### Conflicts found (raised by the debate; resolved in the J27–J56 table)
+- DR-012 and DR-018 say the audio gate is on `Boot`, and Preload has the progress bar. DR-091/092 resolve this by making Boot own the gate state and Preload feed a shared HTML splash. Please confirm this reading.
+- DR-012 gives the rotate overlay plain `orientation: portrait`; DR-094 adds `pointer: coarse` to avoid desktop false positives (a refinement).
+- The reference landing image labels the top button "Campaign"; the brief here asks for Play/Continue. DR-093 follows the brief.
+- DR-018 lists only 192/512/maskable icons; DR-096 adds apple-touch 180 and favicons (an addition, not a contradiction).
+- DR-047 puts Pause in a top corner while DR-095 keeps fullscreen off the Battle HUD, so there is no clash.
+
+---
+
+# Checkpoint C · Level select (DR-100 to DR-105)
+
+## DR-100 · Level select layout (per-biome page)
+- **Question:** How is one biome page laid out at 960x540, and where do Level 0, Wardrobe and Stickers sit?
+- **Options:** (1) full-width scroll map, card as overlay · (2) fixed page: 10-node snake path left, info card right (as reference) · (3) list of level rows
+- **Debate (compact):** GD: A 2-row snake of 5+5 shows the whole teach/test/twist/rest/boss arc in one glance and keeps "next" reachable in 2 taps. / AD: The reference already reads well; card at right, path on the art, header pill centred. / TL: A fixed page needs no scroll physics. Only the pager moves, and the card stays still.
+- **Winner:** (2). M = max(16, safe-inset+8).
+  - Header (y 12..76): Back (M,12,64,64; visual 56, butter-gold chevron). Pager-left hit (216,12,64,64). Title pill (304,16,352,56) "N · Biome", Lilita 40, shrinks to 28. Pager-right hit (680,12,64,64). Acorn pill (792,16,152,56), right edge at 960-M.
+  - Path: row A y=204, L1..L5 at x=184/288/392/496/600. Row B y=376, L6..L10 at x=600/496/392/288/184 (boss at 184). The turn at x≤648 is a cubic curve. Path = plum 12 px line with butter dots (r 3), the part up to "next" bright, the rest 50%.
+  - Level 0 sign: page 1 only, hit (40,160,80,88), dotted path to L1.
+  - Left strip (x=M, w 96, h 72, gap 8, y 292/372/452): Wardrobe, Stickers, Story (replay comic, DR-040).
+  - Info card (672,88,272,412). Page dots y=497, centred x=480.
+- **Reason:** Everything sits at the edges, thumbs stay free, and the card and Play sit in the right-hand thumb zone.
+- **Rejected:** (1) scroll fights swipe. (3) loses the journey feel.
+- **Revisit if:** long names overflow the pill after localisation.
+- **Builds on:** DR-008, DR-013, DR-040, DR-055, DR-058, DR-071
+- **Judge:** Accepted. The header aligns to y 16 (J36). The Level 0 sign uses this rect (J37).
+
+## DR-101 · Level node component
+- **Question:** What do the nodes look like, and what are all the states?
+- **Options:** (1) fill colour carries both status and type (reference) · (2) fill = status, badge shape = type · (3) icons only
+- **Debate (compact):** GD: A kid asks "where do I go, what did I finish?" Status first, so fill = status. / AD: Rest and boss must read without colour, so shape and size carry type. / TL: One `LevelNode(status,type,acorns)` container, all state art baked in the atlas.
+- **Winner:** (2). Node 64 (hit 72x72), boss 88 (hit 96x96). Outline 4, bottom shade band 10 (boss 14), hard plum shadow 4 (boss 6). Number Lilita 28, white, plum 3 stroke.
+
+| State | Fill / shade | Extra |
+|---|---|---|
+| locked | stone #B7AFC4 / plum-300 | plum lock 28, no number |
+| next | raspberry / rasp-700 | pale ring 96 (butter-100, plum 3 both sides), pulse 1.0 to 1.08 over 900 ms |
+| cleared | leaf-600 / leaf-800 | acorn row below (y+12) |
+| skipped | butter-300 / butter-500 | plum number, sticky-note 28x28 at top-right, tilt 10°, no acorns |
+| rest L9 | any status fill | teal 28 hammock badge top-left |
+| boss L10 | plum-700 body, crown 36 | locked: lock badge, next: ring, cleared: butter-300 body + 3 acorns (y+12), skipped: note |
+| selected | | butter-300 ring, gap 6, plum 3 outer |
+| focus | | same ring plus scale 1.1 |
+| pressed | | down 4, shadow 0, scale 0.94, 80 ms. Release spring 120 ms |
+
+- Locked tap: 120 ms shake and the card explains. Hover: lift 2.
+- **Reason:** Rest and boss are shapes, so colour is never the only cue.
+- **Rejected:** (1) a rest or boss that is next had no distinct "next" cue. (3) no numbers.
+- **Revisit if:** the cleared green looks like "go" next to raspberry for colour-blind testers (add a check mark).
+- **Builds on:** DR-003, DR-040, DR-051, DR-055
+- **Judge:** Amended (J29). Numbers use the fill's onColor text. Cleared fill is `success` with white text.
+
+## DR-102 · Level info card
+- **Question:** What does the card show, and how do Level 0, locked and skipped look?
+- **Options:** (1) card per selected node (reference) · (2) tooltip over node · (3) full-screen sheet
+- **Debate (compact):** GD: Players need: what's new, what earns acorns, the wind. Not HP numbers. / AD: Mini node as the header keeps identity with the map. / TL: Data-driven from the level JSON: `name`, `tagline`, `kit`, `windHint`, `par`, `hint`.
+- **Winner:** (1). Card (672,88,272,412), panel-butter, outline 4, radius 24, pad 16, inner 240.
+  - Header: mini node 44 + name Lilita 28, 2 lines max (y 104, h 64).
+  - Tagline: Nunito 800 22, 2 lines, 40 chars.
+  - Kit row: weapon chips 36 (gap 4, up to 6). The new weapon has a raspberry ring and a "New!" pill (caption 18, 46x22, -8°).
+  - Best: 3 rows (acorn 28 + 22 text, shrink to 18): "Win", "Lose no ants", "Win in {par} turns".
+  - Wind row: teal arrow icon + hint, ≤14 chars.
+  - Play (688,420,240,64) raspberry, "Play" or "Play again". Pressed: down 4.
+  - Skipped: sticky on the mini node. Boss and rest: crown or hammock on the mini node.
+  - Locked level: lock 56, "Clear or skip Level N first", button "Go to Level N" (butter-gold).
+  - Level 0: "Training Grounds", Practice and Level 70 Preview buttons (64 each), "Skip to Level 1" third on a new save. Preview and Practice show a check once done.
+  - Swap: 140 ms fade plus 8 px slide.
+- **Reason:** The third text per DR-055 ties to par, so the card answers "how do I get 3?"
+- **Rejected:** (2) too small for text; (3) leaves the map.
+- **Revisit if:** local text overflows twice.
+- **Builds on:** DR-040, DR-055, DR-058, DR-070, DR-072
+- **Judge:** Accepted. The Level 0 panel reuses this rect (J37). Goal strings follow DR-140.
+
+## DR-103 · Biome pager
+- **Question:** How do players move between 10 biomes, and what do locked ones look like?
+- **Options:** (1) arrows only · (2) arrows, swipe, dots · (3) a world overview screen
+- **Debate (compact):** GD: Curiosity matters, so locked pages stay viewable. / AD: A fog over flat colour reads "not yet", and silhouettes would spoil bosses. / TL: DR-014 loads one biome at a time, so locked pages must not need that atlas.
+- **Winner:** (2).
+  - Arrows (visual 56, hit 64). Default teal chevron. Pressed: down 4. Disabled: stone at the ends. Focus: ring. A raspberry "!" dot marks a newly unlocked biome.
+  - Swipe: |dx|>|dy|, page follows the finger 1:1, flips at 48 px or 0.5 px/ms, 280 ms settle, rubber band 0.25 at the ends, tap slop 12 px. Keys: Q/E or PageUp/PageDown.
+  - Dots (18, active pill 34x16 raspberry) are not buttons. Done biome: leaf, locked: stone outline.
+  - Loads: current ±1 map backdrops (4 MB each).
+  - Locked page: three flat tokenised hill layers under a plum-300 55% fog, stone nodes, boss as a "?" medallion, title pill gets a lock. Card: lock plus "Clear or skip Level N" and a "Back to {biome}" button.
+  - Unlock animation: boss cleared, vine grows 600 ms, arrow pops 1.2x, Dot card "New place!" with Go or Later, page slides, L1 locks flip to "next" with a 12-crumb burst (≤ 900 ms total). Reduced motion: no slide.
+  - Opens on the page of the next level.
+- **Reason:** No spoilers and no extra memory.
+- **Rejected:** (3) one more screen. Silhouettes (atlas not loaded, spoils bosses).
+- **Revisit if:** swipe misfires on the node taps.
+- **Builds on:** DR-008, DR-014, DR-055
+- **Judge:** Accepted.
+
+## DR-104 · Skip offer, hint flow and map trace
+- **Question:** How do the hint and skip offers appear, and what does the map show afterwards?
+- **Options:** (1) modal over the Results card · (2) inline panel on the Results card · (3) only on the map
+- **Debate (compact):** GD: Offer at the moment of frustration, never a "failed" mark. / AD: Dot's tone: "Tough one?". The sticky note is a friendly bookmark. / TL: Loss counter per level is needed in the save. The hint is UI only, the sim is unchanged.
+- **Winner:** (2).
+  - After 2 losses: Dot tip line (DR-040).
+  - After 3 (boss 5): a Dot face 96 plus panel above the Results buttons, "Tough one? Dot has a hint, or skip it for now." Buttons 240x64: "Retry with a hint" (raspberry), "Skip for now" (butter-gold), "Map" stays. Esc closes. Pressed: down 4.
+  - Hint = same seed, Assist preview 1.0 s for that attempt, the level's `hint` as a turn-1 Dot card, and the best weapon pulsing. Acorns still count.
+  - Skip: the map opens with a note "thwap" (scale 1.6 to 1, 220 ms), the path to the next node lights, the next node pops. Dot: "It will wait for you."
+  - Clearing later: the note peels off 300 ms and the node goes green.
+  - A skipped boss reads the same, with a dim crown.
+- **Reason:** Friendly and truthful, and it keeps the challenge.
+- **Rejected:** (1) blocks the retry; (3) too late.
+- **Revisit if:** more than 15% skip the same level (DR-055).
+- **Builds on:** DR-040, DR-055, DR-066
+- **Judge:** Amended (J41). The layout is DR-143. The hint definition and map trace here are kept.
+
+## DR-105 · Acorn presentation
+- **Question:** How big are acorns, how do filled and empty differ, and what is the 3-acorn variant?
+- **Options:** (1) acorn count numbers · (2) three acorn icons, lit or hollow · (3) stars
+- **Debate (compact):** GD: Icons plus the reason text (DR-040). / AD: DR-003a bans white streaks, so a gold body with twinkle dots replaces the shimmer sweep. / TL: One atlas icon plus a gold variant, sizes by scaling.
+- **Winner:** (2). Sizes 28 (map row, card), 32 (header pill, "8 / 30" in Lilita 32), 64 (Results). Outline 2 (3 at 64).
+  - Filled: soil-400 body, soil-600 shade crescent, soil-800 cap.
+  - Empty: stone body, plum-300 cap, no shade.
+  - Gold variant (3 acorns, DR-071): butter-500 body, soil-600 cap, 2 butter-300 twinkle dots r 3 popping 1 s, every 3 s. Reduced motion: static dots.
+  - Earn pop: scale 0 to 1.25 to 1, 160 ms stagger, once.
+  - Header pill is per biome. Gold rim at 30/30.
+- **Reason:** Consistent and glint-free.
+- **Rejected:** (1) low feeling; (3) pointy stars forbidden.
+- **Revisit if:** twinkle dots read as glints.
+- **Builds on:** DR-003a, DR-040, DR-055, DR-071
+- **Judge:** Accepted. Its gold variant is the only gold spec (J42).
+
+### Conflicts found (raised by the debate; resolved in the J27–J56 table)
+- DR-040 (acorns independent) vs DR-055 ("3 if also under par", cumulative). The save stores only a count, so the card could light a goal the player did not meet. Proposal: store 3 goal bits per level (count = popcount).
+- DR-055 needs a "losses in a row" counter, but the save schema (PLAN §1) has no field. Add `losses`.
+- Level data needs `tagline`, `windHint` and `hint` strings (not in DR-056).
+- DR-003 (≥48 touch) and CREATIVE (16 px min text) are older than the foundation (64 hit, 18 floor). Foundation wins.
+- Skipping Boss 1 skips the Pollen reward, but DR-072's per-level kits still give it at L11. Intended, but the Wardrobe should show unearned rewards as "Beat Level N".
+- Card height: the 6-chip kit row and a 2-line name leave 2 px spare, so no more rows can be added.
+
+---
+
+# Checkpoint C · Comic viewer (DR-110 to DR-113)
+
+## DR-110 · Comic viewer flow and controls
+- **Question:** How does the Comic scene show 3-4 panels, advance, skip, reveal text and replay?
+- **Options:** (1) one panel per screen, tap to advance (as the reference) · (2) whole comic page, 2x2 grid · (3) vertical scroll strip
+- **Debate (compact):** GD: kids read at their own pace, so tap-to-advance with no auto-play, and Skip always visible. / AD: the reference frame (880x420) gives each panel a full stage; a 2x2 page would shrink bubbles under the 22 px floor at 0.69 scale. / TL: one panel on screen means one texture is live at a time and no scroll physics.
+- **Winner:** (1). Scene data `{biome, mode:'first'|'replay'|'epilogue'}`. Layout in DR-111. Advance: tap anywhere outside the buttons, Space, Enter, →, or Next. Back: ←, Backspace, swipe right >=48 px. Skip: Skip button, Esc, S. Input cooldown 250 ms after each advance (stops double-tap skips). First input while text reveals completes all text; the next input advances. Reveal: caption 40 chars/s, bubble starts 150 ms after caption ends (pop scale 0.8 to 1.0, 120 ms), cap 1.6 s per box (CJK 20 chars/s). Panel in: art slides from x+880, 300 ms Cubic.easeOut, scale 1.04 to 1.0; text boxes fade out 100 ms before. Reduced motion or "instant text": 150 ms crossfade, no reveal. No auto-advance. Idle 6 s: Next pulses 1.0 to 1.06, 600 ms loop. Skip hit (40,460,128x64), visual 120x56, label "Skip" (replay: "Close"), butter-300 + butter-500 band. Next hit (744,460,176x64), visual 168x56, raspberry-500 + raspberry-700 band, label "Next" with chevron; last panel "Let's go!" (replay "Done"). States: default, pressed (y+4, band gone), focus (4 px teal ring, keyboard only), loading (Next shows spinner, input ignored). Dots (centre 480,492): done/upcoming 18 px circle butter-100, current raspberry pill 34x18, outline 3, gap 10, not tappable. Exit: first play marks `comicsSeen` then goes to Battle; replay goes to LevelSelect. Replay entry: 64x64 book button in each entered biome's LevelSelect header (DR-055). Orientation pause freezes reveal timers.
+- **Reason:** One-panel screens keep text large, memory low, and kids in control.
+- **Rejected:** page grid (tiny text); scroll strip (drag vs tap conflicts); auto-play (reading speed varies); tappable dots (mis-taps).
+- **Revisit if:** playtests show kids tapping through captions unread (then lengthen cooldown to 400 ms).
+- **Builds on:** DR-012, DR-055, DR-013, DR-046 (reduced motion), DR-003a
+- **Judge:** Amended (J54). Replay starts from the DR-100 "Story" button, not a header book button.
+
+## DR-111 · Comic panel frame and art spec
+- **Question:** Frame geometry, layers, source and raster size, and per-biome load/unload?
+- **Options:** (1) 1024x576 standalone PNG per panel, cover-cropped into the frame · (2) 1280x720 per panel · (3) 4 panels packed into one atlas page
+- **Debate (compact):** GD: panel 1 must show instantly; the rest can stream. / AD: ink outlines must stay crisp, so 1280 is nicer, but DR-014 already budgets 1024x576. / TL: separate textures allow progressive load and per-panel destroy; a packed page blocks on one file.
+- **Winner:** (1). Card background: plum-700 #4A2F6B with three plum-900 50% circles, drawn as vectors (no texture). Frame outer rect (40,28,880x420), outline 6 plum-900 (frame exception to outline 4), radius 24, hard shadow y+8 plum-900, fill sky-400 until loaded. Inner art rect (46,34,868x408), inner radius 18, clipped by a Graphics GeometryMask (fallback: four plum-700 corner cutters if the S=2 spike shows seams). Source: `art/source/comic/bNN_pN.svg`, viewBox 1024x576, rasterised by the build script at 1x to `assets/comic/bNN/pN.png` (key `comic_bNN_pN`, no mipmaps). Cover-fit scale 0.848 shows source rows 48..528: art safe band y48..528, faces and key props inside it. Layers: L0 baked art (ink included), L1 pop words from shared atlas ("BOING"), L2 bubbles, L3 caption. Load: Comic start queues p1 first, shows it on arrival, streams the rest. Memory: 4 x 1024x576x4 = 9.4 MB per biome, epilogue alone 2.4 MB. Comic peak 32+16+4+9.4+17 = 78 MB, under the 96 MB soft cap. All panel textures are removed on scene shutdown, before Battle loads.
+- **Reason:** Matches DR-014 and the reference, and keeps the soft cap.
+- **Rejected:** 1280x720 (+5.5 MB, kept as upgrade); packed page; live parallax layers (extra textures).
+- **Revisit if:** ink looks soft at S=2 (art is upscaled 1.7x): move to 1280x720.
+- **Builds on:** DR-013, DR-014, DR-003, DR-003a, DR-012
+- **Judge:** Accepted (J51).
+
+## DR-112 · Caption box and speech bubble components
+- **Question:** Sizes, fonts, tails, placement and i18n growth for comic text?
+- **Options:** (1) fixed-size boxes · (2) auto-height boxes with max width and authored placement, build-time fit lint · (3) runtime font shrink
+- **Debate (compact):** GD: captions carry the story, so never truncate. / AD: keep the reference: tilted butter caption bottom-right, white bubble top-left, tail to the speaker. / TL: auto-height is cheap; a lint over panel JSON at +30% text catches overflow before shipping.
+- **Winner:** (2). Text-safe rect (70,58,820x360). Caption: butter-100 fill, outline 4, radius 16, shadow 4, padding 12x18, max width 560, rotation -1.5 deg (left side: +1.5), anchored to bottom edge 418 and right edge 890 (or left edge 70), grows upward. Kicker (panel 1 only, "Chapter 2 · The Clearing") Lilita 22 raspberry-700; main Lilita 28 / line 31 plum-900. Max 3 lines (English fits 2, +30% fits 3); height cap 148. Bubble: white fill, outline 4, radius 24, Nunito 900 22 / 25 plum-900, padding 12x18, width 96..280, max 3 lines, lives in y58..280. Tail 28x30, base at least 24 from corners, tip 12 to 20 px above the speaker's head, never over a face. Max 2 bubbles, 1 caption, 3 pops per panel; no rect overlaps (lint). Text size setting scales bubble text up to 1.2x (bubble widens to 320). States: hidden, revealing, complete. Not interactive.
+- **Reason:** One component set serves 33 panels and +30% languages.
+- **Rejected:** fixed boxes (overflow); runtime shrink (text under the 22 floor).
+- **Revisit if:** a language needs more than 3 lines (widen caption to 640).
+- **Builds on:** DR-003, DR-003a (white allowed in bubbles), DR-012 (bitmap fonts), DR-110, DR-111
+- **Judge:** Accepted. Text size Large scales bubble text 1.2x (J34).
+
+## DR-113 · Epilogue and boss-victory comic variant
+- **Question:** When does the epilogue play, how does it differ, and do boss wins get comics?
+- **Options:** (1) epilogue plays after L100 won or skipped, one panel · (2) comic after every boss · (3) credits-only
+- **Debate (compact):** GD: the L100 win deserves a reward, and a skipped final boss still gets the party with no shame (DR-055). / AD: reuse biome-10 panel 4 and its party composition. / TL: reuse the viewer with `mode:'epilogue'`; no new assets or scene.
+- **Winner:** (1). Trigger: Results of L100 with `done` or `skipped`, once (`comicsSeen` has `epilogue`). Content: STORY biome-10 panel 4, kicker "Epilogue". One panel, so dots and Skip are hidden, the Next label is "Finish", and Finish goes to LevelSelect. Reveal 30 chars/s. 12 flat confetti pieces drift (none under reduced motion). Skipped variant: sticky note (butter-300, outline 4, rotated -3, rect (70,58,300x72), Nunito 800 22) reads "Level 100 skipped. Rematch anytime!"; L100 keeps its bookmark. Replay of biome 10 after L100 is resolved appends the epilogue as panel 4 (4 dots). Boss wins in biomes 1 to 9 show no comic in v1 (Results handles it, DR-071); the spare 4th slot is reserved for a postcard panel.
+- **Reason:** Rewards completion fairly with zero new tech.
+- **Rejected:** comic after every boss (9 more panels, 24 MB art); credits-only.
+- **Revisit if:** playtesters want the postcards, which would fill the reserved slots.
+- **Builds on:** DR-055, DR-012, DR-014, DR-110, DR-111, DR-071
+- **Judge:** Amended (J47). The "The End" card (DR-144) follows the epilogue panel.
+
+### Conflicts found (raised by the debate; resolved in the J27–J56 table)
+- DR-014 (1024x576 panels) vs DR-013 (S=2): the frame is 868 logical px, 1736 device px, so art is upscaled 1.7x on 2x phones. Kept; 1280x720 fits the budget as the fix.
+- DR-012 flow (Results goes to LevelSelect or the next Comic) lacks a Results to Comic(epilogue) edge for L100; DR-055 assumes it. Add it.
+- Frame outline 6 and the reference's radius 34 differ from the tokens (outline 4, radius max 24); I used 6 as a frame exception and radius 24.
+- 576 px art tall, 481 shown: about 16% of each panel is cropped off.
+
+---
+
+# Checkpoint C · Battle HUD (DR-120 to DR-131)
+
+## DR-120 · Battle HUD zones and layout rules
+- **Question:** Where does every HUD element sit at 960x540, which areas are thumb zones, how does left-handed mirroring work, and what stays clear for play?
+- **Options:** (1) top readouts, bottom-left aim and body, bottom-right shot, tray centre-bottom · (2) all controls in one bottom bar · (3) controls on the screen edges, world in the middle
+- **Debate (compact):** GD: left thumb moves and aims, right thumb sets power and fires, one-glance data stays on top (pillar 2). / AD: the reference has pills on top and jelly controls in the bottom corners; a bottom bar would eat a quarter of the world. / TL: one pure function `layout(S, insets, handed, mode)` returns every rect, so tests can assert no overlap.
+- **Winner:** (1). M = max(16, safe overlap + 8) per DR-085, expected 16. Hit rects ≥ 64, gap ≥ 8. Rects (x,y,w,h) at M = 16:
+  - TOP: Team A pill 16,16,232,48 · Team B pill 16,68,232,48 (boss: plate 16,68,232,72) · Turn plate 270,16,420,56 · Wind gauge 300,80,360,48 · Effects row y 132, h 40, centred, max w 480 · Level 0 "Next" 696,16,96,64 · Pause 808,16,64,64 (visual 56) · Fullscreen 880,16,64,64 · Find-my-ant 880,88,64,64 · Notice slot 240,184,480,72 · Dot bubble 16,148,392,112.
+  - BOTTOM-LEFT: Dial 16,380,144,144 · Angle up 168,388,64,64, down 168,460,64,64 · Flip 240,372,72,72 · Hop 320,372,72,72 · Walk left 240,452,72,72, right 320,452,72,72 · Move bar 240,344,152,24.
+  - BOTTOM-CENTRE: Tray grid 408,372,224,152 (4-6 weapons) or a bottom-anchored 88-tall row for 1-3, centred at x 520 · Name pill 416,328,208,40.
+  - BOTTOM-RIGHT: Power slider 648,332,72,192 · Power up 728,388,64,64, down 728,460,64,64 · FIRE 824,404,120,120 (visual 104), 32 px from every other hit rect.
+  - **Left-handed:** mirror every bottom rect with x' = 960 − x − w, then swap pairs so ◀ stays left of ▶. The top is never mirrored.
+  - **Clear zone:** x 16..944, y 176..328 holds no control. If the active ant overlaps a control, that control fades to 40% (still live). The level linter warns on spawns inside HUD rects.
+  - **Z-order:** world indicators < HUD < notices < gate < pause.
+- **Reason:** Thumbs stay off the action and every rect is checkable.
+- **Rejected:** (2) too much cover; (3) thumbs reach edges badly.
+- **Revisit if:** real-device thumbs cannot reach the Hop row, or M > 24 is common (scale clusters by 0.94).
+- **Builds on:** DR-003, DR-012, DR-013, DR-015, DR-020, DR-045, DR-047
+- **Judge:** Amended (J33, J38, J46). No fullscreen button. Level 0 Next is 800,16,72,64. The Dot bubble is at y 180.
+
+## DR-121 · Aim controls: angle, power, facing, keyboard and mouse
+- **Question:** How does a player set angle and power under set-then-fire on touch, mouse and keyboard?
+- **Options:** (1) dial plus power slider, each with steppers, plus slingshot drag from the ant · (2) slingshot only · (3) two sliders
+- **Debate (compact):** GD: 1% power is 11 px of range, so touch needs steppers (DR-033). / AD: the dial matches the reference; a vertical slider reads "more power" at a glance. / TL: all paths write the same `aim` state, so HUD, preview and bot mirror agree.
+- **Winner:** (1). Nothing fires on release (J8).
+  - **Angle dial:** full-circle needle with two allowed arcs, −20°..+90° per facing. Dragging into the other half flips facing (DR-033's free turn). Centre shows "52°" and a ◀/▶ facing glyph. Drag snaps to 1°. Steppers: tap 1°, hold 15 steps/s for 0.3 s, then 5° at 10/s.
+  - **Power slider:** track 28x160, knob 56 showing the number. Drag snaps to 1%. Steppers repeat the same way with 5% coarse.
+  - **Slingshot:** a drag starting within 56 px of the active ant pulls back opposite the shot; power = pull / 150 px; dead zone 20 px; band line drawn. Any other drag pans (DR-046).
+  - **Keys:** A/D or ←/→ walk · W/S or ↑/↓ angle · `=`/`+`/NumPad+/PgUp power up · `-`/NumPad−/PgDn power down · Space or Enter fire (key repeat ignored) · Shift or Z hop · X back-flip · T turn · Q/E/Tab cycle weapons · 1-6 pick · C recentre · Esc or P pause · F fullscreen.
+  - **Mouse:** wheel over world cycles weapons; wheel over dial or slider steps 1; hover tips after 500 ms.
+  - Switching weapon tweens dial and slider to that weapon's remembered values in 150 ms.
+  - States (dial, slider, steppers): default, pressed (shift 4, knob 1.1x), limit (3 px bump), disabled (55%, stone ring, mirrors the bot).
+- **Reason:** One state model, three input skins.
+- **Rejected:** (2) too coarse; (3) two slider drags are fiddly.
+- **Revisit if:** steppers go unused (drop them) or accidental slingshot grabs appear (radius 40).
+- **Builds on:** DR-015+J8, DR-033+J9, DR-046, DR-036
+- **Judge:** Accepted. This is the full key map (J53).
+
+## DR-122 · FIRE and Jump buttons
+- **Question:** Sizes and states, and how is a buffered press shown?
+- **Options:** (1) big FIRE alone in the corner, separate Hop and Flip · (2) FIRE with Hop stacked above · (3) one multi-purpose button
+- **Debate (compact):** GD: FIRE fires on press, so it sits far from every other target; Hop and Flip join the walk cluster. / AD: FIRE is the one action-colour circle with the butter ring of the reference. / TL: buffer windows are ticks (fire 12, jump 9), so visuals read the sim buffer state.
+- **Winner:** (1). FIRE hit 120, visual 104, `action` with shade band. Hop and Flip 72x72, each with its move cost in a corner (caption 18: 50, 80).
+  - **FIRE:** ready (butter ring pulses 1.6 s) · pressed (down 4, fires at once) · queued (ring sweeps 200 ms, auto-fires when legal) · rejected (3 × 6 px shake in 120 ms) · disabled (stone, ring off) when not your turn, in TurnStart/Fire/Resolve, the 2P gate or a bot turn.
+  - **Hop/Flip:** ready, pressed, queued (150 ms ring), disabled when budget < cost, airborne, not your turn, or after the retreat.
+  - A press arriving while the buffer clears on turn change is dropped silently.
+- **Reason:** Forgiving, and the player sees why a press did nothing.
+- **Rejected:** (2) stray fires; (3) hides verbs.
+- **Revisit if:** accidental fires exceed 5% of turns.
+- **Builds on:** DR-015+J8, DR-036, DR-042, DR-003
+- **Judge:** Amended (J29). The FIRE label and fill use action and ink.
+
+## DR-123 · Move controls, move budget and the retreat phase
+- **Question:** How are walk and jump shown, and how does the 3 s retreat read?
+- **Options:** (1) walk buttons plus a one-bar budget, retreat reuses the turn plate · (2) numeric budget · (3) separate retreat panel
+- **Debate (compact):** GD: the bar shows what a hop (50) or flip (80) will cost. / AD: one bar, no numbers; the plate says "Run for cover!". / TL: the retreat is a 180-tick sim window; the HUD reads `retreatTicks`.
+- **Winner:** (1). Walk ◀ ▶ 72x72, held. Move bar 152x24: butter track, leaf-600 fill = remaining/160, plum ticks at 50 and 80, foot icon. Pulses at 0. Walk states: default, held, disabled (budget 0, airborne, slope > 45°).
+  - **Retreat (J6):** after FIRE, dial, steppers, slider, tray and FIRE dim to 55% and go inactive; walk, Hop, Flip stay live while budget remains. Plate text "Run for cover!", timer disc becomes a butter 3-2-1 disc with a runner icon, a 6 px teal line drains on the move bar over 3000 ms. No retreat UI if budget is 0.
+- **Reason:** Cost and window shown with shapes and numbers.
+- **Rejected:** (2) busy; (3) extra panel.
+- **Revisit if:** players do not run from a Dewdrop (add a fuse ring on the ant).
+- **Builds on:** DR-036, DR-042+J6, DR-043, DR-015
+- **Judge:** Accepted.
+
+## DR-124 · Weapon tray
+- **Question:** How do 6 weapons fit, and what are the slot states?
+- **Options:** (1) 3x2 grid, no scroll · (2) scrolling strip of 4 · (3) collapsed pop-out
+- **Debate (compact):** GD: Level 0, two-player and L34+ show 6, and switching must take one tap. / AD: a grid keeps every silhouette visible. / TL: a fixed 224x152 panel is trivial to hit-test; scroll only as a 7+ fallback.
+- **Winner:** (1). Slots 64x64, gap 8, padding 8. 1-3 weapons one row, 4-6 two rows of 3. Slot: icon 40, ammo badge 28 with numeral 22 (∞ for Seed).
+  - States: default · selected (raised 6, `secondary` fill; name pill shows the name) · empty (ammo 0: stone, badge crossed) · locked (stone, padlock; name pill "Unlocks at Level 14/24/34") · pressed · focus.
+  - **Sneak chip (Level 0):** dim silhouette + padlock; tap arms 1 shot (dashed outline, badge 1); fired = ✓ "tried", stays dim.
+  - **"New!" tag:** 44x24 `action` pill, caption 18, wobbles, on a weapon's first level; clears on first select.
+  - **Pickups:** a Seed Bundle bumps the badge (1.3x, 300 ms).
+- **Reason:** One-tap switch, no hidden slots.
+- **Rejected:** (2) hides weapons; (3) two taps.
+- **Revisit if:** more than 6 weapons ship.
+- **Builds on:** DR-009, DR-052, DR-070, DR-072, DR-015, DR-048+J11
+- **Judge:** Accepted. Binding geometry for the Sneak chips (J39).
+
+## DR-125 · Wind gauge, vertical fields and Oscillate
+- **Question:** How do levels −5..+5, Column, Oscillate, gusts and calm show?
+- **Options:** (1) horizontal chevron gauge plus an effects row · (2) one dial · (3) numbers only
+- **Debate (compact):** GD: chevron count is the skill, the sign must read at arm's length. / AD: the reference teal pill; white chevrons are allowed (DR-003a). / TL: `gauge()` returns {level, vertical, gust, next}; the HUD only draws it.
+- **Winner:** (1). Pill 300,80,360,48, `info` fill. Five slots (28) left, hub 64, five right. Lit chevrons white, pointing away from the hub on the wind's side; unlit are `info-shade` outlines. Hub shows the signed numeral (32) "+3"/"−3"; level 0 shows "Calm" (22).
+  - Wind tick: chevrons pop from the hub outward at 40 ms each.
+  - Gust: chevrons shake ±2 px 600 ms and a "Gust" chip with a bolt joins the effects row.
+  - Vertical (Garden swirl): chip with 1-3 stacked up/down chevrons and "Up"/"Down".
+  - Column zones: "Updraft" chip (bracket icon, "×2" on bosses) while active; "Vent next" dashed chip a turn ahead; in the world, teal dashed zone edges with rising chevrons.
+  - Oscillate: a 360x24 wave strip replaces the chips; a dot rides one sine period at the phase (6 s). The gauge updates live.
+  - Effects row: up to 4 chips, 40 tall, text 22.
+- **Reason:** One gauge covers 10 biomes; every effect has a word and a shape.
+- **Rejected:** (2) slow to read; (3) no gut feel.
+- **Revisit if:** testers miss the wave strip.
+- **Builds on:** DR-031, DR-032+J9, DR-003a
+- **Judge:** Accepted.
+
+## DR-126 · Boss telegraph HUD
+- **Question:** How does the HUD telegraph next-round tricks and phase changes?
+- **Options:** (1) "Next" chip, ghost chevrons on the gauge, and a banner · (2) banner only · (3) separate ghost gauge
+- **Debate (compact):** GD: the cue shows a full turn before the trick (pillar 4). / AD: dashed means "not yet", a shape cue. / TL: the engine knows the next wind exactly, so the ghost is exact.
+- **Winner:** (1).
+  - **Next chip:** dashed plum outline, clock icon, trick name ("Leaf gust"); leads the effects row from the TurnEnd card until the trick fires, then becomes a solid chip with rounds left.
+  - **Ghost arrow:** dashed hollow chevrons on the slots of the coming wind with its own sign; the hub keeps the real wind.
+  - **Telegraph banner:** 480x72 in the notice slot, text 28: "[Boss]: [cue]. Wind changes next round", 1200 ms.
+  - **Phase banner:** 480x96, "PHASE 2!" at 40 plus one 22 line, 1600 ms; boss plate segment pops and shakes (no shake in reduced motion).
+  - **Boss plate** (replaces the Team B pill): name 22, segmented HP bar (one segment per phase) 200x20, numeral.
+- **Reason:** No unseen tricks: words, shape and timing.
+- **Rejected:** (2) easy to miss; (3) duplicate gauge.
+- **Revisit if:** testers still lose to unseen tricks (hold the banner 2000 ms).
+- **Builds on:** DR-053, DR-054, DR-032, DR-042, DR-031
+- **Judge:** Accepted.
+
+## DR-127 · Turn plate, timer and warnings
+- **Question:** How do the turn banner and timer look in each state?
+- **Options:** (1) persistent plate that animates at TurnStart · (2) big centre banner each turn · (3) no plate
+- **Debate (compact):** GD: whose turn reads in one glance; a centre banner each turn blocks the action. / AD: badge, name, timer disc as in the reference. / TL: the plate reads sim state; TurnStart is 600 ms through L10 (DR-071).
+- **Winner:** (1). Plate 270,16,420,56. Badge 40 at 278,24 (circle or rounded triangle, white ring). Name 28 in x 326..626, shrinks to 22. Timer disc 48 at 634,20.
+  - TurnStart: plate drops in, 300/400/200 ms (900) or 200/250/150 (600) through L10; wind ticks 400 ms (300); a tap skips.
+  - Timer disc: normal butter with plum numeral 32 · ≤10 s `action` ring and numeral · ≤5 s rounded square, `action` fill, ink numeral, pulse 1.0→1.2 per second, tick sound (shape + colour + motion). Hidden in Level 0 Part 1 and in Resolve.
+  - Timeout: disc shows 0, "Oops, too slow!" pops over the ant.
+  - Sudden death: from dew start − 3, chip "Dew in 3 rounds" counts down plus a 480x72 banner once; from dew start the chip says "Dew rising".
+- **Reason:** Persistent, light, shape-coded.
+- **Rejected:** (2) covers play.
+- **Revisit if:** the plate is missed on bot turns.
+- **Builds on:** DR-041, DR-042, DR-043, DR-044, DR-071
+- **Judge:** Amended (J29). The ≤ 5 s numeral is ink. The plate is also the two-player banner (J46).
+
+## DR-128 · Ant tags, active marker, team bars, damage numbers, knock-out
+- **Question:** How is health shown per ant and per team?
+- **Options:** (1) pill tag per ant plus team bars · (2) bars over ants · (3) numbers only
+- **Debate (compact):** GD: the HP number is what matters. / AD: the reference tag (badge + number); the active ant gets the bobbing arrow. / TL: the Hud scene draws tags from the Battle camera transform, clamped and pixel-snapped.
+- **Winner:** (1).
+  - Tag 76x32, butter, plum outline 3, team badge 24 + HP numeral 22, 12 px above the ant; overlapping tags offset 36 px vertically.
+  - Active ant: tag 96x40 with `action` outline 4 and nickname, plus an `action` arrow 40x44 bobbing 8 px at 1.2 s.
+  - Low HP (≤25): `danger` numeral and ±3° wobble.
+  - KO: tag turns stone with a dizzy-star icon, shrinks out after 1200 ms.
+  - Team bars: badge 32, 100x16 bar in team colour with shade band, numeral 32; drains over 400 ms after the number lands; the active team pill rises 4 px with a ▸ notch.
+  - Damage numbers: Lilita 40, white with plum 4 stroke, "−30", rise 56 px over 900 ms; direct hit 56 with "!"; heal "+25" in leaf-200; hits within 300 ms summed; reduced motion: no rise.
+- **Reason:** Readable at 667x375, shape plus number.
+- **Rejected:** (2) too small; (3) no team context.
+- **Revisit if:** tags crowd in 4v4.
+- **Builds on:** DR-041, DR-035, DR-003, DR-007, DR-048
+- **Judge:** Accepted.
+
+## DR-129 · Aim preview and bot aim visuals
+- **Question:** What does the preview show, and how is a bot's aim made visible?
+- **Options:** (1) same 8-dot preview for everyone, crosshair and power bar for bots · (2) no preview for bots · (3) full-arc preview
+- **Debate (compact):** GD: DR-033 keeps wind the skill, so the preview stays short. / AD: white dots with plum outline plus a ring (white allowed, DR-003a). / TL: cosmetic, tweens onto the already-fired values (DR-066).
+- **Winner:** (1).
+  - Player preview: 8 dots r 6, 0.06 s spacing, ring r 16 stroke 5 at 0.48 s; stops at terrain with the ring squashed 14x6. Assist 1.0 s (16 dots), dots after the 8th at 50%. Hidden in Fire, Resolve and other teams' turns. Drawn in the Battle world layer below the HUD.
+  - Bot aim: same dots; the ring becomes a crosshair (r 18, 4 ticks, amber with plum outline), wobbling ±3σ_a (max 12°) and settling over 0.6-1.2 s on the fired value; a 16x72 power bar behind the ant climbs with slight overshoot at low levels; HUD dial and slider mirror it at 55%.
+  - Reduced motion: wobble amplitude halved, shorter settle.
+- **Reason:** The player watches the bot decide (pillar 2).
+- **Rejected:** (2) hides the show; (3) removes the wind skill.
+- **Revisit if:** the crosshair hides the target.
+- **Builds on:** DR-033, DR-066, DR-003a, DR-061
+- **Judge:** Accepted.
+
+## DR-130 · Camera UI
+- **Question:** How does the player re-find their ant, pan, and track off-screen things?
+- **Options:** (1) conditional find button, edge hints and edge indicators · (2) always-visible camera buttons · (3) no UI
+- **Debate (compact):** GD: being lost must cost one tap. / AD: one conditional button, not a toolbar. / TL: visibility test is camera centre vs follow target.
+- **Winner:** (1).
+  - Find-my-ant 880,88,64,64 (ant-head target icon): shown when the camera centre is > 120 px from the follow target or the active ant is off-screen; recentres in 500 ms (150 ms cut in reduced motion). Key C; double-tap on the world does the same.
+  - Pan affordance: hand cursor on drag; a faint 28x56 chevron at an edge that can still pan, fading after 2 s idle; a first-time Dot tip teaches the drag.
+  - Edge indicators: 48 px circles, non-interactive, clamped to x 24..936, y 188..350, rotated to the target. Projectile: white with plum outline and arrow. Ant: team badge plus arrow. Distance "↑ 320" at 22.
+  - Pan clamped to the world (DR-020), zoom ≤ 1.25.
+- **Reason:** Least screen area, one tap.
+- **Rejected:** (2) clutter; (3) lost players.
+- **Revisit if:** players pan by accident while aiming.
+- **Builds on:** DR-046+J7, DR-020, DR-026, DR-121
+- **Judge:** Accepted. During the retreat the camera eases to zoom 1.0 (J49).
+
+## DR-131 · Two-player tap gate, Dot tips, toasts and queue rules
+- **Question:** How does the hot-seat gate look, and how do tips, banners and toasts share the screen?
+- **Options:** (1) one notice slot with priorities, a yielding Dot bubble, and a full-screen gate · (2) free-floating popups · (3) modal cards only
+- **Debate (compact):** GD: a gate is one clear tap; tips never block a shot. / AD: butter bubble, Dot's face, pulse ring on the target. / TL: one priority queue makes ordering testable.
+- **Winner:** (1).
+  - Gate: world dims (scrim), cut-out r 96 around the next ant and its arrow. Banner 240,196,480,88 with a 64 badge and "Amber Caps' turn" (40, shrinks to 28). Button 320,300,320,96 "Tap to start" (40) with caption "Pass the device". Whole screen is the hit area (tap, Space, Enter); the first press is consumed. HUD controls 60% and inactive; timer full and frozen.
+  - Dot bubble: max 16,148,392,112. Dot 64, body 22, max 3 lines, tail, dashed `action` pulse ring on the target. Tap to close, or it completes when the taught action is done. Never in Fire or Resolve. Max 1, 600 ms between tips. Any banner collapses it to a 64 px Dot chip.
+  - Notice slot 240,184,480,72: banner (28), toast (22, 1600 ms) or prompt (480x120+, buttons 200x64). Priority: phase > telegraph > sudden death > pickup > info. Higher preempts after 600 ms. Queue of 3, duplicates collapse. Held during gate and pause; pickups wait until TurnEnd.
+- **Reason:** Predictable, never covers controls.
+- **Rejected:** (2) overlaps; (3) blocks play.
+- **Revisit if:** testers miss pickup toasts.
+- **Builds on:** DR-045, DR-058, DR-070, DR-044, DR-053, DR-013
+- **Judge:** Amended (J38, J46). The gate is DR-183's button gate at 300,212,360,96 with no dimming. The Dot bubble is at y 180. The notice queue is accepted.
+
+### Conflicts found (raised by the debate; resolved in the J27–J56 table)
+- DR-015 hold repeat "faster after 400 ms" vs DR-033 "15 steps/s for 0.3 s, then coarse 10/s": DR-033 used. DR-015 lacks power keys, X, T, C and keys 4-6; DR-121 adds them.
+- DR-009/DR-072 say the tray "scrolls"; DR-124 uses a 3x2 grid, scroll only as a 7+ fallback.
+- DR-070 chips say Level 21/41/61; the judge ruling says 14/24/34, used.
+- DR-003 seeds (touch 48, FIRE 96) vs foundation (64/72): foundation used, FIRE hit 120, visual 104.
+- DR-047 pause 56 vs hit min 64: visual 56, hit 64.
+- DR-042 TurnStart 300/400/200 vs DR-071's 600 through L10: scaled to 200/250/150.
+- DR-046 follows the projectile while J6 lets the ant run for 3 s: propose framing ant and projectile together at zoom 1.0 during the retreat; the off-screen indicator is the fallback.
+- DR-045 Space/Enter start the gate while DR-015 Space fires: the gate consumes the first press.
+- DR-020 fixed world vs HUD: ants can spawn under controls; needs a level-linter rule (no spawn feet inside HUD rects).
+- HP tag uses 22, not the 32 HUD numeral (does not fit 76x32).
+- DR-053 "icon at the start of the round" vs DR-042 "boss card at TurnEnd": treated as the same moment.
+- DR-044 warning at round 18, dew at 21; for bosses and Level 0 Part 2, warning = dew start − 3.
+- "Left-handed layout" is a new Settings toggle.
+- Horizontal budget is exact: 376 + 224 + 296 + 2×16 = 928; above M = 24 the 0.94 scale fallback applies.
+
+---
+
+# Checkpoint C · Results and rewards (DR-140 to DR-145)
+
+## DR-140 · Results card layout (victory and defeat)
+- **Question:** How is the Results card laid out, in what order does it reveal, and where do Map / Retry / Next sit?
+- **Options:** (1) one fixed 3-row checklist card with the reward as the last row · (2) full-screen results with a big acorn centrepiece · (3) tiny toast then straight to the next level
+- **Debate (compact):** GD: kids must state the 3 goals (DR-040), and "one more level" needs Next under the right thumb. / AD: one lit or dim acorn per row with a one-line reason, a hero ant on the card to receive trinkets (DR-071 flies items to "the ant on the card"). / TL: everything comes from the match log. The reward is saved at Results start, so a skip tap can never lose it.
+- **Winner:** (1). Card `panel-butter`, ink outline 4, radius 24, shadow 6, rect 140,40,680x448. Title "Victory!" display 64 at 164,52,632x64. Hero ant (cocky, scale 1.0) at 164,124,160x160. Goal rows at x340, w456, h48, gap 8, y 124/180/236: acorn 40 + body-22 text: "Won the level" / "No ant knocked out" / "Done in {par} turns or fewer". Lit acorn = soil body + checkmark disc (leaf-600). Dim = stone `locked` + empty ring (never colour alone). **Reward row** 164,296,632x72, `secondary` fill, outline 4, radius 16 (DR-141). With no reward it shows "Your best: 2 acorns, 5 turns" ("New best!" when beaten), so the layout never shifts. Buttons y392, h72, order **Map (176w, secondary) · Retry (176w, secondary) · Next (248w, primary raspberry)** at x164/356/548, gap 16. Next is bottom-right, the same thumb spot as FIRE.
+  - Reveal: card in 250 ms (scale 0.9 to 1, back-out) · title stamp 200 ms · rows at 450/800/1150 ms (acorn pop 1.25 then 1, plink pitch +2 semitones; dim acorn gets a soft "bup", no buzzer) · buttons slide in at 1500 ms, reward row starts at 1500 ms.
+  - **Tap-to-skip:** any tap before 1500 ms jumps to the final state and is consumed (it never presses a button). Buttons are live from 1500 ms. Enter = Next (the first Enter skips), Esc = Map, R = Retry. Reduced motion: rows fade in 100 ms each.
+  - **Defeat:** card 200,96,560x348. Title "Dizzy!" 64 with a 2-cycle wobble, plus "Try again?" at 28. Dizzy ant 120 px at 224,184. Text at body 22: "Same map, same wind. Take another go!" Buttons y348: Map (176w secondary) · **Retry (320w, primary)**. A bonk-boing sound, no buzzer. Rows are absent and there is no reward.
+  - States for every button: default · pressed (down 4, shadow shrinks) · focus (teal 4 px ring, offset 4) · disabled (`locked`) · hidden until 1500 ms.
+- **Reason:** The layout is stable and the primary action always sits in the same place. A skip never costs a reward.
+- **Rejected:** (2) too slow for 100 levels; (3) hides the acorn goals.
+- **Revisit if:** testers tap Next by accident (raise the live time to 1800 ms) or the reveal feels slow after L10 (cut it to 900 ms).
+- **Builds on:** DR-040, DR-055, DR-071, DR-003a, J17
+- **Judge:** Amended (J30, J31). Scrim 70%, DR-086 focus ring.
+
+## DR-141 · Reward pop-up components
+- **Question:** How does each reward type present in the reward row, how long, and how do several queue?
+- **Options:** (1) one row component with 5 type skins · (2) a separate modal per reward · (3) a toast only
+- **Debate (compact):** GD: each win needs one clear "got it" beat in about 1.5 s. / AD: trinkets fly to the ant, and the gold variant has no white glint (DR-003a). / TL: rewards are string ids in `save.unlocks`. Skins are data keyed by the id prefix.
+- **Winner:** (1). Row rect 164,296,632x72. Icon slot 172,304,56x56. Title Lilita 28 and subtitle Nunito 22 at x240. Action chip 628,304,160x56 on the right. Durations are DR-071's and include 200 ms in and 200 ms out.
+  - **Cap trinket (1500, 1800 for the L9 Coconut Charm with a boing):** the icon pops in the row, holds 400 ms, then flies to the ant's trinket anchor (fixed beside the cap stem, 24 px slot scaled with the ant, never over the cap or badge, J26). It flies on a 450 ms arc, then does a 120 ms squash and a cocky "hah!". Reduced motion: a 150 ms crossfade.
+  - **Sticker page (1200):** the page icon flips (scaleX 0 to 1, 300 ms). Text: "Sticker page 2".
+  - **Nickname (1500):** the ant gets random auto-names. A "Pick" chip opens the Wardrobe. Tapping it cancels the auto-close. Skip is implicit.
+  - **Victory dance (1500):** the hero ant dances once.
+  - **Gold shimmer** (3 acorns): +600 ms. The item squashes and recolours to gold (`butter-500` body, plum outline). A flat `butter-300` band sweeps twice, 4 round dots pop, and a "Gold!" pill (raspberry) appears. Reward ids stay the same, with a `gold` flag.
+  - **Queue:** at most 2 per clear. Order: weapon, trinket or dance, sticker, nickname. Gap 150 ms. A tap settles everything. Settled state: the icon at 40 px plus "{name} added". States: queued · playing · settled · skipped.
+- **Reason:** One component covers every type, keeps one-tap skip, and keeps trinkets off the cap and badge.
+- **Rejected:** (2) a modal per reward (too slow); (3) a toast cannot hold a flying item.
+- **Revisit if:** testers skip pop-ups (cut each to 1000 ms).
+- **Builds on:** DR-071, J26, DR-003, DR-003a, DR-140
+- **Judge:** Amended (J42, J43). No sweep band. The nickname reward opens the DR-163 picker.
+
+## DR-142 · Weapon unlock card
+- **Question:** How does the unlock card for Dewdrop (L4), Pollen (L10), Grub (L14), Roller (L24) and Plop (L34) look, and what does "Try it" do?
+- **Options:** (1) a modal sheet with art, name and a one-line description · (2) a reward-row pop-up only · (3) a full-screen scene
+- **Debate (compact):** GD: it is a milestone, so it earns a big beat and an instant way to use it. / AD: each weapon silhouette is unique: cream sausage Grub, grey striped ball Roller, brown blob Plop, teal drop Dewdrop, yellow pod Pollen. / TL: a single `WeaponCard` component, shown once per weapon id via a `seen` flag.
+- **Winner:** (1). Sheet 200,36,560x468, `panel-butter`, radius 24, shadow 8, over a plum 60% dim. Ribbon "NEW WEAPON!" (Lilita 40, raspberry) at 200,48,560x56. Art plate: a `sky-100` circle 160 at 400,116, outline 4, with the weapon at 120 px. Name (display 40) at y288. Description (body 22, max 2 lines) at y342. Buttons y416, h72: **Later** (144w, secondary) at 260 · **Try it** (280w, primary) at 420.
+  - Copy: Dewdrop "Bounces up to 3 times, then pops after 3 seconds." · Pollen "Bursts into 5 seeds in the air." · Grub "Digs through cover, then pops." · Roller "Lands, rolls downhill, then pops." · Plop "Builds soil to plug holes and make bridges."
+  - **Pollen:** shown on the L10 Results (after the boss), and **Try it** goes to L11 with the weapon pre-selected.
+  - **Dewdrop, Grub, Roller, Plop:** shown as a scripted card at the start of L4, L14, L24 and L34, the weapon's first level, with the Dot card (DR-072). **Try it** closes the card and pre-selects the tray slot. The Results of that level shows a 2200 ms recap row ("Added to your kit").
+  - Animation: pop-in 220 ms, art does 2 squash bounces, 12 flat crumbs (no glints), and a weapon sound gag. After 2200 ms (2800 ms on L10, which then adds the sticker row) the card shrinks into the reward row. Buttons then act normally and the weapon carries a "New!" tag in the tray. States: default · pressed · focus · collapsed.
+- **Reason:** It is a moment, never a block, and the weapon is used at once.
+- **Rejected:** (2) too small for a milestone; (3) a scene and extra load.
+- **Revisit if:** testers miss the new weapon in the tray.
+- **Builds on:** DR-052, DR-009, DR-072, DR-071, J26
+- **Judge:** Accepted.
+
+## DR-143 · Hint offer and Skip offer
+- **Question:** What do the Dot tip (after 2 losses) and the Skip offer (after 3, or 5 on bosses) look like and say?
+- **Options:** (1) extra rows on the "Dizzy!" card · (2) separate pop-up · (3) tip only, no skip
+- **Debate (compact):** GD: help comes early, skip comes late, and it is never a gate. / AD: Dot is a friendly row, and the word "fail" is banned. / TL: the loss streak is a counter per level in the save. The tip is chosen from the match log.
+- **Winner:** (1).
+  - **Loss 2+ (Dot tip):** add a Dot row 80 high inside the defeat card (card h 436, y52): Dot avatar 56 plus a bubble (white, plum 4). Body 22, 2 lines, up to 60 characters. Chosen by cause: "Check the wind arrow, then nudge your angle." · "Your shots landed short. Try more power." · "Blasts hurt your own ants too. Keep your distance." · "Take your time. Relaxed turns are in Settings." For bosses, name the cue: "Listen for the bell. A gust comes next turn."
+  - **Loss 3, or 5 on bosses (Skip offer):** the card is 560x360 at y90. Title "Dizzy!". The Dot row says "Stuck? No worries! I can show you the aim, or we can skip this one for now." Buttons: **Retry with a hint** (512w, primary, y), then **Map** (176w) · **Skip for now** (320w, secondary) below, gap 8.
+  - **Hint** (assumed): Dot's tip card on turn 1 plus the aim preview held on for that attempt. Skip unlocks the next level and puts a sticky-note bookmark on the map, with the toast "Sticky note saved on the map". It needs no confirm and is replayable. The offer repeats on every later loss.
+  - Never use "failed", "lost", "game over" or "try harder". States: default · pressed · focus.
+- **Reason:** Help is kind, skip is cheap, and a tired kid never hits a wall.
+- **Rejected:** (3) a wall; a skip confirm (friction).
+- **Revisit if:** more than 15% skip the same non-boss level.
+- **Builds on:** DR-040, DR-055, J17, DR-033, DR-053
+- **Judge:** Accepted, with the DR-104 hint definition (J41).
+
+## DR-144 · Boss victory and biome-complete
+- **Question:** What plays when a boss goes down, and how does the biome end and hook the next one?
+- **Options:** (1) the stretcher gag, a banner, the Results card and a postcard panel · (2) straight to Results · (3) a full cutscene
+- **Debate (compact):** GD: bosses are the 10-level payoff and deserve a beat of about 3 s. / AD: reuse the knock-out stretcher (CREATIVE §2). The next biome hook is Queen Marigold's postcard (STORY). / TL: this is a Results sub-state, with no new scene key.
+- **Winner:** (1).
+  - **Boss down (3300 ms):** 75 ms hit-stop, then the boss goes dizzy with orbiting stars. At 600 ms the medic ants enter with a leaf stretcher scaled 1.6. The boss loads at 1000 ms and is carried off by 3000 ms. Escorts go off in parallel. **Banner** 0,212,960x96 (raspberry, plum 4 top and bottom), "{Boss} is dizzy!" at 64 (shrinks to 40), in 300 ms at 900 ms, out at 3000 ms. A tap goes to Results after at least 800 ms. Reduced motion: a static pose, with a 300 ms banner.
+  - **Boss Results:** the normal card (DR-140), title "Boss dizzy!", par 14, and the boss reward in the reward row. Next becomes "Next stop".
+  - **Biome-complete panel** (in the Results scene): card 180,60,600x420. Header "{Biome} cleared!" at 40. Acorn tally "24 / 30" (acorn 40). A postcard 520x180: stamp (next biome icon, 64), then Marigold's one-line hook in Lilita 28, e.g. "Wish you were here! The sky grew a shoe. M." Buttons: Map (secondary) · **Next stop: The Clearing** (primary), which opens that biome's Comic. Slide in 400 ms.
+  - **Final boss (Gloria):** the same sequence at 4000 ms, "The Crumb Crown is dizzy!". Results title "You did it!", with Next = "Epilogue". Then comic panel 4, then a "The End" card: "The rowdiest ants have a home!", acorn total, Map and Title. A skipped L100 shows the epilogue plus the note "Level 100 skipped, replay it anytime" at 22.
+- **Reason:** It reuses existing art and gives a calm hook for the next biome.
+- **Rejected:** (2) flat; (3) too costly (art and load).
+- **Revisit if:** the stretcher beat feels long on the 10th boss (cut it to 2000 ms).
+- **Builds on:** DR-053, DR-054, DR-055, DR-071, DR-012, DR-014, CREATIVE §2
+- **Judge:** Accepted (J47).
+
+## DR-145 · Two-player result card
+- **Question:** How is a two-player result shown, with team colour and badge shape?
+- **Options:** (1) a team-colour ribbon with the badge plus a small stats row · (2) the same card as the campaign · (3) text only
+- **Debate (compact):** GD: no acorns or rewards (DR-040), so it is just a winner moment and a fast rematch. / AD: colour plus shape: Blue circle, Amber rounded triangle, in the ribbon and on the ants. / TL: it uses the same Results scene with a `mode: versus` branch.
+- **Winner:** (1). Card 140,40,680x448. Ribbon 164,64,632x88 in the team colour (`team-a` or `team-b`, with the shade band), with a badge 56 at each end (white ring, plum keyline). Text "Blue Caps win!" / "Amber Caps win!" at 64, white fill with a plum 6 px stroke. A draw: plum-700 ribbon, both badges, "Draw!". The winner's hero ant (cocky) is at 420,164, 120x150. The loser (dizzy) is at 300, scale 0.6. Stats row 164,316,632x56: per team badge 40, name 22, ant icons (alive filled, others dim) and "Turns 14". Buttons y392, h72: **Title (176) · Setup (176) · Rematch (248, primary)**. Rematch keeps the setup and a random seed re-rolls. Slide in 250 ms. States as in DR-140.
+- **Reason:** It reads without colour and puts Rematch under the thumb.
+- **Rejected:** (2) shows acorns that do not exist; (3) no identity.
+- **Revisit if:** players ask for a stats screen.
+- **Builds on:** DR-003, DR-007, DR-040, DR-044, DR-045, DR-140
+- **Judge:** Accepted. The copy is "Blue Caps" / "Amber Caps" (J45).
+
+### Conflicts found (raised by the debate; resolved in the J27–J56 table)
+- **DR-072 vs DR-009/J26:** DR-072 says W4-W6 are rewards of Bosses 2, 4 and 6. DR-009 puts them at L14/L24/L34, and J26 makes the L20/40/60 boss rewards a big trinket or dance. I followed DR-009 and J26.
+- **DR-071 vs DR-052:** DR-071 gives Dewdrop as the L4 Results reward, but DR-052 and the ammo tables put it in L4's kit (ammo 5). I resolved this with an intro card at level start plus a Results recap row (DR-142).
+- **DR-055:** "Retry with a hint" has no defined hint. I assumed Dot's tip plus the aim preview on.
+- **DR-045 vs "Blue Caps win!":** DR-045 says "Amber Colony's turn". I used "Amber Caps" for symmetry, so the DR-045 banner copy should change.
+- **DR-045 "swap-colours button" vs the fixed pairing (blue circle, amber triangle):** I read the swap as swapping which player has each team, never changing the colour-badge pairing.
+- **DR-071 durations vs gold shimmer:** the table has no time for the gold upgrade. I added +600 ms.
+- **DR-003 and DR-015 "touch targets 48/56" vs foundation 64/72:** the foundation values apply (buttons here are 72 high).
+- **DR-012 scene list:** the biome-complete and "The End" panels are Results sub-states, not new scenes. The Sticker album, Wardrobe and nickname picker (J26) are outside this DR set.
+
+---
+
+# Checkpoint C · Level 0 screens (DR-150 to DR-154)
+
+## DR-150 · Level 0 entry: sign, panel, states, launching
+- **Question:** How does a player find and launch Level 0 (Part 1 or Part 2 alone), and what does the sign show?
+- **Options:** (1) a Title button · (2) a signpost on the map plus the usual detail panel, auto-opened on a new save · (3) a separate Level 0 scene
+- **Debate (compact):** GD: it must be offered once, never nag, and Skip must be one tap (DR-058, DR-055). / AD: the reference map already has a right-hand detail panel, so a leaf signpost needs no new screen. / TL: derive "new" from the save, with no new flag: `progress` empty and `level0` empty.
+- **Winner:** (2).
+  - **Sign:** biome 1 page only, 96x88 hit rect at (n1.x−48, n1.y−128), above node 1 and clear of the Back button. Leaf board 96x56 (`leaf-600` #3E9A3A, plum 4, R16) with "0" in Lilita 40 (`panel` #FFF1D0). Below it a 88x24 plate reading "Training" (caption 18).
+  - **Sign states:** new = ±2° wiggle (2.4 s) and a bobbing raspberry arrow · default = still · selected = lift 6 and shadow 8 · pressed = down 4 · focus = 4 px `secondary` ring · Part 1 done = 28 px check badge, top-right · Preview tried = 28 px reward badge, top-left (Brass Doorknob Pin icon on a win, Brave Scout leaf sticker on a loss; never a fail mark) · match saved = raspberry dot badge, bottom-right.
+  - **Panel** (656,96,288,412), the same butter panel as the L4 panel. Title "Level 0" (40), "Training Grounds" (28), body 22 "Free play. Nothing to lose." Buttons: Part 1 Practice 256x72 (caption "about 3 min") · Part 2 Level 70 Preview 256x72 (caption "one try · about 4 min") · "Skip to Level 1" 256x64 (`secondary`). Button states: Play / Replay (P1 done) · Play / Resume ("Match saved") / Replay ("Reward collected. Replay for fun.") for P2. Nothing is ever disabled.
+  - **New save:** Title Play opens LevelSelect with Level 0 selected and the panel open. Auto-open only while `progress`, `p1Done` and `previewResult` are all empty.
+  - **Launch:** Part 1 goes straight to Battle (200 ms fade) and never plays the Jungle comic. Part 2 opens the DR-153 intro card first.
+- **Reason:** It reuses the existing map panel, so no new scene, and it offers without nagging.
+- **Rejected:** (1) clutters Title; (3) a new scene for one level.
+- **Revisit if:** more than 60% skip it (shrink the panel to a single "Train?" prompt).
+- **Builds on:** DR-058, DR-070, DR-055, DR-012, DR-003.
+- **Judge:** Amended (J37). The sign rect is from DR-100 and the panel rect from DR-102.
+
+## DR-151 · Dot tip cards in Part 1
+- **Question:** How do tip cards look, where do they sit, and when do they close, without covering aim, wind or FIRE?
+- **Options:** (1) a modal card that pauses play · (2) a non-modal card in fixed top slots that collapses to a Dot bubble · (3) a speech tail pointing at each control
+- **Debate (compact):** GD: the player can't lose and there is no timer, so a card may wait, but it must not block the shot. / AD: Dot in a butter card, with a teal ring (plus a bobbing arrow) on the target control. / TL: the slots are fixed rects, and a keep-out test picks the side.
+- **Winner:** (2).
+  - **Card:** 400x112 butter panel, R24, plum 4, shadow 6. Dot disc 64 at left (`sky-400` fill, plum 4). Title 28 Lilita plus body 22, at most 2 body lines. A whole-card hit area closes it.
+  - **Slots:** TL (16,120) or TR (544,120). That is below the wind gauge (y ≤ 112) and above the aim dial and FIRE (y ≥ 400), so those are covered by construction. Choose the side away from the active ant, its tag and the 8-dot preview. If neither is free, show the bubble only.
+  - **Timing:** enter 220 ms (slide 24 and back-out). At 8 s, or on any aim, walk or fire input, it collapses (180 ms) to a 64x64 Dot bubble in the same corner. Tap the bubble to reopen it for 8 s. Doing the taught action closes the card at once. One card at a time, with a 400 ms gap. Reduced motion: a 100 ms fade.
+  - **Order:** T1 move, aim, power, fire · T2 hop, Dewdrop · T3 wind, Pollen. The target control gets a 4 px `info` #1FA38A ring (+8) that pulses at 900 ms. Input outside the card is never blocked.
+  - **Next:** a 152x64 pill at (648,16), `action`, label "Next". It appears after the player's 3rd turn (220 ms pop), pulses 3 times, then stays still. Pause is (880,16) and Fullscreen is (808,16).
+- **Reason:** Non-modal cards keep Level 0 feeling like play.
+- **Rejected:** (1) blocks the shot; (3) the control is far from the top slots.
+- **Revisit if:** testers miss the cards (move the slot nearer the control).
+- **Builds on:** DR-058, DR-070, DR-071, DR-033, DR-003.
+- **Judge:** Amended (J33, J38). The cards use the DR-131 bubble rect. Next is 800,16,72,64. No fullscreen button.
+
+## DR-152 · Sneak Shot chips and Dot announcement
+- **Question:** How do the 3 greyed trial chips look, what do they say, and how do they behave?
+- **Options:** (1) a separate row of buttons · (2) chips 4 to 6 in the weapon tray, with a short label on the chip and a full label in a tab · (3) a text-only list
+- **Debate (compact):** GD: "Unlocks at Level 14 / 24 / 34" must read at a glance, and a tap must arm exactly 1 shot. / AD: the grey chip says "not yours yet" while the armed chip gets the real art. / TL: the tray is one component with 3 or 6 slots.
+- **Winner:** (2).
+  - **Tray:** 64x64 hit per chip, 8 gap, 12 padding. Left anchor x=336, y=436. 3 slots (232 wide) before the offer; it grows to 448 wide to the right (200 ms), with chips popping in 60 ms apart. Live slots never move. The name tab moves above the selected chip. Keys 4 to 6 select chips.
+  - **Chip** (56 visual, R16, plum 4): ribbon "L14 / L24 / L34" (Lilita 18).
+    - **Idle:** `locked` #B7AFC4 fill, silhouette in `plum-700`, a 24 px plum padlock badge at top-right.
+    - **Pressed:** down 4, and the tab shows a 2-line label: name, then "Unlocks at Level 14" (22 / 18).
+    - **Armed:** lift 6, `secondary` fill, full-colour art, ammo badge "1". Tap again to disarm.
+    - **Tried:** locked fill, check badge (`leaf-400`), ribbon "tried". It shows the tab only and cannot be armed.
+    - **Focus:** 4 px ring.
+  - **Rule:** 3 trial shots per team, not per ant. After a trial shot, Seed Spitter is reselected.
+  - **Dot card:** "Sneak Shot! One try of three weapons you'll earn later." Placed as in DR-151. It holds 1.5 s after its entrance, then collapses to the bubble. The chips pulse 2 times (raspberry ring, 600 ms).
+- **Reason:** The short label sits on the chip, the full label appears on touch, and a tap arms the shot.
+- **Rejected:** (1) off-tray; (3) hides the weapon art.
+- **Revisit if:** testers fire a trial shot by accident (require a second tap to arm).
+- **Builds on:** DR-070 (Judge), DR-009, DR-072, DR-015, DR-003a.
+- **Judge:** Amended (J39). DR-124 tray geometry. 3 trials per team.
+
+## DR-153 · "Ready for a peek at Level 70?" and the Preview intro card
+- **Question:** How do the Go/Skip card and the one-attempt intro look, and how does "one attempt" show in the pause menu?
+- **Options:** (1) one merged card · (2) a Go/Skip card, then an intro card with 3 rows · (3) a text-only pause note
+- **Debate (compact):** GD: Skip must cost nothing. The expectation rows are what make one try feel fair. / AD: both are modal butter cards with a plum scrim at 60%. / TL: the pause menu keeps its slots, and a caption replaces Restart.
+- **Winner:** (2).
+  - **Ready card:** (192,112,576,316). Dot 96, title 40 on 2 lines, body 22 "One try against a tough bot. Skip and you can still try it later from the Level 0 sign." Buttons Skip (`secondary`) and Go (`action`), 256x72 each, gap 16. Default focus is Go. Esc focuses Skip but does not activate it. Skip goes to the L1 flow (comic if unseen).
+  - **Intro card** (160,70,640,400): title "Level 70 Preview" (40) and a raspberry ribbon "ONE TRY" (Lilita 28). 3 rows (icon 48, text 22, 64 high):
+    1. "One try. There is no Restart."
+    2. "You (3 blue circles) vs 2 Porch Scouts (amber triangles). They have 60 HP."
+    3. "They aim like a Level 70 bot. All 6 weapons are yours. About 4 minutes."
+    - Buttons: "Let's go!" (`action`) and "Not now" (`secondary`), 72 high. Not now returns to the map, or goes to L1 when reached from the Ready card.
+    - Variants: a saved match swaps "Let's go!" for "Resume". If already played, the title gets "(replay)" and a row "Rewards already collected."
+  - **In match:** a non-interactive pill (800,88,144,32), `secondary`, plum text, "One try". The pause menu has 3 buttons (Resume, Settings, Quit). The Restart slot becomes a 64 px caption row with the Dot head: "One try! No restarts here." The panel size is unchanged. The Quit confirm says "Your match is saved. Resume it from the Level 0 sign."
+- **Reason:** It is honest about the stakes without any pressure, and the pause panel stays the same size.
+- **Rejected:** (1) too dense; (3) players hunt for the missing button.
+- **Revisit if:** testers still ask "where is Restart".
+- **Builds on:** DR-070, DR-047, DR-058, DR-012, DR-003.
+- **Judge:** Accepted. Binding over DR-171 for the Preview pause (J40). Scrim 70%. The "One try" pill moves to 672,88,144,32 to clear Find-my-ant.
+
+## DR-154 · Preview win and lose cards, and the replay state
+- **Question:** What do the result cards look like, and what changes on a replay?
+- **Options:** (1) the standard Results card with an acorn row · (2) a custom Level 0 card: ant hero art, one copy block, one reward row · (3) a full-screen cutscene
+- **Debate (compact):** GD: no acorns here, only the reward. Losing must feel funny, not failed. / AD: win = a cocky hero with a confetti of rounded leaves. Lose = a dizzy ant with orbiting stars (never pointy stars). / TL: it is the Results card with a different row template.
+- **Winner:** (2). Card (128,60,704,420). Hero art 240x300 on the left. Copy on the right.
+  - **Win:** title "You beat a Level 70 bot!" (40), body "Imagine you after the whole trip." (22). Reward chip (304x64, `secondary`): pin art 40 + "Brass Doorknob Pin" and caption "Cap charm". It flies to the hero's cap anchor beside the stem (1500 ms, J26: never over the cap or badge).
+  - **Lose:** title "Dizzy!" (64) and body "That is as tough as the Porch gets. You'll be ready by Level 61." The reward chip is the Brave Scout sticker (80 px, peel-in 1200 ms).
+  - **CTA:** "Let's go!" (`action`, 280x72) to the L1 flow. A tap skips the reward animation.
+  - **Replay** (a result already saved): the reward row is stone-outlined with greyed art, a check and "Already collected". The buttons are "Back to map" (`action`) and "Play again" (`secondary`). The copy is unchanged. Nothing is saved.
+- **Reason:** One card, one reward, one button keeps the first-time path fast.
+- **Rejected:** (1) acorns would imply failure; (3) too slow.
+- **Revisit if:** players miss the sticker (add an album shortcut).
+- **Builds on:** DR-070, DR-071, J26, DR-055.
+- **Judge:** Accepted.
+
+### Conflicts found (raised by the debate; resolved in the J27–J56 table)
+- **DR-070 "1.5 s auto" vs reading time:** 11 words in 1.5 s is too fast. Resolved: it collapses to the Dot bubble (the text is still reachable) and the chips carry the label.
+- **DR-070 "ammo per ant" vs PLAN "1 trial shot each" and "after all 3 are used":** I used per team (3 shots total). If it is meant per ant, the chip state must follow the active ant.
+- **Tray position:** a 6-slot tray (448 wide) cannot be centred at x=480 without hitting the aim cluster (x ≤ 304). I set a left anchor of x=336 for the HUD spec. The reference slot pitch is about 81, and I used 72.
+- **DR-015 keys 1 to 3:** extended to 1 to 6 for Level 0 and the Preview.
+- **DR-070 "Skip leads to L1" vs DR-012 flow:** Skip goes to the Comic (if unseen), then Battle.
+- **Lose copy "ready by Level 61":** under J23 the full kit is in by L34. The copy is binding, so it now means skill, not kit.
+- **DR-071 sticker album:** Brave Scout is earned before page 1 (L2). The album needs a "Bonus" slot.
+- **HUD positions** (Pause (880,16), Fullscreen (808,16), banner ≤ 640 wide) are working values. The HUD record must confirm them.
+
+---
+
+# Checkpoint C · Sticker album, Wardrobe, nicknames (DR-160 to DR-164)
+
+## DR-160 · Sticker album
+- **Question:** How is the album laid out, how do slots and page flips work, how many pages, and how do players enter and leave it?
+- **Options:** (1) one scrolling grid of all stickers · (2) book pages, 6 slots each, one page per biome plus extras · (3) per-biome tabs with small lists
+- **Debate (compact):** GD: pages are the reward unit (DR-071 "album page flips in"), so a page must be a real object with a count that fills up. / AD: a butter book panel with big silhouettes shows "what is left" without any text-heavy list. / TL: stickers are string ids in `save.unlocks`; the page list is data, rendered by one `AlbumPage` container.
+- **Winner:** (2). **Pages: 13** = Page 0 "The Porch" (Level 0 sticker Brave Scout) + Jungle Home pages 1-3 (the L2, L7 and L10 reveals of DR-071) + one page for each of biomes 2-10 (revealed on that biome's first level, DR-071 rhythm). 6 slots per page.
+  - Back button 64x64 at x16,y16 (inset-aware). Title "Sticker Album" (title 40) centred y20. Count "17 / 78" (label 28) top-right, right-aligned to x944.
+  - Book panel x96,y88,w768,h368, butter `#FFF1D0`, plum 4 outline, radius 24, shadow 6. Page name (label 28) at y100. Slots 3x2, each 224x140 at x120/368/616, y148/304 (gap 24/16).
+  - Arrows 72x72 hit (visual 56) at x16,y234 and x872,y234. Footer y468: "Page 3 / 13" (label 28) plus a raspberry NEW pill on any unseen page. Swipe, arrows and Left/Right keys flip.
+  - Slot states: earned (butter card, art 96x96, name caption 18), unearned (flat stone `#B7AFC4` silhouette, caption = hint such as "Level 7"), new (raspberry NEW pill, jelly wiggle 200 ms), focus (4 px teal ring, 2 px gap). Locked page: all silhouettes plus a lock and "Clear Level N".
+  - Flip: 320 ms (scaleX 1 to 0 in 160, then 0 to 1 in 160). Reduced motion: instant swap.
+  - Entry: a Level Select button, or "See in album" on the reward pop-up (opens on the new page). Exit: Back, Esc or the Results pop-up tap.
+- **Reason:** Pages give a collect-them-all goal, and 6 slots at 224x140 stay readable at 0.69 scale.
+- **Rejected:** (1) no sense of a page reveal; (3) small targets and text.
+- **Revisit if:** testers cannot tell which level earns a slot (add tap-to-hint toast), or art cost is too high for 78 stickers.
+- **Builds on:** DR-071, J26, DR-055, DR-003, DR-012, DR-013, J18
+- **Judge:** Accepted. Focus ring per DR-086. Brave Scout lives on Page 0.
+
+## DR-161 · Wardrobe
+- **Question:** How does a player give each ant one trinket, one dance and one nickname, and see the result?
+- **Options:** (1) one list of ants, each with three dropdowns · (2) ant tabs plus a preview plus tabbed item grids · (3) drag items onto the ant
+- **Debate (compact):** GD: kids want to see the change at once, so equip on tap with no Save button. / AD: preview must show the hero pose and the real in-game size so the trinket never looks bigger than it is. / TL: it writes `wardrobe{antId:{trinket,dance,nickname}}` (J18) on every change, nothing else.
+- **Winner:** (2). Opened from Level Select. 4 ant tabs always shown (max 4 per side, DR-050), even if the level has fewer.
+  - Back 64x64 at x16,y16. Title "Wardrobe" centred.
+  - Ant tabs x16,y88,w168,h96, gap 8, down to y496. Shows side sprite 56 px, nickname (caption 18), small trinket icon. States: default, selected (raspberry outline), focus, pressed (down 4 px).
+  - Preview panel x200,y88,w400,h408: hero pose at 1.5x (180x225) at x310,y108. Below, "In battle" strip x216,y352,w368,h92, leaf `#7CCB3E` fill, side ant at 1:1 (96 px) with a 24 px trinket.
+  - Options x616,y88,w328,h408: 3 tabs (Trinket, Dance, Name) 104x64 at y88. Item area y160..496, vertical drag scroll. Trinket grid 4 columns of 72x72, gap 8. Dance rows 304x72 (DR-164). Name tab shows the current name plus a 200x72 "Change" that opens DR-163.
+  - Tap equips at once. Tap the equipped item again, or the first "none" cell, to remove it. The same trinket may be on two ants.
+  - Locked item: flat stone silhouette, 24 px padlock bottom-right, tap shows a toast with the source ("Clear Level 6"). Never hidden.
+  - Two-player: both teams read slots 0-3 of the same wardrobe (team colour differs).
+- **Reason:** Immediate feedback and visible goals suit kids. All hit areas are at least 72.
+- **Rejected:** (1) no preview; (3) drag is poor on touch.
+- **Revisit if:** more than 25 trinkets make the grid scroll too long (add a filter).
+- **Builds on:** DR-071, J26, DR-050, DR-041, J18, DR-003, DR-013
+- **Judge:** Accepted.
+
+## DR-162 · Trinket item component and anchor rule
+- **Question:** What size is a trinket, where does it attach, and how does it scale on the hero pose?
+- **Options:** (1) fixed screen offset from the cap · (2) per-frame anchor point beside the stem, size tied to head scale · (3) free placement by the player
+- **Debate (compact):** GD: it must never change team reading (J26). / AD: 24 px beside the stem, fully outside the cap silhouette, behind the cap in z-order. / TL: anchors are data in the ant atlas JSON per frame, and a CI pixel test checks overlap.
+- **Winner:** (2).
+  - Source art 48x48, shown at **24x24** on the side pose (about 0.25 of the 96 px ant width, DR-071).
+  - Anchor `trinketAnchor` (x,y) per atlas frame (all walk and idle frames, hero, faces). It sits on the rear side of the cap stem (away from facing, so it mirrors with the ant), with the item box 2 px outside the cap outline.
+  - Hard rules (J26): the box never overlaps the cap mask, the cap outline or the gaster badge. Draw it below the cap. CI test: mask overlap = 0 px on every frame.
+  - Hero scale: size = 24 x (hero head width / side head width), clamped to 24..64. Wardrobe hero at 1.5x gives about 54 px. Assumed: side head about 40 px, hero head about 90 px.
+  - States: default, equipped, locked (stone silhouette plus padlock), new (raspberry dot), gold-shimmer, focus (4 px teal ring), pressed (down 4 px).
+  - Gold variant (3-acorn clear, DR-071): `#FFD978` fill, plum outline, a flat 4-point plum-outlined sparkle in `#F7B932` pulsing at 800 ms. No white glints (DR-003a). Reduced motion: static sparkle. Gold replaces the plain item; a 64x64 toggle in the preview lets the player go back.
+- **Reason:** Per-frame anchors keep the rule exact while the ant bobs.
+- **Rejected:** (1) drifts off the stem; (3) breaks team identity.
+- **Revisit if:** any trinket reads as part of the cap at 0.69 scale.
+- **Builds on:** DR-071, J26, DR-003, DR-003a, DR-007, DR-055
+- **Judge:** Amended (J42). Gold uses the DR-105 twinkle dots, not a sparkle.
+
+## DR-163 · Nickname picker
+- **Question:** How do players name ants, and is free text allowed?
+- **Options:** (1) free text field · (2) 12 preset silly names with Skip · (3) auto-names only
+- **Debate (compact):** GD: DR-071 gives the L3 reward as "pick from 12 silly names with Skip", fast and fun. / AD: big name chips look like jelly buttons and fit the 540 px height. / TL: no free text means no keyboard on phones, no profanity filter, no personal data, and the names are locale strings.
+- **Winner:** (2). **No free text entry**, for kid safety and for no on-screen keyboard.
+  - Names (proposal, keys `nick.01`..`nick.12`): Biscuit, Noodle, Sprout, Pickle, Waffles, Pip, Bubbles, Zigzag, Mochi, Dumpling, Turbo, Squeak.
+  - Modal panel x96,y64,w768,h412 (butter, radius 24). Title "Name your ant" (title 40) at y80. Left column x120,w160: side ant preview and Skip 160x72 at y380 (raspberry outline, secondary).
+  - Chip grid x296,y150: 3 columns x 4 rows, chips 176x72, gap 8 (544x312). Label 28 Lilita, auto-shrink to 22 minimum. CI test: each locale name is at most 12 characters.
+  - Chip states: default, pressed, selected (check), taken (name already used in this team, stone, small ant icon), focus.
+  - Flow: pick sets the name and advances to the next ant (progress dots). Skip leaves this ant as "Ant N" and advances. Close X or Esc exits. Names are locale strings, never concatenated.
+- **Reason:** Safe, quick, translatable.
+- **Rejected:** (1) kids-safety and keyboard cost; (3) loses the reward.
+- **Revisit if:** testers want more names (add packs per biome).
+- **Builds on:** DR-071, DR-041, J18, DR-012
+- **Judge:** Amended (J43). "Pip" becomes "Peanut".
+
+## DR-164 · Dance preview and selection
+- **Question:** How does a player preview and pick a victory dance, and what happens with reduced motion?
+- **Options:** (1) pick from a text list, no preview · (2) tap plays once and selects · (3) separate Play and Select buttons
+- **Debate (compact):** GD: dances are fun to watch, so the tap must show it. / AD: the hero pose in the preview does it, at most 1500 ms like the reward pop-up. / TL: dances are short sprite-tween clips, no loops, so reduced motion is easy.
+- **Winner:** (2). Dance rows 304x72: name (label 28), mini icon 48, and a 56x56 replay button (hit rect 64x64) that plays without changing the selection.
+  - Tap row: select and play once on the hero preview and in the in-game strip. Max 1500 ms (Wiggle, Spin, and later dances). Tapping again restarts. The dance ends on the cocky idle.
+  - Row states: default, selected (raspberry outline plus check), playing (replay icon animates), locked (stone, padlock, source toast), focus, pressed.
+  - Reduced motion (OS media query read at boot): no tween. Show the key pose and peak pose, swapped as a hard cut over 900 ms total with at most 3 changes. The same rule applies to the Results victory dance.
+  - The Results screen plays the winning ant's own dance once.
+- **Reason:** Preview equals result, and it is accessible.
+- **Rejected:** (1) no preview; (3) extra taps.
+- **Revisit if:** testers confuse select with preview.
+- **Builds on:** DR-071, DR-161, J18, DR-003
+- **Judge:** Amended (J35). Uses the Settings reduced-motion switch.
+
+### Conflicts found (raised by the debate; resolved in the J27–J56 table)
+- DR-071 says "sticker page 1/2/3" at L2, L7, L10 (all Jungle Home) but the rhythm says one page per biome; resolved as three Jungle pages plus a Level 0 Porch page (13 total).
+- DR-071 does not list the 12 names; DR-163 proposes them.
+- DR-012 Settings list has no reduced-motion setting; DR-164 uses the OS media query only.
+- DR-071 table still says "Coconut Hat"; J26 renames it Coconut Charm.
+- DR-003 says touch targets of at least 48; foundation tokens set 64 min, used here.
+
+---
+
+# Checkpoint C · Settings, pause, modals, saves (DR-170 to DR-175)
+
+## DR-170 · Settings dialog (HTML)
+- **Question:** Which controls and styling does the HTML Settings dialog have, and how is it opened?
+- **Options:** (1) one scrolling HTML dialog with 5 sections · (2) tabbed dialog · (3) canvas Settings with custom sliders
+- **Debate (compact):** GD: few, clear toggles; Assist and Relaxed turns must be findable by a stuck player. / AD: butter card, plum outline, jelly pills, so it feels like the canvas screens. / TL: real `<input type=range|checkbox>`, `role=dialog aria-modal`, free a11y (DR-012).
+- **Winner:** (1). `#settings` is a fixed-position dialog over the canvas, max-width 600 CSS px, max-height 100dvh minus 2x safe-area, inner scroll, padding 24, radius 24, 4 px plum border, `0 8px 0` plum shadow, bg `panel`. Tokens come from `theme.css` vars. HTML text is in CSS px: Lilita One 28 headings, Nunito 18 body (never below 16), all controls at least 44x44 CSS px, 8 px gaps. Sections:
+  - **Sound:** Music and SFX sliders 0-100 (defaults 70/80), live preview blip on release.
+  - **Play:** Assist aim preview (1.0 s, DR-033), Relaxed turns 60 s (DR-043, single-player), Show tips + "Reset tips" button, Left-handed HUD (mirrors the bottom clusters, never the top readouts).
+  - **Display:** Reduced motion (Auto follows `prefers-reduced-motion` / On / Off), Performance mode with note "Reloads the game. Uses a lighter picture. Use it if the game feels slow.", Fullscreen button, Install button (only if installable), Language select (English only, disabled, "More languages soon").
+  - **About:** Credits (DR-174), build id.
+  - **Reset progress:** danger zone, opens an HTML confirm "Erase all progress?" with Cancel (default) and Erase.
+  - Controls: toggles are 72x44 pills (on = `action` fill + check mark, off = `disabled`), sliders have a 44 px thumb with value text. States: default, pressed (+2 px down), focus (DR-086 ring), disabled (`disabled`, 60% text), selected. Opened from Title (gear) and Pause (Settings button). Esc, Close (top-right 48x48 CSS) or backdrop tap closes. Opening turns off Phaser keyboard and pointer capture and traps focus. Closing returns focus to the opener. Performance toggle writes the setting and shows "Reload now" (in a match it reloads from the last TurnEnd, DR-173) or "Later".
+- **Reason:** Sliders and focus handling come free in HTML, and one scroll avoids hidden settings.
+- **Rejected:** tabs (hide Assist); canvas Settings (DR-012 cost).
+- **Revisit if:** more than about 12 controls, then split into tabs.
+- **Builds on:** DR-003, DR-012, DR-013, DR-033, DR-043, DR-018
+- **Judge:** Amended (J31, J34). Adds Text size Normal/Large to Display. Focus ring per DR-086.
+
+## DR-171 · Pause overlay scene
+- **Question:** What does Pause look like, what freezes, when does it auto-trigger, and how does play resume?
+- **Options:** (1) butter panel over a dimmed frozen battle · (2) full-screen menu · (3) side drawer
+- **Debate (compact):** GD: Resume must be the biggest, easiest target; a surprise resume loses turns. / AD: four jelly buttons on a butter card (DR-047), battle visible under a scrim. / TL: the `Pause` scene pauses `Battle` and `Hud` sim and timer; auto-pause must also cover blur and portrait.
+- **Winner:** (1). Scrim full 0,0,960,540. Panel 400 wide, x=280. Height = 88 + n*72 + (n-1)*12 + 32. n=4: h=444, y=48. n=3: h=360, y=90. Title "Paused" 40 at panel y+30, caption 18 "Level N · Round R" at y+66. Buttons 320x72 at x=320, first y = panel y+88, gap 12, order Resume (action, default focus), Restart (secondary), Settings, Quit to map. Level 0 Preview replaces Restart (DR-153). Part 1 keeps it. Footer caption "Match saved" or "Saving is off" (DR-173).
+  - States: default, pressed, focus ring, disabled (none used).
+  - **Confirms:** Restart opens a destructive confirm. Quit opens a neutral confirm and keeps the match slot.
+  - **Freezes:** sim ticks, turn timer, camera follow, wind chevrons and ambient animation. Music ducks to 25% in 150 ms and SFX stop.
+  - **Triggers:** `visibilitychange` hidden, window `blur`, portrait (rotate overlay flag), audio interruption, Esc or P, Android back (popstate guard).
+  - **Resume:** scrim fades 150 ms, then a 600 ms ready-delay in real time. Input is ignored, buffers are cleared (DR-015), and a held touch must be released before it aims. Reduced motion uses 300 ms, no fade. Returning from portrait or blur lands on Pause, never silently running.
+  - Esc: closes a modal, then Settings, then Pause.
+- **Reason:** A ready-delay stops lost turns after a tap-resume.
+- **Rejected:** instant resume (accidental shots); drawer (hidden Quit).
+- **Revisit if:** playtesters resent the 600 ms.
+- **Builds on:** DR-012, DR-015, DR-043, DR-047, DR-070
+- **Judge:** Amended (J30, J40). Scrim 70%. The Preview keeps n=4 with the caption row.
+
+## DR-172 · Modal and confirm dialog (canvas)
+- **Question:** One confirm pattern for Restart, Quit, smooth-mode, resume and replace-match?
+- **Options:** (1) one `ConfirmModal` component owned by the calling scene · (2) a new scene · (3) per-screen custom cards
+- **Debate (compact):** GD: the safe choice must always be the default, and the destructive one never the biggest. / AD: same butter card family, destructive gets its own colour plus an icon, not colour alone. / TL: a component, not a scene (keeps DR-012 list), disables the owner's input while open.
+- **Winner:** (1). Scrim tap = Cancel (non-destructive only). Card: x=220, w=520, padding 32, radius 24, 4 px outline, 8 px shadow, vertically centred, h = 32 + title 40 + 16 + body (22, max 3 lines, 456 wide, line 29) + 24 + 72 + 32. Buttons 216x72, gap 24, one row. Order: Cancel/safe left, confirm right. Styles: primary = `action`; secondary = `secondary`; **destructive** = `danger` fill, white text, 28 px bin icon. Focus default: primary, but for destructive the Cancel button. Keys: Esc, Android back and B = Cancel. Enter or Space activates focus; arrows or Tab move it. Max one modal. Open: scrim fade 120 ms plus card pop 0.9 to 1 in 160 ms. Reduced motion: 80 ms fade only. Button states: default, pressed, focus, disabled.
+- **Reason:** Consistent order and a safe default prevent kid mis-taps.
+- **Rejected:** a scene (list bloat); three buttons (too much to read).
+- **Revisit if:** a 3-choice dialog is needed (stack as 3 rows).
+- **Builds on:** DR-003, DR-003a, DR-012, DR-013, DR-047
+- **Judge:** Amended (J30, J31). Scrim 70%. DR-086 ring.
+
+## DR-173 · Save status UI
+- **Question:** How does the player know saves work, fail, or can be resumed?
+- **Options:** (1) quiet indicator, banner only on failure, resume modal · (2) always-visible save icon · (3) silent
+- **Debate (compact):** GD: a saved match is a promise, a failure must be loud once. / AD: no HUD clutter, so nothing in Battle. / TL: writes are TurnEnd (`ants.match.v1`) and level end (`ants.save.v1`, J18); a boot probe write detects blocked storage.
+- **Winner:** (1).
+  - **Indicator:** 40x40 plum-700 disc with butter acorn-check at x=16,y=484 (plus safe margin) on Results, LevelSelect and Title only. It shows 1200 ms after a write. None in Battle. Pause footer says "Match saved".
+  - **Banner:** if the probe or a write throws, a 560x64 `secondary-shade` pill at x=200,y=16 reads "Saving is off on this device." / "Progress is lost when you close the game." Text 22 over two lines. Persistent on Title and LevelSelect with a 64x64 close (returns next session). In Battle it shows 3 s once. Pause footer: "Saving is off".
+  - **Resume prompt:** tapping a level whose id equals the slot's opens a DR-172 modal "Pick up where you left off?", body "Round 5 · Blue's turn", [New match] [Resume] (default Resume). A different level in the same mode: "Start a new match? Your saved match on Level 12 will be replaced." [Cancel (default)] [Start new (destructive)]. Resume shows "The ants are remembering…" on a 480x120 card; after 5 s it adds "Start over". Build mismatch or failure: "That match is from an older version." [Back] [Restart level].
+  - No save is written on blur or fatal error.
+- **Reason:** Silent when fine, loud once when broken.
+- **Rejected:** a permanent HUD icon; auto-resume with no prompt.
+- **Revisit if:** players say they did not know they had a saved match.
+- **Builds on:** DR-018, DR-047, DR-070, DR-172, J18
+- **Judge:** Accepted.
+
+## DR-174 · Credits and licences
+- **Question:** What must Credits show and where do licence texts ship?
+- **Options:** (1) a Credits view inside the Settings dialog plus shipped licence files · (2) a canvas scroll · (3) a link to GitHub only
+- **Debate (compact):** GD: a short thanks line, kids will not read legalese. / AD: calm list, 16 CSS px minimum. / TL: OFL needs the notice and licence with redistributed fonts, so files ship same-origin and offline.
+- **Winner:** (1). Opens from Settings > Credits as a view swap with a Back button. Content, in order: title and build id; "Made by" line (name supplied by the owner); third-party table (name, version, licence, [View licence] expands inline): Phaser 3.90.0 (MIT), Lilita One (SIL OFL 1.1), Nunito (SIL OFL 1.1); each runtime library the bundler includes, auto-listed; "Art and code are original. Sound is made in code."; "No ads. Saves stay on this device." Licence texts ship at `/Ants/licenses/`: `OFL-LilitaOne.txt`, `OFL-Nunito.txt`, `MIT-Phaser.txt`, `THIRD_PARTY.txt` (generated at build). Precached by the service worker. Fonts are self-hosted woff2 subsets with `OFL.txt` beside them; no Reserved Font Name is claimed for a subset.
+- **Reason:** Legal compliance and offline use at no UI cost.
+- **Rejected:** Google Fonts hotlink (offline and privacy); a link-only credit.
+- **Revisit if:** any asset with attribution is added (music, icons).
+- **Builds on:** DR-003, DR-012, DR-018, DR-170
+- **Judge:** Accepted (J27).
+
+## DR-175 · Error and crash fallback (HTML)
+- **Question:** What does the player see if the game fails to start or crashes?
+- **Options:** (1) a static `#fatal` card in `index.html`, inline CSS, shown by error handlers · (2) reload silently · (3) a Phaser error scene
+- **Debate (compact):** GD: kind copy, one obvious button. / AD: butter card on plum, no external font needed. / TL: it must work without the bundle (DR-012), so no module imports, and a crash loop must be breakable.
+- **Winner:** (1). z-index above rotate and Settings, `role=alert`. Card max 520 CSS px, radius 24, 4 px plum border, plum page, butter card. Fonts `Lilita One` if loaded else `ui-rounded, system-ui`. Copy:
+  - Crash: "Oh no, the ants tripped!" / "Something went wrong and the game stopped." plus "Your saved progress should be safe." only if the save probe passed.
+  - Canvas and WebGL both fail: "Your browser can't draw the game. Try a newer browser."
+  - No JS (`<noscript>`): "This game needs JavaScript. Please turn it on and reload."
+  - Load over 15 s: "Still loading… check your connection."
+  - Buttons: **Reload game** (56 CSS px high, default focus), plus a collapsed "Details" with copyable error text. If 2 fatals happen within 60 s (sessionStorage counter), add "Clear saved match and reload", which removes `ants.match.v1` only.
+  - Triggers: `window.onerror`, `unhandledrejection`, boot failure. A WebGL context loss tries to restore for 3 s, then goes fatal.
+- **Reason:** Works with no bundle, and the loop breaker protects a corrupt match save.
+- **Rejected:** a silent reload loop; a canvas error scene (dies with the canvas).
+- **Revisit if:** error telemetry is ever added.
+- **Builds on:** DR-012, DR-013, DR-018, DR-047
+- **Judge:** Accepted.
+
+### Conflicts found (raised by the debate; resolved in the J27–J56 table)
+- DR-012 lists a "text size" setting; omitted here because the canvas bitmap text cannot scale.
+- DR-003 says fonts "from Google Fonts"; offline play (DR-018) and DR-174 need self-hosted fonts.
+- DR-047 does not say whether Quit keeps the match slot; DR-173 keeps it for all levels.
+- Left-handed HUD is a new setting; the HUD DR must provide mirrored layouts.
+- Esc priority (modal, Settings, Pause) is new; Phaser keyboard is disabled while HTML Settings is open.
+
+---
+
+# Checkpoint C · Two-player setup (DR-180 to DR-183)
+
+## DR-180 · Two-player setup layout
+- **Question:** What is on the Two-Player Setup screen, where, and what do names, ants, timer, wind and kit controls look like?
+- **Options:** (1) one screen, two team cards flanking a map column, options bar below · (2) wizard of 3 steps (names, map, rules) · (3) minimal screen (map + Start), rules in Settings
+- **Debate (compact):** GD: A friend on a shared phone wants Start in 3 taps, but kids love naming their ants. One screen shows everything and Start is always valid. Wind on/off is rejected: wind is the skill (pillar 4) and each biome's field is its identity (DR-032). / AD: Blue left and Amber right, fixed, with badge, band and ant portrait on each card, so "who is who" is clear before play (DR-003). Amber band uses plum text because white on #E69F00 fails contrast. / TL: One scene `TwoPlayerSetup`, one `TwoPlayerSetup` object handed to Battle. Typed names need a native keyboard, so the name editor is an HTML input overlay (like Settings, DR-012).
+- **Winner:** (1). Frame = 928x508 safe rect, margin M = max(16, inset+8); rects below assume M = 16 at 960x540. Hit rects are 64+ high, 8+ apart.
+  - Header y16..80: Back (16,12,72,64); title "Two Players" Lilita 40 centred; Resume pill (724,16,220,64), shown only if `ants.match.v1` 2P slot exists.
+  - Blue card (16,88,264,288), Amber card (680,88,264,288). Butter panel, r24, plum 4. Band (0,0,264,48) team fill, badge 36 with white ring, text "Player 1/2" Lilita 28 (white on Blue, plum on Amber). Portrait (84,60,96,96). Ant-count icons row (56,164,152,32), 4 slots of 32, filled up to N, rest stone 30%. Name pill (16,208,232,64): name Lilita 28, pencil icon 24. Default names "Blue Colony" / "Amber Colony" (DR-045).
+  - Map column x296..664 (DR-181), weapon tray (297,296,366,64): 6 cells of 56 (icon 40 + ammo numeral 22): Seed ∞, Dew 3, Pollen 1, Grub 1, Roller 2, Plop 2 (DR-034, J24). Display only.
+  - Row A y388..452: Ants group plate (16,388,320,64): label "Ants each" 22, minus (136,388,64,64), numeral 40 at x200..256, plus (256,388,64,64); range 2..4, default 3. Turn group plate (352,388,336,64): label "Turn", chips "30 s" (424,388,124,64), "60 s" (556,388,124,64); "60 s" is Relaxed turns (DR-043). No "off" chip.
+  - Row B y460..524: toggle plates "Starter kit only" (16,460,328,64) and "Pickups" (360,460,328,64); whole plate is the hit rect, switch visual 64x36 at right. Pickups = Honey Drop + Seed Bundle every 3rd round (DR-048, J11).
+  - START (704,428,240,96), raspberry, Lilita 40, bottom-right like FIRE.
+  - Names: tap pill opens a picker sheet (60,48,840,444): 12 presets in 4x3 tiles (196x64): Crumb, Pip, Waffle, Biscuit, Noodle, Pickle, Sprout, Button, Mochi, Pebble, Doodle, Zippy; plus "Write my own" (HTML input, max 12 chars, letters, digits, space, - ' !; small normalised blocklist; on a hit show "Nice try! Pick another."). The other player's name tile is disabled. Equal names get " 2".
+  - Starter kit ON: tray cells 4-6 go stone with a small x; ammo unchanged.
+  - States: pill/chips/buttons default, pressed (down 4, shadow shrinks), focus (ring token, 4 px offset 2), chip selected (raspberry fill) vs unselected (butter-gold); stepper minus/plus disabled (stone) at 2 and 4; toggle off (stone track, knob left) / on (teal track, knob right, check shape); Start never disabled.
+  - Keys: Tab order Back, Resume, P1 name, P2 name, map prev, map next, minus, plus, 30 s, 60 s, Starter, Pickups, Start. Enter on Start starts, Esc = Back.
+- **Reason:** Everything is visible at once, thumb-friendly (Start bottom-right), and Blue/Amber never swap (DR-003).
+- **Rejected:** (2) too many taps for a visitor. (3) hides rules. Wind on/off (kills pillar 4). Colour swap (see Conflicts). Free-typing on canvas (no keyboard support).
+- **Revisit if:** testers miss the Starter toggle, or the keyboard covers the screen on 667x375 (then presets only on touch).
+- **Builds on:** DR-003, DR-012, DR-034, DR-041 (J10), DR-043, DR-045, DR-048, DR-057, DR-072 (J12, J24), DR-032
+- **Judge:** Amended (J44, J45). No "Write my own". Defaults "Blue Caps" / "Amber Caps". "Pip" becomes "Peanut".
+
+## DR-181 · Map picker component
+- **Question:** How do two players choose among the 10 arenas plus Random, and is anything locked?
+- **Options:** (1) one big thumbnail with prev/next arrows and swipe, wrapping · (2) 4x3 grid sheet · (3) dropdown list
+- **Debate (compact):** GD: Eleven choices is few, and 2-3 taps reach any map from the middle. Nothing is locked: a guest on a fresh save must not be shut out (DR-057). / AD: One large thumbnail reads like a poster of the biome. A wind hint line with a teal arrow shape keeps wind visible before play. / TL: Thumbnails are baked at build time from each arena's mask and biome colours into one sheet, 4x3 frames of 448x252 (5.4 MB), loaded on entering Setup and destroyed on leaving (DR-014 pattern). No biome atlas is loaded.
+- **Winner:** (1).
+  - Column x296..664. Prev arrow (296,127,64,64), next arrow (600,127,64,64), jelly butter-gold, chevron stroke 6 round. Thumbnail frame (368,96,224,126), plum 4, r16, hard shadow 4; image at 224x126 (448x252 at S=2) with spawn markers (Blue circle left, Amber triangle right).
+  - Name (296,228,368,32) Lilita 28 centred. Hint line (296,262,368,28) body 22: teal arrow + text. Hints: Gentle wind, Shifty wind, Updraft, Steady gusts, Swirling wind, Kite gusts, Door gusts, Swaying wind, Vent bursts, Hood and fridge, Surprise wind.
+  - Order: Jungle Home, The Clearing, The Camp, The Trail, Village Garden, Picnic Park, The Porch, Living Room, The Pantry, The Kitchen, Random arena. Wraps both ways.
+  - Random: thumbnail is a butter-gold tile with a die icon (96). The thumb is a button: tap rolls a new seed (die tumble 300 ms); hint line shows "Seed 4821 · tap die" (0..9999). Seed picks biome and layout; it stays secret until the first TurnStart pan.
+  - Change animation: slide 180 ms ease-out, name crossfade 120 ms. Swipe over the thumb (48 px) or Left/Right keys when focused. Reduced motion: 0 ms.
+  - Policy: all 11 entries always unlocked, no lock icons, no campaign gating, no comics triggered.
+  - States: arrow default/pressed/focus (never disabled); thumb default/focus/(Random) pressed.
+- **Reason:** Simple, big, and one control for touch, mouse and keyboard.
+- **Rejected:** (2) grid costs a second overlay; (3) no picture. Locks (DR-057).
+- **Revisit if:** testers swipe past a favourite repeatedly. Then add a grid on tap.
+- **Builds on:** DR-014, DR-032, DR-045, DR-057, DR-003
+- **Judge:** Accepted.
+
+## DR-182 · Defaults, memory and Rematch
+- **Question:** What does Setup start with, what is remembered, and how does Rematch work?
+- **Options:** (1) remember last setup in the save, Rematch reuses it · (2) always reset to defaults · (3) remember only names
+- **Debate (compact):** GD: A family plays several matches in a row, so memory saves taps. First launch must be fair and gentle. Rematch keeps the same arena but must roll new wind and a new coin flip. / AD: Names and arena on screen at once so the second match feels familiar. / TL: Add `settings.twoPlayer` inside `ants.save.v1`; read with clamping and defaults, so no version bump (J18, `migrate()` tolerant).
+- **Winner:** (1).
+  - `settings.twoPlayer = { names:[s,s], ants:2..4, arena:0..10, timer:30|60, starter:bool, pickups:bool }`. Written on Start (not on every tap). Bad or missing values fall back to defaults.
+  - First-launch defaults: names "Blue Colony" / "Amber Colony", ants 3 (J10), arena Jungle Home (gentlest wind), timer 30 s, Starter kit only off (all 6 weapons, DR-072), Pickups off (DR-048). Ammo is not editable: Seed ∞, Dew 3, Pollen 1, Grub 1, Roller 2, Plop 2.
+  - Random remembers "Random" but rolls a fresh terrain seed each time Setup opens. The match seed (coin flip, wind rolls) is separate and fresh on every Start.
+  - Rematch (from Results, also after a Draw, DR-044): same `TwoPlayerSetup` object with the same arena and terrain seed, new match seed (so a new coin flip and new wind). Results also has "Change setup", which opens Setup prefilled. Nothing is written for Rematch.
+  - Resume pill (DR-047): visible only if a 2P match slot exists. Start does not warn; the first TurnEnd overwrites the slot.
+  - Corrupt or blocked storage: defaults, no error shown (try/catch, DR-018).
+- **Reason:** Fewer taps for repeat play, same fairness, and the save stays small.
+- **Rejected:** (2) annoying for families; (3) halfway. Reusing the match seed on Rematch (same coin flip every time).
+- **Revisit if:** testers want "loser goes first" or "swap who starts".
+- **Builds on:** DR-018 (J18), DR-041, DR-044, DR-045, DR-047, DR-048, DR-057, DR-072
+- **Judge:** Amended (J45). The default names are "Blue Caps" / "Amber Caps".
+
+## DR-183 · Who is up across a hot-seat match
+- **Question:** How does everyone always know whose turn it is, consistent with the DR-045 tap gate?
+- **Options:** (1) team-colour screen frame + banner + persistent turn chip + gate button · (2) banner only · (3) full-screen team colour wash at handover
+- **Debate (compact):** GD: The gate stops the timer burning while the phone moves, so it must say whose turn it is, loudly, from arm's length. / AD: Colour alone fails colourblind kids, so every cue pairs colour with the badge shape (circle vs rounded triangle). A frame is calm and never hides the field. / TL: Frame, chip and gate are Hud-scene objects driven by one `activeTeam` value; the gate is one input-wait state after the TurnStart pan (DR-042, DR-045).
+- **Winner:** (1). Two-player only.
+  - **Frame:** 8 px team-colour stroke around the safe rect, inner r24, drawn above the world, below HUD. Blue #0072B2, Amber #E69F00. Crossfades 150 ms at TurnStart (instant if reduced motion). Stays through Resolve, retreat and Pause.
+  - **Banner (TurnStart):** pill (300,16,360,56) top-centre, badge 40 + "{name}'s turn" Lilita 28, slides in 180 ms, holds through the gate, then shrinks into the chip (200 ms). The next ant carries the bobbing arrow tinted to team with a badge ring (DR-041).
+  - **Turn chip (persistent):** (16,16,264,56) top-left: badge 36 + name (body 22). The HUD record must reserve it (check against the pause button corner).
+  - **Gate:** after the 500 ms pan, a jelly button (300,404,360,96): team-colour fill (white text on Blue, plum text on Amber), badge 48 left, "Tap to start" Lilita 40. Pops in 180 ms. Tap, Space or Enter starts. Hit area is the button only, with a 400 ms lockout from first show so a stray handover touch does nothing. Other HUD controls are visible but inactive, no dimming (nothing hidden, DR-045). The timer starts on tap (DR-043).
+  - **First turn:** a 1000 ms coin-flip pop ("{name} goes first!"), tap to skip, then the normal TurnStart.
+  - **States (gate):** default (idle bob 4 px, 1.2 s), pressed (down 4), focus, locked (first 400 ms, 60% opacity). Reduced motion: no bob.
+- **Reason:** One-glance rule (pillar 2): edge colour, badge shape and name all say the same thing and never depend on colour alone.
+- **Rejected:** (2) too easy to miss when passing; (3) hides the map and fights DR-045's "nothing hidden". Full-screen tap gate (accidental starts while passing the phone).
+- **Revisit if:** the frame hides edge-adjacent ants, or "Quick handover" is requested (DR-045).
+- **Builds on:** DR-003, DR-041, DR-042, DR-043, DR-045, DR-047, DR-003a
+- **Judge:** Amended (J46). No turn chip. Gate at 300,212,360,96. The DR-127 plate is the banner.
+
+### Conflicts found (raised by the debate; resolved in the J27–J56 table)
+- DR-045 setup lists "map pick from unlocked biomes" and a "swap-colours" button. DR-057 and DR-072 open every arena from the start (they win). The brief fixes Blue and Amber and never swaps them, so the swap button is dropped. Patch PLAN.md line 100 ("colour swap") and DR-045.
+- DR-045 says Setup is a canvas scene, but typed names need an HTML input overlay. This extends DR-012's HTML list (rotate, loading, Settings).
+- DR-072(c) gives W4/W5/W6 ammo 1 each, but the DR-009 judge ruling (J24) sets Grub 1, Roller 2, Plop 2. J24 is used here.
+- DR-057 says Random arena uses a fresh seed but not whether the seed picks the biome. This record assumes it does (needs confirming in the level schema).
+- DR-057 still says ammo 4/3 and crates every 4 rounds. J12 and J11 already amend this (3/1, every 3rd round).
+- DR-180 "Pickups" label covers both Honey Drop and Seed Bundle (J11); DR-045 only names honey drops.
+- The turn chip at top-left and gate button at bottom-centre must be checked against the HUD and pause-button rects from the parallel records.

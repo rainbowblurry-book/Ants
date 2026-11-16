@@ -54,13 +54,13 @@ The spec below is the target. The rejected SVG redraw is gone, and the preview s
 
 **Rival colonies** (STORY.md): amber team colours plus a signature accessory (leaf cape, bottle-cap hard hat, and so on). The silhouette stays the same, so they still read as ants. Bosses are 1.6× scale with a unique headpiece.
 
-## 3. UI style (DR-003, DR-003a)
-- **Jelly candy controls:** plum 4 px outline, pill or rounded-rect shapes, a flat darker shade band along the bottom edge, and a solid plum drop shadow (5 px). Pressed state: shift down 4 px and shrink the shadow.
+## 3. UI style (DR-003, DR-003a; exact values in `docs/UI.md` and `src/ui/theme.json`, which win)
+- **Jelly candy controls:** plum 4 px outline, pill or rounded-rect shapes, a flat darker shade band along the bottom edge, and a solid plum drop shadow (6 px, DR-083). Pressed state: shift down 4 px and shrink the shadow.
 - **Panels:** butter `#FFF1D0` with plum outline, corner radius 24, 6 px drop shadow.
-- **Semantic colours:** primary action raspberry `#E8456B`; info and wind teal `#1FA38A` (always paired with arrow shapes); secondary butter-gold `#FFD978`; disabled stone `#B7AFC4`.
-- **Fonts:** **Lilita One** for display and **Nunito** 700–900 for body, both SIL Open Font License 1.1 (Google Fonts). In-canvas display text is baked to a bitmap font. Minimum text size is 16 px logical; body is 20 px.
+- **Semantic colours:** primary action raspberry `#EE6083` with plum text (DR-080: the old `#E8456B` failed contrast); info and wind teal `#1FA38A` (always paired with arrow shapes); secondary butter-gold `#FFD978`; disabled stone `#B7AFC4`.
+- **Fonts:** **Lilita One** for display and **Nunito** 700–900 for body, both SIL Open Font License 1.1, self-hosted (J27). In-canvas display text is baked to bitmap fonts. Minimum text size is 18 px logical; body is 22 px (DR-081).
 - **Icons:** stroke-built with round caps and joins and filled with `currentColor`. Ratings use acorns, never pointy stars.
-- **Exact layout, sizes and touch targets:** to be decided in UI.md (checkpoint C). The preview's 56–64 px buttons are provisional.
+- **Exact layout, sizes and touch targets:** see `docs/UI.md` (hit rects at least 64x64, DR-082).
 
 ## 4. Motion and juice (pillar 1)
 - **Squash and stretch:** on ants (jump, land, fire recoil), projectiles (Dewdrop wobble) and UI presses.

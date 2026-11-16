@@ -97,7 +97,7 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
 - **Match end (DR-044):** a team wins when the other has no active ants. If both teams are wiped at once, it is a draw: a loss in the campaign, Rematch in two-player.
 - **Sudden death (DR-044):** a warning shows at round 18. From round 21 (round 30 on bosses) the teal "dew" rises 24 px per round, and ants under it are bubbled home (knocked out). At the round-40 cap, more total HP wins.
 - **Two-player (DR-045):** a "Tap to start" gate ends every TurnStart. Nothing is hidden. Controls are identical for both players.
-  - Setup: arena, seed shuffle, 2–4 ants, relaxed timer, pickups toggle and colour swap. Player 1 is Blue circle and player 2 is Amber triangle (DR-003).
+  - Setup: arena, seed shuffle, 2–4 ants, relaxed timer, pickups toggle and "Starter kit only". Player 1 is always Blue circle and player 2 always Amber triangle; there is no colour swap (DR-003, J46). Layout in UI.md §4.11.
 - **Camera (DR-046, DR-038, DR-020, J7):**
   - TurnStart: 500 ms pan at zoom 1.15.
   - A drag pans during Move/Aim. On Fire the camera follows the shot with 180 ms smoothing and a 40 px look-ahead, at zoom 1.2.
