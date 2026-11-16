@@ -1,7 +1,7 @@
 # Creative Direction — Project Ants
 
 Source of truth for look, character, sound mood and tone. Each rule cites its Decision ID.
-Reference files: `art/reference/` (approved preview, screenshots, `ant-concept.webp`).
+Reference files: **ant design reference: `art/source/`** (the user's Gemini images: hero pose, side pose and 4 faces; reference only, see PROGRESS "Ant art reference"); `art/reference/` (approved preview, screenshots, older `ant-concept.webp`).
 
 ## 1. World style (DR-001, DR-003a)
 - **Flash-era vector:** flat bright fills, thick plum outline `#2E1A47`, at most one flat shade tone per shape. **No gradients on characters or UI, no white glint streaks.** The only gradients allowed are on the sky and on the soil body fill.

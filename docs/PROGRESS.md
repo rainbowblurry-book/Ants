@@ -2,7 +2,7 @@
 
 **Current stage:** Checkpoint B **complete**. Waiting for the user's go-ahead to start checkpoint C (`docs/UI.md` + `src/ui/theme.json`).
 
-> ⚠ **ANT ART IS NOT APPROVED.** The preview uses cut-outs from the user's concept image (`art/reference/placeholder/`, DR-007a). Do not draw new ant art until the user sends better images, then follow "How to send ant art" below. Checkpoint B did not touch ant art.
+> ⚠ **ANT ART: the reference is in `art/source/`, but final art is not drawn or approved yet.** The user's Gemini images in `art/source/` are now **the** design reference for the ants (see "Ant art reference" below). They replace `art/reference/ant-concept.webp` as the main reference. The preview still shows the old placeholder cut-outs (DR-007a). Draw the final ant art only when the user asks, from these images.
 **Branch:** `claude/eager-mccarthy-jpc952` on `rainbowblurry-book/Ants`.
 
 ## Done
@@ -34,15 +34,33 @@
 - **Campaign:** DR-050 max 4 ants per side, AI index = level · DR-052 Dewdrop at L4, Pollen after Boss 1 · DR-053 4-round telegraphed boss loop · DR-055 no acorn gates, skip after 3 losses.
 - **Bot AI:** DR-061 human-like input errors · DR-062 lethal radius = 0.5·blast radius from the hurtbox · DR-063/064 calibrated curve with a floor at L90+ (95%) · DR-065 `tests/ai-cap.test.ts`.
 
-## How to send ant art (for the user)
-Best results, in order of preference:
-1. **Separate files, one pose per file:** transparent PNG at least 1024 px tall, or SVG. One file each for: hero pose, side gameplay pose (facing right), and each face (cocky, aim, oops, dizzy).
-2. **Plain flat background** (pure white or pure green `#00FF00`), no text, no drop shadows, and nothing touching the character.
-3. **Same character, same scale, same cap** in every file. One colour version is enough; team colours are applied in code.
-4. **Upload into the repo** at `art/source/ants/` (or attach in chat). File names like `hero.png`, `side.png`, `face-cocky.png`.
+## Ant art reference (`art/source/`, uploaded by the user 2026-11-16)
+These are AI-generated (Gemini) images, used **as reference only**. They are never shipped and never traced. Final art is original flat SVG in `/art`, drawn by hand from these images (DR-007 licensing note, CREATIVE §7).
+
+| File | Size | Shows | Used for |
+|---|---|---|---|
+| `art/source/heropose.jpeg` | 1024x1024 | upright 3/4 ant, hand on hip, raised fist, big grin, acorn cap, elbowed antennae, striped gaster | hero pose: landing, posters, comics, win/lose (CREATIVE §2) |
+| `art/source/sidepose.jpeg` | 1376x768 | side view facing right, 6 legs down, one eye, small smile | side gameplay pose, drawn 88x63 in game, mirrored for left (DR-027) |
+| `art/source/cocky.jpeg` | 1376x768 | head only: cocky face | face `cocky` (idle, win) |
+| `art/source/aim.jpeg` | 1376x768 | head only: aiming face | face `aim` (aiming) |
+| `art/source/oops.jpeg` | 1376x768 | head only: oops face | face `oops` (miss, near miss) |
+| `art/source/dizzy.jpeg` | 1376x768 | head only: X-eyes, wobbly mouth, tongue, orbiting stars | face `dizzy` (hit, knock-out) |
+| `art/source/readmePose` | text | the user's note: these are pose references | – |
+
+**What to keep:** the proportions and shapes. That means the big round head with a wide mouth, the acorn cap with a curly stem, elbowed antennae with round tips, thin outlined limbs, a pinched waist, a large gaster with darker stripes, and a thick dark-plum outline.
+
+**What to change when drawing (rules from earlier decisions):**
+- The cap takes the **team colour** (blue `#0072B2`, amber `#E69F00`) and is **smooth**, with no scale texture. At most a few flat shade dots (DR-007, CREATIVE §2).
+- Flat fills only, with at most one flat shade tone per shape. No gradients and no white shine streaks (DR-001, DR-003a).
+- The team badge (blue circle, amber rounded triangle) goes on the gaster (DR-003, DR-007).
+- Dizzy stars use round joins and ball tips, so no sharp points (CREATIVE §1).
+- Body colours follow the CREATIVE §2 table (body `#B4532A`, stripes `#7A3418`, outline `#2E1A47`).
+- The images are JPEGs on white, so cut-outs need keying. Use them for reference and size checks only.
+
+**When the art is drawn:** add a Decision Record (DR-007b) that marks DR-007a's placeholders as replaced. Re-run the preview screenshots, and check the side pose reads clearly at 88x63 and at 667x375.
 
 ## Open items carried forward
-- Ant art: the user uploaded new reference images to `art/source/` (`heropose`, `sidepose`, `cocky`, `aim`, `oops`, `dizzy` .jpeg) during checkpoint B. They have **not been reviewed or used yet**. Ant art stays placeholder until the user says to start.
+- Ant art: the reference images are in `art/source/` (see above). Final SVG ant art is not drawn yet and waits for the user's go-ahead. The UI.md asset list (checkpoint C) should list the ant sprites against these files.
 - UI.md (checkpoint C) must decide:
   - touch target sizes at 667x375 (FIT 0.69)
   - keyboard power keys
