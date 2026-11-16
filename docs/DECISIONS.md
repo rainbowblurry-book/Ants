@@ -37,7 +37,8 @@ Nothing appears in UI.md or PLAN.md without a Decision ID. Builder deviations ar
 - **Question:** What visual language does the UI use over the DR-001 world?
 - **Options:** (A) jelly candy buttons (thick plum outline, flat shade band, one hard curved glint) · (B) leaf/bark natural panels · (C) die-cut sticker/badge UI
 - **Debate (haiku, 3 rounds):** GD argued that bark hides the wind readout and jelly pops. AD argued that stickers' white borders clutter a 540 px-tall canvas, and that the plum outline ties the UI to the world's ink. TL noted that jelly is nine-sliced flat fills with a tiny atlas and no textures.
-- **Winner:** (A) Jelly candy UI. Its anti-generic rule: one hard-edged curved glint per control and a flat shade band, never a soft gradient sheen.
+- **Winner:** (A) Jelly candy UI: thick plum outline, a flat shade band along the bottom edge, and a solid plum drop shadow. No gradient sheen.
+- **Amended by DR-003a:** the white glint streaks are removed.
 - **Palette direction (finalised in UI.md):** plum ink `#2E1A47`, butter panel `#FFF1D0`, raspberry action `#E8456B`, Team Blue `#0072B2` + **circle** badge, Team Amber `#E69F00` + **rounded triangle** badge (Okabe-Ito, colorblind-safe), teal info `#1FA38A` (always paired with an arrow shape), glint `#FFFFFF`.
 - **Fonts:** Lilita One (display, SIL OFL 1.1) + Nunito (body, SIL OFL 1.1), both from Google Fonts. Display text in-canvas is baked to a bitmap font.
 - **Layout seeds:** touch targets ≥ 48 px logical (56 preferred); FIRE 96 px bottom-right; aim pad bottom-left; wind and turn banner top-center, never under a thumb.
@@ -51,3 +52,21 @@ Nothing appears in UI.md or PLAN.md without a Decision ID. Builder deviations ar
 - **Debate:** GD: the brief says 3.x, so go with 3.x. AD: no visual difference for flat vector atlases. TL: 3.90.0 is the final, mature 3.x release with broad examples. Phaser 4 is a renderer rewrite, so it is outside scope unless the user asks.
 - **Winner:** Phaser **3.90.0**, pinned exactly.
 - **Revisit if:** the user asks to migrate to Phaser 4.
+
+## DR-003a · Remove white glint streaks (user edit, checkpoint A review)
+- **Question:** Keep the white curved glint on buttons and art, replace it, or drop it?
+- **Options:** (1) keep · (2) replace with another accent (e.g. a dotted stitch or a darker inner rim) · (3) drop it, keeping the shade band and drop shadow
+- **Debate:** GD: the glints add noise over the readouts and the eye goes to them first. AD: the shade band plus the plum drop already says "jelly", and a second accent would be decoration for its own sake. TL: one less layer per nine-slice and per sprite.
+- **Winner:** (3) Drop all decorative white highlights on UI, ants, leaves, sun, logo and weapon icons. White stays only where it carries meaning: wind chevrons, the aim preview, badge borders, eye whites, speech bubbles.
+- **Reason:** The user found the streaks odd. Removing them also makes the HUD calmer and easier to read (pillar 2).
+- **Rejected:** keep (the user's feedback); replace (no accent earned its place yet).
+- **Revisit if:** buttons read as flat or unclickable in playtests. Then try a darker inner rim, not a white glint.
+
+## DR-005 · Ant character attitude (user edit, checkpoint A review)
+- **Question:** How do we make the fighting ants feel rowdy while staying family-friendly?
+- **Options:** (1) facial attitude only (brow, smirk) · (2) full rowdy kit: scowl, half-lidded eye, big mandibles, chipped-tooth grin, shaking raised fist, dented and tilted acorn-cap helmet, wide stance · (3) battle gear (bandanas, slings, war paint)
+- **Debate:** GD: the raised fist makes a clear silhouette, so you can read their mood even at 80 px. AD: a dented cap tilted like a bad-boy beanie gives scrappy charm, while war paint pushes them toward "soldier". TL: everything stays inside one symbol and no extra textures are needed.
+- **Winner:** (2) Full rowdy kit. Team identity stays on the cap colour plus the abdomen badge shape.
+- **Reason:** It is clearly scrappy and funny without weapons-as-props or injuries (pillar 1), and it reads at phone size.
+- **Rejected:** (1) too subtle at small sizes; (3) more militaristic and busier, and it competes with the team badge.
+- **Revisit if:** faces turn to mush at the final in-game ant size. Then drop the tooth and keep the fist, brow and mandibles.
