@@ -1,63 +1,62 @@
-# Handoff: Project Ants planning, checkpoint B done → start C, then D
-Seq: 1 | Date: 2026-11-16 | Branch@commit: claude/eager-mccarthy-jpc952@c70b707 | Status: in progress (B done, C not started)
+# Handoff: Project Ants planning, checkpoint C done → await approval, then D
+Seq: 2 | Date: 2026-11-16 | Branch@commit: claude/eager-mccarthy-jpc952@fd987a9 | Status: in progress (C done, waiting for the user's approval before D)
 Saved to: rainbowblurry-book/Ants, docs/SESSION_HANDOFF.md (not docs/HANDOFF.md: that name is the checkpoint D deliverable)
 
 ## Goal
-Plan (not build) a Phaser 3 ant artillery game. You act as the **planner**: write docs only, no game code. Next deliverables are checkpoint C (`docs/UI.md` + `src/ui/theme.json`), then checkpoint D (`docs/HANDOFF.md`). The rules are in `docs/BRIEF.md`.
+Plan (not build) a Phaser 3 ant artillery game. You act as the **planner**: write docs only, no game code. The next deliverable is checkpoint D (`docs/HANDOFF.md`). The rules are in `docs/BRIEF.md`.
 
 ## State
-- Done:
-  - Checkpoint A was approved apart from the ant art.
-  - Checkpoint B (`docs/PLAN.md`, 64 Decision Records) is done, plus two rounds of user edits: Level 0, 3 new weapons, early rewards and kits.
-- The user asked to move to C and D. **The brief still says to stop after C** and wait for approval before D.
-- GitHub Pages: the user set Source to "GitHub Actions". The site appears once code reaches `main`.
-- Uncommitted work: none.
+- Done: A (approved except ant art), B (`PLAN.md`), and **C**, committed in fd987a9:
+  - `docs/UI.md`
+  - `src/ui/theme.json`
+  - DR-080 to DR-183 plus the judging table J27–J56 in `DECISIONS.md`
+  - sync edits to `CREATIVE.md` §3 and `PLAN.md` §3
+  - `PROGRESS.md` updated
+- Waiting on: the user's answer to "Do you approve continuing to the next stage?" for C → D.
+- Uncommitted work: none. The scratchpad copies of the debate records (`scratchpad/c/*.md`) are temporary, and everything in them is now in `DECISIONS.md`.
 
-## Decisions (with why), only those not obvious from the docs
-- The ant design reference is the user's Gemini images in `art/source/`. They are reference only, never shipped or traced, because they are AI-generated (DR-007 licensing note).
-- Level 0 Part 2 is one Level 70 Preview attempt, not three teasers. The user clarified "teser" meant **trial shots of 3 not-yet-unlocked weapons** plus a level-70 taste (DR-070).
-- The 3 new weapons unlock at L14, L24 and L34, because the user wants weapons that unlock "soon" and a rewarding early game (DR-009, J23). The user has not commented on the weapon picks themselves (assumed accepted).
-- Bot cap numbers were recalibrated by the planner's Monte-Carlo, because the debate's draft gave 99% hits at L90 (DR-063 to DR-065).
+## Decisions (with why)
+- **The user's own ask:** at the start of this session the user said "C and D only". After `/cpt` resume they said "ok go, start from fresh knowledge from B handoff". So C was re-run from scratch, with PLAN.md as context, and the stale pre-B debate drafts were discarded.
+- **Brief rule:** stop after C for approval, because BRIEF requires a stop at each checkpoint and handoff seq 1 said so. The user has not waived it.
+- **`action` colour:** now `#EE6083` with plum text, and the scrim is 70%. This came from the planner's own contrast script: `#E8456B` failed (white 3.82, plum 4.06), and a 60% scrim failed (3.79). The user has not seen this change yet.
 
 ## Do
-- Follow `docs/BRIEF.md` checkpoint rules:
-  - Every UI item cites a Decision ID.
-  - Sonnet subagents at medium effort run the debates, one per screen. Pass `model: sonnet` and `effort: medium`.
-  - Big creative calls use the haiku debate. Show the haikus to the user.
-  - The planner judges every record and adds a **Judge's ruling** line where records conflict. Use the J-numbers that follow J26.
-- After each checkpoint: update `docs/PROGRESS.md`, commit, push to `claude/eager-mccarthy-jpc952`, give a 5-line summary, and ask "Do you approve continuing to the next stage?" Then stop.
-- Apply the installed skills `design-system` (token layers) and `frontend-design-ui-ux` (spec handoff) for C.
-- Write in plain short sentences, and say what was verified and what was assumed. The user writes quickly with typos, so infer the meaning, and ask only when the answer would change the work.
-- Pin versions to ones at least 2 weeks old, and check them on npm before writing them.
+- Follow the BRIEF checkpoint rules:
+  - Sonnet debate subagents at medium effort (`model: sonnet`, `effort: medium`), one per screen or system.
+  - The planner judges every record with J-numbers. The next one is **J57**.
+  - Every item cites a Decision ID.
+- Ask each subagent to also save its records to a scratchpad file. That saves retyping them into `DECISIONS.md`.
+- After each checkpoint: update PROGRESS, commit, push, give a 5-line summary, ask for approval, and stop.
+- Write in plain short sentences. Say what was verified and what was assumed. The user writes with typos, so infer the meaning.
 
 ## Don't
-- Don't redraw the ant art unless the user asks. The SVG redraws were rejected (helmets looked wrong, DR-007a). The preview still uses the placeholder cut-outs.
-- Don't name the session file `HANDOFF.md`, because that is the D deliverable.
-- Don't force-push. In this session a push was rejected because the user had uploaded files to the branch through GitHub. The fix was `git fetch origin <branch> && git merge --no-edit FETCH_HEAD`.
-- Don't change team identity. The cap colour (blue `#0072B2` with a circle, amber `#E69F00` with a triangle) and the badge shape stay fixed, and trinkets never cover them (J26).
-- Don't use Worms names or weapons, gradients or glints, angular shapes, or humans as targets (CREATIVE §7).
+- **Don't run debates before reading the latest remote branch.** Run `git fetch` first. This session started 5 debates without PLAN.md because B had been pushed from another session, and they conflicted with B (hold-to-charge vs DR-033 set-then-fire, a 3-slot tray vs 6, Actions v4 vs v5–v7).
+- **Don't launch more than about 10 Sonnet subagents at once.** The account hit "You've hit your 5-hour limit" mid-run, and two agents died before saving their files.
+- Don't redraw the ant art unless the user asks (DR-007a). The reference is `art/source/`.
+- Don't name the session file `HANDOFF.md`, and don't force-push.
+- Don't change team identity or add free-text names (J44).
 
 ## Open questions / uncertainty
-- When to draw the final ant SVG from `art/source/`: before C, during C, or later. Ask the user.
-- The user said they will read `PLAN.md` later, so expect edits to the level table (§6) or bosses (§7).
-- Unverified items (PLAN §12): the S=2 crisp-canvas spike, device memory and per-blast ms, and Node 24 in CI.
-- The calibration scripts lived in the session scratchpad and are **not** in the repo. Re-derive them from PLAN §9 if they are needed.
+- The user has not reviewed UI.md. Expect edits, especially to the action colour and the HUD layout (DR-120).
+- The D draft records P-1..P-8 from this session were made without PLAN.md and are not saved anywhere. Re-run them (assumed: they are worth reusing as prompts only).
+- Real-device checks are still open: the S=2 spike, safe-area `env()` values, and Hop-row reach (UI.md §7).
 
 ## Next steps
-1. Read `docs/BRIEF.md` (checkpoint C), `docs/PROGRESS.md` (open items for UI.md), `docs/DECISIONS.md` (DR-003, DR-003a, DR-015, DR-033, DR-070, DR-071, and the J-tables), `docs/CREATIVE.md` §3, and `art/reference/ui-preview.html`.
-2. Spawn Sonnet debate subagents, one per screen or system: tokens and theme, Title, Level select and map, Comic, Battle HUD (6-slot weapon tray, wind gauge with vertical chevron, boss telegraph), Results and rewards, Level 0 (Sneak Shot chips, Preview cards), Album / Wardrobe / Nicknames, Settings and Pause, two-player setup, Rotate and loading screens.
-3. Judge the records, then write `docs/UI.md` and `src/ui/theme.json`. Settle the minimum touch size at 667x375 (FIT 0.69), keyboard power keys and the asset list (map the ant sprites to the `art/source/` files).
-4. Update PROGRESS, commit, push, give the 5-line summary, ask for approval and stop.
-5. After approval, do D: write `docs/HANDOFF.md`. Start with a one-page Decisions Summary, then the stage plan (stage 0 = the S=2 spike). Tag each stage hard (Fable, high effort) or routine (Sonnet subagent, medium effort), with acceptance tests from PLAN §10.
+1. Wait for the user's approval of C, and apply any edits they ask for as new DRs or J rulings.
+2. Run the D debates: build stage order, the hard/routine tag rule, the test stack, the override tiers, src layout and the placeholder-art manifest.
+   - Use Sonnet at medium effort, with PLAN §10–§12, UI.md §6 and J48–J50 as required context.
+3. Write `docs/HANDOFF.md`.
+   - Start with a one-page Decisions Summary ("we chose X over Y because Z").
+   - Then the stages, with stage 0 = the S=2 spike. Each stage gets its files, acceptance tests (PLAN §10, UI.md §6) and a hard or routine tag.
+4. Update PROGRESS, commit, push, give the summary, and stop.
 
 ## Key files & links
-- `docs/BRIEF.md`: the verbatim brief and the standing user additions (the rules).
-- `docs/PROGRESS.md`: current state, open items, and the ant art reference table.
-- `docs/PLAN.md`: checkpoint B (systems, 100-level table, bosses, bot AI, tests, deploy YAML).
-- `docs/DECISIONS.md`: DR-001 to DR-072, the J1–J26 judging tables, and the Override format.
-- `docs/DEBATES.md`: haiku debates 1–4. `docs/CREATIVE.md`, `docs/STORY.md`.
-- `art/source/`: the user's ant reference images. `art/reference/`: the approved preview and screenshots.
-- Repo: https://github.com/rainbowblurry-book/Ants, branch `claude/eager-mccarthy-jpc952`.
+- `docs/BRIEF.md`: the rules.
+- `docs/PROGRESS.md`: current state and open items.
+- `docs/UI.md` + `src/ui/theme.json`: checkpoint C.
+- `docs/PLAN.md`: checkpoint B.
+- `docs/DECISIONS.md`: DR-001..DR-183, J1–J56.
+- `art/source/`: the ant reference images. `art/reference/`: the approved preview.
 
 ## Previous handoffs
-- none (first)
+- seq 1 (2026-11-16): B done, start C then D.
