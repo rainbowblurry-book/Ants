@@ -1,11 +1,81 @@
 # Progress
 
-**Current stage:** Planning **complete** (A–D). Checkpoint D (`docs/HANDOFF.md`) is written and pushed to `main`. Next: the builder (Fable) starts at HANDOFF stage 0.
+**Current stage:** Build **stage 0 done** (scaffold, CI, Pages, S=2 spike). Next: stage 1, the sim core (HARD).
 
-> ⚠ **ANT ART: the reference is in `art/source/`, but final art is not drawn or approved yet.** The user's Gemini images in `art/source/` are now **the** design reference for the ants (see "Ant art reference" below). They replace `art/reference/ant-concept.webp` as the main reference. The preview still shows the old placeholder cut-outs (DR-007a). Draw the final ant art only when the user asks, from these images.
-**Branch:** `claude/eager-mccarthy-jpc952` on `rainbowblurry-book/Ants`.
+> ⚠ **ANT ART: the reference is in `art/source/`, but final art is not drawn or approved yet.** The build uses placeholders only (DR-195, DR-007a). Stage 0 draws no ants at all. Draw the final ant art only when the user asks.
 
-## Done
+**Branches:** one per stage, `build/stage-NN-name`, merged to `main` when CI is green (DR-194).
+
+## Build log
+
+### Stage 0 · Scaffold, CI, Pages, S=2 spike — done 2026-11-16
+Branch `build/stage-00-scaffold`.
+
+**Built**
+- Toolchain at the PLAN §2 pins: Phaser 3.90.0, Vite 8.3.5, TypeScript 5.9.3, Vitest 5.0.5, Biome 2.6.4. Scripts `dev build typecheck lint test e2e ci`.
+- `index.html` with the viewport meta, `#game`, and inline splash, rotate and fatal shells. Colours come from `theme.json` at build time, so the file has no colour literal.
+- `.github/workflows/deploy.yml`: `test` and `e2e` on every stage branch and on `main`; `build` and `deploy` to Pages from `main` only.
+- `src/main.ts`, `src/boot/config.ts`, `src/boot/renderScale.ts`, `src/scenes/Spike.ts`.
+- `tools/gen-theme.ts` (theme.json → `theme.ts` + `theme.css`), self-hosted Lilita One and Nunito with their OFL texts.
+
+**Spike result: S=2 works. No fallback needed.** The render path in DR-013 stays as planned.
+
+What the spike draws, at S=2 and at S=1: terrain as 12 chunk canvases, 2x art at half scale, a vector badge, nine-slice jelly buttons, Lilita One bitmap text with a stroke layer, Nunito runtime text, and a world camera that zooms and pans under a fixed HUD.
+
+| Check | How it was tested | S=2 | S=1 |
+|---|---|---|---|
+| Seams between terrain chunks | every pixel of the solid soil read back at 7 camera poses (zoom 1, 1.15, 1.2, 1.25, fractional pan) | 0 bad pixels | 0 bad pixels |
+| Seams inside nine-slices | panel strips that cross every slice edge, read back | 0 bad pixels | 0 bad pixels |
+| UI alignment | the button face's pixel box against its logical rect | exact | exact |
+| World alignment | the badge's pixel box against the camera maths | within 1.5 canvas px per edge | within 1.5 canvas px per edge |
+| Input | taps on the button's logical rect, by touch and by mouse; a tap 8 px outside misses | pass | pass |
+| Crisp text and ink | by eye, on the crops below | sharp | soft, as expected |
+
+These ran at 844x390 (DPR 3), 667x375 (DPR 2) and 1280x720 (DPR 1): 26 Playwright checks, all green.
+
+**Frame time (read this with care).** The test machines have no GPU, so Chromium draws WebGL on the CPU. That makes S=2 look slow there: it has 4x the pixels.
+
+| Viewport | S | Frame, median / p95 | Game code per frame, median / p95 |
+|---|---|---|---|
+| 844x390, CPU slowed 4x | 1 | 33 / 50 ms | 2.8 / 7.0 ms |
+| 844x390, CPU slowed 4x | 2 | 133 / 183 ms | 4.4 / 15.2 ms |
+| 667x375, CPU slowed 4x | 1 | 33 / 50 ms | 2.8 / 5.8 ms |
+| 667x375, CPU slowed 4x | 2 | 117 / 267 ms | 3.0 / 6.1 ms |
+| 1280x720 | 1 | 33 / 50 ms | 0.6 / 1.2 ms |
+| 1280x720 | 2 | 117 / 133 ms | 0.7 / 4.3 ms |
+
+- **Verified:** the game's own cost per frame is about the same at S=1 and S=2, and far under 16.7 ms.
+- **Not verified:** how fast a real phone GPU fills the S=2 canvas. No emulator can tell us. The spike page shows its frame time in the bottom-left corner, so a look at the live page on a phone answers it: about 16.7 ms means 60 fps.
+- The safety net is already planned: the "smooth mode" prompt that drops to S=1 (DR-013), built in stage 13.
+
+**Screenshots** (`docs/spike/`; `-s2` is S=2, `-s1` is S=1, `-crop` is a close crop, `-pan` is the camera zoomed 1.2 and panned):
+
+| Viewport | S=2 | S=1 | Crop S=2 | Crop S=1 | Panned S=2 |
+|---|---|---|---|---|---|
+| 844x390 | [png](spike/phone-844x390-s2.png) | [png](spike/phone-844x390-s1.png) | [png](spike/phone-844x390-s2-crop.png) | [png](spike/phone-844x390-s1-crop.png) | [png](spike/phone-844x390-s2-pan.png) |
+| 667x375 | [png](spike/phone-667x375-s2.png) | [png](spike/phone-667x375-s1.png) | [png](spike/phone-667x375-s2-crop.png) | [png](spike/phone-667x375-s1-crop.png) | [png](spike/phone-667x375-s2-pan.png) |
+| 1280x720 | [png](spike/desktop-1280x720-s2.png) | [png](spike/desktop-1280x720-s1.png) | [png](spike/desktop-1280x720-s2-crop.png) | [png](spike/desktop-1280x720-s1-crop.png) | [png](spike/desktop-1280x720-s2-pan.png) |
+
+**Render rules the spike fixed for later stages**
+1. The canvas is 960·S x 540·S. Every camera gets `setBounds(0, 0, 960, 540)` and `setZoom(S × gameZoom)` (`applyLogicalCamera` in `src/boot/config.ts`). Move cameras with `centerOn`, pan or follow. Never write `scrollX`/`scrollY`: at S=2 "no pan" is scroll −480, −270, not 0.
+2. Do not use `camera.setOrigin(0, 0)`. Phaser 3.90 computes `worldView` and the bounds clamp from a centred origin (read in the Phaser source).
+3. Art is rasterised at 2x and drawn at scale 0.5. A nine-slice is created at twice its logical size with 48 px corners, then scaled 0.5.
+4. Bitmap fonts are baked at 2x the role size. Runtime text uses `resolution: S`.
+5. Half-pixel positions stay sharp at S=2 (DR-085 snap rule).
+6. Phaser's camera shake is sized from the camera width, which is 1920 at S=2. Stage 4 must size shake in logical px. This is from reading the source and is not tested yet.
+
+**Tests**
+- `npm test`: 2 files, 7 tests (render scale rule, theme tokens in sync).
+- `npm run e2e`: 26 checks pass, 1 skipped by design (the rotate overlay check is for touch devices only).
+- CI and Pages: see "Stage 0 CI" below.
+
+**Overrides logged:** OVR-001 (CI runs on stage branches), OVR-002 (Playwright and Node-types pins), OVR-003 (token generator and fonts arrive early). All Tier T. No Tier G.
+
+**Not done here on purpose:** the splash progress feed, audio gate, rotate pause and crash-loop breaker (stage 7); the build-time font bake and UI atlas (stage 4); Performance mode (stage 7 Settings).
+
+## Planning history
+
+### Done
 **Checkpoint A** (approved except ant art):
 - Docs: `BRIEF.md`, `DESIGN_PILLARS.md`, `DEBATES.md` and DR-001 to DR-008a.
 - `preview/ui-preview.html` with 15 screenshots, and `art/reference/`.
@@ -110,4 +180,4 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 - **GitHub Pages:** done by the user (Settings → Pages → Source: "GitHub Actions").
 
 ## Next step
-The build starts in a new chat with Fable, following `docs/HANDOFF.md` from stage 0. The builder stops after each stage, and for playtests at M1 and M2.
+Stage 1, the sim core (HARD): `src/sim/rng.ts`, `trig.ts`, `terrain.ts`, `physics.ts`, `wind.ts` and the `match.ts` skeleton, with the `rng`, `ban-scan`, `trig`, `terrain` and `physics` tests. The builder stops after each stage, and for playtests at M1 and M2.
