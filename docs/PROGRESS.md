@@ -19,7 +19,7 @@
   - bot AI with its error model and a calibrated curve
   - the test list, including the `ai-cap` headless test spec
   - the GitHub Pages workflow and the repo setting, plus risks
-- After the user's review: Level 0 added (DR-058, DR-059) to `PLAN.md` §6, §9 and §10.
+- After the user's review: Level 0 (DR-058, DR-070), the 3 new weapons (DR-009, haiku Debate 4 in `DEBATES.md`), the early reward track (DR-071) and kits (DR-072). These are reflected in `PLAN.md` §1, §4, §5, §6, §8, §9 and §10, and in `CREATIVE.md` §5.
 - `docs/DECISIONS.md`: 51 new records (DR-010 to DR-067) from six Sonnet debate subagents at medium effort (tech, terrain, physics, turn flow, campaign, bot AI). They are followed by the planner's judging summary (J1–J22) and a judge's line on every record.
 - Bot-AI calibration: a planner Monte-Carlo, not committed, using the plan's physics. At levels 90–100 the bot lands about 95% of benchmark shots inside the lethal radius in stable wind. Level 1 lands about 25%, level 20 about 39%, and the curve rises steadily in between.
 - Verified on 2026-11-16:
@@ -33,7 +33,10 @@
 - **Physics:** DR-030 g 600, full 45° shot 864 px · DR-031/032 wind levels ±5 at 25 px/s² plus Level, Column and Oscillate fields · DR-033 set-then-fire, wind-free short preview · DR-035 linear falloff, direct ×1.2, cap 60.
 - **Turns:** DR-041 alternate teams, fixed ant rotation · DR-042 turn state machine with a 3 s retreat · DR-043 30 s timer, skip on timeout · DR-044 rising "dew" sudden death · DR-045 two-player tap gate.
 - **Campaign:** DR-050 max 4 ants per side, AI index = level · DR-052 Dewdrop at L4, Pollen after Boss 1 · DR-053 4-round telegraphed boss loop · DR-055 no acorn gates, skip after 3 losses.
-- **Level 0 (user edit):** DR-058 "Training Grounds": a practice match against a ~11%-accurate bot, all 3 weapons unlimited, can't lose · DR-059 Sneak Peek: 3 quick teasers (Trail, Living Room, Kitchen) against a capped-accuracy bot, can't lose.
+- **Level 0 and early game (user edits):**
+  - DR-058/DR-070 "Training Grounds". Part 1 is practice against a bot that hits about 11% of shots: Seed, Dewdrop and Pollen are unlimited, you can't lose, and you get **one trial shot each of the 3 new weapons**. Part 2 is a **Level 70 Preview**: one attempt, 3 v 2 against a level-70 bot (about 80% accurate), with the full kit. DR-059's teasers are superseded.
+  - DR-071: L1–10 are quick (about 28 min in total) with a cosmetic reward on every clear.
+- **New weapons (haiku debate, DR-009):** Tunnel Grub (digs, L14), Pill Roller (rolls, L24) and Mound Plop (builds terrain, L34). DR-072: each level fixes its own kit, and two-player has all 6 weapons.
 - **Bot AI:** DR-061 human-like input errors · DR-062 lethal radius = 0.5·blast radius from the hurtbox · DR-063/064 calibrated curve with a floor at L90+ (95%) · DR-065 `tests/ai-cap.test.ts`.
 
 ## Ant art reference (`art/source/`, uploaded by the user 2026-11-16)
@@ -68,8 +71,9 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
   - keyboard power keys
   - the vertical wind chevron for the Garden swirl
   - boss telegraph HUD (icon plus ghost wind arrow)
+  - a 6-slot weapon tray, Sneak Shot chips, reward pop-ups, the sticker album, the Wardrobe and the nickname picker (DR-009, DR-070, DR-071)
 - Build-time checks listed in PLAN §12: the S=2 render spike, device memory and blast ms, and refitting bot-cap constants against the real sim.
-- **The user must switch on:** Settings → Pages → Build and deployment → Source: "GitHub Actions" (only needed once code reaches `main`).
+- GitHub Pages: **done by the user** (Settings → Pages → Source: "GitHub Actions"). The site appears once code reaches `main`.
 
 ## Next step
 Checkpoint C: `docs/UI.md` + `src/ui/theme.json`. Cover the palette, fonts, spacing, every screen, and components with states and an asset list, each linked to a Decision ID. Use Sonnet debate subagents (medium effort), one per screen. Then commit, push, update this file and stop.

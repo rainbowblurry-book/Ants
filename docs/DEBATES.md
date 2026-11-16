@@ -46,3 +46,19 @@ GD: *Jelly, then. Two teams: / circle blue, triangle gold / shape tells, color h
 AD: *Plum ink, cream, candy / one curved glint per button, flat / no mush gradients*
 TL: *Fonts: free, OFL / Lilita One, Nunito / ship it, thumbs rejoice*
 **Verdict:** Jelly candy UI.
+
+## Debate 4 — Three unlockable weapons (DR-009)
+
+**R1**
+GD: *Dig, build, roll: three gaps / starters never touch those jobs / ground becomes the toy*
+AD: *Grub, lump, and pill bug / sausage, blob, and ball: three shapes / each reads at arm's length*
+TL: *Grub eats the mask: stamps / roller hugs the height column / plop fills empty cells*
+**R2**
+GD: *Plop does no damage? / it makes a bridge or a wall / every shot a choice*
+AD: *Grub spits crumbs, munching / pill bug rattles, googly-eyed / plop says splorp: mud hats*
+TL: *Roller needs slope probes / seven samples, no trig calls / a delta of holes*
+**R3**
+GD: *A toy each biome / grub, roller, plop, in test slots / always something new*
+AD: *Brown, cream, and grey rings / no one looks like dot, drop, puff / plum ink on all three*
+TL: *No new random stream / every call is pure, fixed-step / ship it, sims stay cheap*
+**Verdict:** Tunnel Grub, Pill Roller, Mound Plop, unanimous.

@@ -1130,7 +1130,7 @@ interface WindField {
 
 # Checkpoint B · User edit after review (DR-058, DR-059)
 
-## DR-058 · Level 0 "Training Grounds" (user edit)
+## DR-058 · Level 0 "Training Grounds" (user edit) — amended by DR-070
 - **Question:** How do new players try everything safely before Level 1?
 - **Options:** (1) no extra level; L1–3 teach as planned · (2) a Level 0 practice match: a very weak bot, unlimited ammo on all three weapons, no way to lose · (3) a non-combat sandbox with target dummies only
 - **Debate (compact):**
@@ -1152,7 +1152,7 @@ interface WindField {
 - **Rejected:** (1) it doesn't let players experiment freely; (3) dummies don't teach turns, wind reading against a bot, or retreating.
 - **Revisit if:** many players skip it (shorten the tip cards), or playtesters still lose L1 (then add a 4th tip card on bracketing).
 
-## DR-059 · Sneak Peek: 3 high-level teasers inside Level 0 (user edit)
+## DR-059 · Sneak Peek: 3 high-level teasers inside Level 0 (user edit) — SUPERSEDED by DR-070
 - **Question:** How do players get a taste of what the later game looks like, so they know what's coming and can plan?
 - **Options:** (1) a non-interactive trailer · (2) three short playable teasers back-to-back against capped-accuracy bots in late biomes · (3) unlock one late level early
 - **Debate (compact):**
@@ -1172,3 +1172,167 @@ interface WindField {
 - **Revisit if:** the teasers scare young players. Then lower the teaser bot to AI index 70 and keep the visuals.
 - **Process note:** like DR-003a, these are user edits after review, debated by the planner without a subagent.
 - **Cross-record effects:** DR-063 gains an "index 0" row outside the 1–100 curve. DR-065 gains assert 8 (L0 hit rate in [0.06, 0.16]). DR-055: Level 0 never blocks L1. DR-052: Level 0 ammo is a trial only.
+
+
+---
+
+# Checkpoint B · User edit 2 (DR-009, DR-070 to DR-072)
+
+The user clarified the Level 0 request. Part 1 should add **one trial shot each of 3 new weapons that unlock soon**. Part 2 should be **one hard but beatable match at the level-70 setup** (bot at level 70, one chance). Levels 1–10 should feel quick and rewarding. DR-009 is a big creative decision (weapons), so it used the haiku debate (Debate 4 in `DEBATES.md`). DR-070 to DR-072 used a compact debate. Both ran as Sonnet subagents at medium effort.
+
+| # | Conflict | Ruling |
+|---|---|---|
+| J23 | Weapon unlock levels: L14/24/34 (DR-009) vs L20/40/60 boss rewards (DR-072) | DR-009: weapons arrive sooner, and the boss rewards become cosmetics. |
+| J24 | New-weapon ammo: per-weapon table (DR-009) vs flat 2/2/1/4/2 (DR-072) | DR-009. |
+| J25 | Mound Plop adds terrain, but DR-021 only erases | Add `fill()` to the grid, with the same dirty-rect path. |
+| J26 | "Cap trinkets" vs team identity on the cap | Trinkets anchor beside the stem and never recolour or hide the cap or badge. The coconut "hat" becomes a charm. |
+
+## DR-009 · Three unlockable weapons (haiku debate, Debate 4)
+- **Question:** Which 3 original ant weapons unlock later in the campaign, and when? Each must fill a role the starter trio lacks and interact with destructible terrain.
+- **Options:** (a) Tunnel Grub (dig) / Pill Roller (roll) / Mound Plop (build) · (b) Gust Puff (knockback-only shove) / Silk Snare (delayed trap) / Mildew Cloud (area denial that clears after a turn) · (c) Ember Spark (burning ground) / Hornet Seeker (homing) / Twig Ladder (bridge)
+- **Debate (haiku, 3 rounds):** GD wanted three jobs the starters never do: dig, build, roll. AD gave each a silhouette unlike dot, drop and puff (cream sausage, brown blob, grey striped ball) and a sound gag. TL showed all three are pure functions of (angle, power), with no new RNG and only a small terrain-delta overlay. Unanimous for (a).
+- **Winner:** (a)
+
+| Weapon | Role | Damage | Blast r (px) | Wind factor | wMul | Fuse / special | Behavior |
+|---|---|---|---|---|---|---|---|
+| Tunnel Grub | dig through cover | 40 (direct 48) | 30 | 0.15 | 1.0 | tunnel 60 ticks at 150 px/s | Flies ballistic. On its first non-rock terrain contact it keeps its heading, gravity off. It erases a circle of r 11 × material mult every tick (soil 11, soft 16.5, hard 5.5). It pops at tunnel end, when it breaks out into air, or on touching an ant. ROCK (mult 0) stops it at once, so it pops on the surface. A direct hit in flight is ×1.2. |
+| Pill Roller | ground-hugging roll | 38 (direct 46) | 40 | 0.5 in air, 0 rolling | 0.85 | fuse 150 ticks from landing | Lands, curls up and rolls in its launch direction along the surface. Roll speed starts at min(200, 0.35 × landing speed). Acceleration is 0.5·g·sinθ downhill minus 120·mu. It rolls off ledges and falls on. It bounces once off a wall taller than 8 px at half speed. It pops on touching an ant or at fuse end. |
+| Mound Plop | build: bridge, plug, shield | 6 (direct 7) | 34 (fill) | 0.4 | 0.9 | none, sticks on first contact | Fills EMPTY and WATER cells within 34 px with SOIL, so it is a plug, wall or bridge. Cells within 18 px of any ant's body stay empty, so ants are never entombed or crushed. No crater. The tiny damage and knockback (56 px/s) give a plop on the head. |
+
+  Sanity checks (g 600, v = wMul·(100+620p)):
+  - **Range.** Full power at 45°: Grub 720² / 600 = 864 px, Roller 612² / 600 = 624 px, Plop 648² / 600 = 700 px. Typical 300–500 px shots sit at 50–75% power, as with the starters.
+  - **Drift.** At level 5 on a 500 px 45° shot (T² = 1.67, DR-031): Plop 0.4 × 125 × ½ × 1.67 = 42 px, so wind matters against its 34 px fill. Roller in air is 52 px. Grub is 16 px, under its 30 px blast, so it ignores wind. Rolling is wind-free.
+  - **Damage.** Grub 40 ×1.2 = 48, so three hits kill (two direct hits do 96). Roller 38 / 46 is similar. The 60 cap is never reached. Linear falloff on the Grub's 30 px blast bottoms out at 10 HP.
+  - **Roll.** On SOIL (mu 0.8, decel 96 px/s²) a 158 px/s landing rolls 158² / 192 = 130 px in 1.65 s, before the fuse. A 20° downhill gains 103 px/s² (more than the 96 decel), so the ball runs away downward. On SLICK (decel 6) it slides about 490 px, which is a big gag.
+  - **Tunnel.** 60 ticks × 2.5 px = 150 px of tunnel. That is enough to pass a 100 px stump but not to cross a stage.
+
+- **Unlock levels** (the first test slot of Biomes 2, 3 and 4, the same pattern as Dewdrop at L4 in DR-052, each with a scripted card):
+
+| Weapon | Unlock | Why |
+|---|---|---|
+| Tunnel Grub | **L14** | Biome 2 stump forts (HARD cover) are what it answers. |
+| Pill Roller | **L24** | Biome 3 camp slopes and bouncy tent. |
+| Mound Plop | **L34** | Biome 4 puddles, where it bridges WATER. |
+
+  The sequence L4, L10, L14, L24, L34 puts a new toy every 4 to 10 levels, and all three are unlocked by L34, well before L70. Level 0 gives one trial shot each, with the tag "Unlocks at Level 14 / 24 / 34". The Level 0 trial arena needs a stump or wall for the Grub, a slope for the Roller and a gap for the Plop.
+
+- **Campaign ammo (per team pool):**
+
+| Slot | Grub | Roller | Plop |
+|---|---|---|---|
+| Teach (first level using it) | 3 | 4 | 5 |
+| Test | 3 | 3 | 4 |
+| Twist | 2 | 2 | 4 |
+| Rest | 5 | 6 | 8 |
+| Boss | 3 | 3 | 4 |
+
+  **Two-player default:** Grub 1, Roller 2, Plop 2, added to the existing ∞ / 3 / 1 row. Plop is cheap because it deals almost no damage. The weapon tray scrolls, because it now holds 6 slots.
+
+- **Sound and visual gags:**
+  - Grub: loud "munch-munch-crunch", cheeks puffing, crumbs spat sideways. It pops out of the far wall wearing a dirt hat.
+  - Roller: a rising "brrrr" rattle, googly eyes spinning inside a grey striped ball. At fuse end it unrolls dizzy, with a "boing", and the blast is a petal-and-confetti puff.
+  - Plop: a wet "splorp", a mud hat on any ant it hits, and a wobbly mud tower that jiggles for 1 s.
+  - Silhouettes: Grub is a long cream segmented sausage with tiny mandibles. Roller is a round grey ball with plum rings and 2 little legs poking out. Plop is a squat brown rounded blob with 3 trailing crumbs. All have plum outlines.
+
+- **Reason:** The starter trio covers direct fire, timed bounce and spread. This trio adds dig (reach ants behind HARD or ROCK cover), roll (reach ants in trenches and down slopes, and craters become ramps) and build (shape terrain instead of erasing it). That meets pillar 3 directly and sets up combos: dig a tunnel, then roll through it, or plug a crater to stop a roll. A miss is funny for each: the Grub exits the wrong wall, the Roller rolls past, and the Plop makes a lopsided bridge to nowhere (pillar 1). None resembles a Worms weapon or name. All are deterministic, with no new RNG.
+- **Rejected:** (b) Snare and Cloud need state that persists across turns (like a mine or napalm), and a knockback-only shove has weak terrain interplay. (c) Ember is burning ground (damage over time, napalm-like) and Seeker is homing, which is forbidden and hard to simulate. Twig Ladder duplicates the Plop's job.
+- **Revisit if:** Grub tunnelling trivialises HARD stump forts (then cut its tunnel to 45 ticks), Plop is only ever used to entomb (then widen the ant keep-out to 24 px), or players still miss "something new" after L34 (add a boss-reward reskin or ammo crates).
+- **Bot AI note:**
+  - **Grub:** the standard angle × power search. The sim runs the tunnel, so no extra parameter is needed. Since its wind factor is 0.15, bots ignore wind error for it.
+  - **Roller:** landing x is not monotone in power on slopes. The solver adds one extra refine step, with power offsets ±2% around each top candidate (+9 sims), and scores the final pop point.
+  - **Plop:** it is scored by damage only, so bots would never pick it. Bots do not use it, except scripted boss moves (DR-053 telegraphs).
+  - **Budget:** with 5 or more weapons, cap each at ≤ 120 sims, so the 1,200 sim hard cap holds. Skip weapons that are out of ammo or out of range on a cheap check.
+- **Determinism note:** New sim state:
+  - Grub: heading vector, tunnel tick counter, and an erase-delta overlay inside `simulateShot` (a sparse set of dug cells, so the real mask is not copied).
+  - Roller: mode (air or roll), roll speed, direction and fuse counter.
+  - Plop: a deterministic row-major fill, with ants' keep-out zones.
+  - Slope uses 7 integer height samples and the ratio dy / sqrt(dx² + dy²) (sqrt only, no trig). There is no new RNG stream and no `Math.random`. Timing is all in fixed ticks. Every effect is a circle erase or fill, so no banned APIs are needed.
+- **Judge's ruling:** Accepted, with the unlock levels **L14 / L24 / L34**. They win over DR-072's boss-reward slots (L20/40/60) because the user asked for weapons that unlock "soon" and a rewarding early game (J23). The ammo table here wins over DR-072's generic row. Two-player defaults: Grub 1, Roller 2, Plop 2 (J24). Mound Plop needs a new terrain op, `fill(cx, cy, r, SOIL)` on EMPTY/WATER cells with an ant keep-out. It pushes dirty rects like `erase`, which amends DR-021 and DR-024 (J25). The Level 0 practice arena must include a HARD stump, a slope and a gap for the three trial shots (DR-070).
+
+
+
+## DR-070 · Level 0 revised (supersedes DR-059, amends DR-058)
+- **Question:** How do Part 1 and Part 2 of Level 0 give a free trial of the new weapons and a taste of L70?
+- **Options:** (1) keep DR-058 plus 3 teasers · (2) Part 1 plus Sneak Shots, Part 2 = one Level 70 Preview match · (3) Part 2 as a replayable sandbox with a retry button
+- **Debate (compact):**
+  - GD: One real match against a ~80% bot gives the "hard but fair" thrill. One attempt makes it feel big. A retry button turns it into a grind, so no retry.
+  - AD: A Porch arena with all six weapons in the bar shows "what is coming". Greyed lock chips with "Unlocks at Level N" read in one glance. Lady Latch must not appear.
+  - TL: It reuses the L64 level file, the bot at `botParams(70)`, and the existing level data. New: a `kit` field, a per-team HP override and a `maxAttempts` flag.
+  - GD: Rival HP 100 vs a player with 3 ants is a loss for a new player. Bot needs about 4 hits per ant; a beginner needs 3-4 hits per rival at 30-40% accuracy. So rivals get less HP, not the bot less skill.
+  - TL: A headless test checks the odds (see below).
+- **Winner:** (2).
+  - **Part 1 Practice (DR-058 kept):** AI index 0 (~11% hits), can't lose, unlimited Seed/Dewdrop/Pollen, no timer, scripted wind, tip cards. Two changes: sparring rivals pop back up with 50 HP at TurnEnd, so Part 1 never ends by itself. It ends on "Next" (shown after turn 3), as before.
+  - **Sneak Shot:** after the player's 3rd turn, a Dot card (tap to close, 1.5 s auto): "Sneak Shot! One try of three weapons you'll earn later." Three greyed chips appear in the weapon bar: W4 "Unlocks at Level 21", W5 "Level 41", W6 "Level 61" (pending DR-009 for names and levels). Tapping a chip arms it for exactly 1 shot. The chip then shows "tried" and stays dim. Sneak ammo is per ant, cosmetic of the trial only, and does not unlock anything.
+  - After all 3 are used (or Next is pressed), Dot says "Ready for a peek at Level 70?" with Go and Skip buttons. Skip leads to L1. Part 1 total: about 3 min.
+  - **Part 2 "Level 70 Preview":** one match, launched after Part 1 or alone from the Level 0 sign.
+    - **Arena:** the Porch test layout (L64), non-boss. The door is shut and Lady Latch is not shown. Door gust is capped at 3 here (the real Porch uses 5). Plank gaps stay.
+    - **Teams:** 3 player ants (100 HP, blue circle caps) vs 2 rival ants at **60 HP** (amber triangle caps, "Porch Scouts"). This is a Level 0-only HP exception to DR-050.
+    - **Bot:** AI index 70 (~80% hits), using the same kit and ammo as the player.
+    - **Kit:** all 6 weapons. Seed ∞, Dewdrop 4, Pollen 3, W4/W5/W6 2 each (pending DR-009). One Honey Drop on the player's side at round 4.
+    - **Timer:** 45 s. Sudden-death warning at round 8, dew from round 10 (normal 21), so it ends by round 14, about 4 min.
+    - **One attempt:** Restart is hidden in the pause menu. Quit and Resume keep the same match (`ants.match.v1`). Result saved as `level0.previewResult`.
+    - **Win card:** "You beat a Level 70 bot! Imagine you after the whole trip." Reward: cap trinket "Brass Doorknob Pin" (cosmetic, once).
+    - **Lose card:** "Dizzy! That is as tough as the Porch gets. You'll be ready by Level 61." Reward: sticker "Brave Scout". Both cards end on "Let's go!" to L1. Replaying Part 2 from the Level 0 sign is always allowed, with no second reward.
+- **Reason:** It meets the request: real thrill, one chance, and no soft-lock. Lowering rival HP keeps the bot's behaviour honest, because the lesson is "this bot aims well".
+- **Rejected:** (1) too passive and fake accuracy caps; (3) kills the one-chance thrill. Kitchen or Pantry arena (shows late visuals and spoils the finale). A boss arena (spoils Lady Latch).
+- **Revisit if:** the headless test (an AI-25 stand-in as the "new player", 200 seeds) wins outside 35-60%. Then adjust rival HP (50-70), not bot skill. Also revisit if playtesters call it unfair, or if more than 60% skip it.
+- **Judge's ruling:** Accepted, with these changes. The Sneak Shot chips read **"Unlocks at Level 14 / 24 / 34"** (DR-009). The Preview kit uses DR-009's test-slot ammo: Seed ∞, Dewdrop 4, Pollen 3, Grub 3, Roller 3, Plop 4. The Preview rival-HP exception (60 HP) applies to Level 0 only. Assert 9 joins DR-065's test list.
+
+## DR-071 · Quick, rewarding first 10 levels
+- **Question:** How do L1-L10 feel fast, with a reward on every clear?
+- **Options:** (1) acorn stars only · (2) a cosmetic reward on every clear L1-10 plus the two kit unlocks · (3) a currency shop
+- **Debate (compact):**
+  - GD: The first 30 minutes decide retention. A reward on every clear plus fast turns makes "one more level" easy. Acorns give no reward now, so add one.
+  - AD: A 24 px trinket slot on each ant, placed off the cap and off the badge, so team identity (cap colour and shape) never changes. Pop-ups show the item art and one line.
+  - TL: Rewards are string ids in `save.unlocks` (a bump of `v`, with `migrate()`). The table is data, one reward per level.
+- **Winner:** (2).
+  - **Pacing:** L1-3 about 1.5-2 min each (2v1, 2v1, 2v2, par 4/4/6). L4-8 about 2.5-3 min. L9 about 3 min. L10 boss about 5 min. Total about 28 min.
+  - TurnStart is 600 ms (down from 900) in L1-10, and a tap skips it. Bot think time is capped at 1.0 s through L10 (amends DR-066's 1.8 s at L1). Cards are tap-to-close with an auto-close. The comic stays skippable. Teach levels keep the 60 s timer but need no Dot card after L1 unless something is new.
+  - Reward pop-up is the last row of the Results card. A tap skips it. No ads, no currency, no IAP, nothing that changes damage.
+  - A 3-acorn clear upgrades the same reward to a gold-shimmer variant (cosmetic, DR-055).
+
+| Lvl | Reward | How shown | Pop-up |
+|---|---|---|---|
+| 1 | Cap trinket: Leaf Feather | item flies to the ant on the card | 1500 ms |
+| 2 | Sticker page 1 (Dot waves) | album page flips in | 1200 ms |
+| 3 | Ant nicknames (pick from 12 silly names) | name picker with Skip | 1500 ms |
+| 4 | **Dewdrop Bounce joins your kit** | weapon art card (DR-052) | 2200 ms |
+| 5 | Victory dance: Wiggle | the winning ant dances once | 1500 ms |
+| 6 | Cap trinket: Seed Pin | flies to the ant | 1500 ms |
+| 7 | Sticker page 2 | album page flips in | 1200 ms |
+| 8 | Victory dance: Spin | the winning ant dances once | 1500 ms |
+| 9 | Cap trinket: Coconut Hat (rest-level gag) | silly pop with a boing | 1800 ms |
+| 10 | **Pollen Pod joins your kit** plus sticker page 3 | weapon art card, then album | 2800 ms |
+
+- **Rhythm L11-100:** every biome gives 4 rewards: sticker page on its first level (with the comic), a dance or nickname on its L5, a trinket on its rest level (L9), and a boss reward on its L10. Boss rewards: new weapons at L20, L40, L60 (pending DR-009), and a big trinket or dance at the other bosses. Test and twist levels give only the 3-acorn shimmer. That is one reward about every 2.5 levels.
+- **Wardrobe:** a screen on the level select where each ant gets one trinket, one dance and one nickname.
+- **Reason:** It rewards every early win while keeping all fun cosmetic, and it never touches team colour or badge shape (DR-003).
+- **Rejected:** (1) no early hook; (3) a currency shop breaks the "no IAP" rule. A "sneak shot token" (power creep; Level 0 already gives the trial). Per-level trinkets for all 100 levels (art cost, noise).
+- **Revisit if:** median time for L1-10 is over 35 min, or testers skip pop-ups (shorten to 1000 ms), or trinkets crowd the cap.
+- **Judge's ruling:** Accepted, with these changes (J26). Trinkets attach at a fixed anchor beside the cap stem. They never recolour the cap, hide the cap's outline or cover the gaster badge, so team identity stays readable (DR-003, DR-007). L9's "Coconut Hat" becomes the **Coconut Charm** trinket, because a hat would replace the team cap. Weapon unlocks at L14, L24 and L34 are extra reward moments. The boss rewards at L20, L40 and L60 become a big trinket or a dance instead of weapons. Bot think time is capped at 1.0 s through L10 (amends DR-066). TurnStart is 600 ms through L10 (amends DR-042). Sticker album, nickname picker and Wardrobe are new UI screens for checkpoint C.
+
+## DR-072 · Unlock schedule for the full 6-weapon kit and rival kits
+- **Question:** When do the 6 weapons unlock, who gets which kit, and how much ammo?
+- **Options:** (1) the player's save decides every kit · (2) each level fixes its own kit by level number, rivals mirror it · (3) rivals always have everything
+- **Debate (compact):**
+  - GD: A level that defines its own kit stays fair, replayable and deterministic (pillar 4). Rivals with a weapon the player has never seen are unfair.
+  - AD: A first use of a new weapon should have a Dot card and art; one per unlock keeps the beat special.
+  - TL: `kit` and per-slot ammo live in level data, so replay and the replay log (`ants.match.v1`) stay deterministic whatever the save holds.
+- **Winner:** (2).
+  - **Unlock schedule:** Seed L1 (∞) · Dewdrop L4 · Pollen reward of L10, usable L11 · W4 reward of Boss 2 (L20), usable L21 · W5 reward of Boss 4 (L40), usable L41 · W6 reward of Boss 6 (L60), usable L61. All in kit by L70, as in the Level 0 Preview. W4-W6 levels and names are **pending DR-009**.
+  - **(a) Rivals:** the same kit and the same ammo table as the player at that level. Replaying an old level keeps its old kit, so a later weapon never makes an earlier level easier.
+  - **(b) Bosses:** the boss uses its plain shot, trick and cluster loop (DR-053), not the unlock list. Escorts use the level kit with the boss ammo row (Dew 4, Pollen 3, W4-6: 2 pending). The player's boss kit is the level kit. A boss's reward arrives after the win, never during it.
+  - **(c) Two-player:** all 6 weapons from the first match, so a friend on a fresh save is not stuck with Seed. Setup gets a "Starter kit only" toggle (Seed, Dewdrop, Pollen). Defaults per DR-034: Seed ∞, Dewdrop 3, Pollen 1, and W4/W5/W6 1 each (pending DR-009).
+  - **(d) Ammo for W4-W6 (pending DR-009), per team pool:**
+
+| Slot | Teach | Test | Twist | Rest | Boss |
+|---|---|---|---|---|---|
+| W4 / W5 / W6 | 2 | 2 | 1 | 4 | 2 |
+
+  - On a weapon's first level (L21, L41, L61): ammo 3 and a Dot card.
+- **Reason:** Level-defined kits keep campaign fairness and determinism. All 6 weapons in two-player keeps the friend-on-a-phone case fun.
+- **Rejected:** (1) replay makes old levels trivial and breaks seeds; (3) unfair. Two-player locked by save (a friend with an empty save has only Seed).
+- **Revisit if:** the haiku debate (DR-009) changes unlock levels or ammo, or testers find the new weapons too rare or too common.
+- **Judge's ruling:** Accepted, with DR-009's unlock levels (Grub L14, Roller L24, Plop L34) and DR-009's ammo table. Rivals use the level's kit, but the bot never chooses the Mound Plop (DR-009 bot note). Two-player: all 6 weapons from the start, plus a "Starter kit only" toggle.
+
+

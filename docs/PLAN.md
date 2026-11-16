@@ -41,7 +41,7 @@ Look, story and UI live elsewhere: `CREATIVE.md`, `STORY.md` and `UI.md` (checkp
   - A hand-written service worker (production only): cache-first for hashed assets, network-first for `index.html`.
   - First-tap audio unlock in `Boot`.
   - No zoom, scroll or pull-to-refresh: viewport meta, `touch-action: none`, `overscroll-behavior: none`, non-passive `touchmove`. Safe-area insets apply to the HUD.
-- **Saves (DR-018, DR-047, J18):** `ants.save.v1 = {v, progress{levelId: {done, acorns, skipped}}, comicsSeen, unlocks, settings}` plus `ants.match.v1 = {levelId|setup, seed, buildId, inputLog}`. Both are try/catch guarded, with a `migrate()` chain. A corrupt save moves to `ants.save.bak`.
+- **Saves (DR-018, DR-047, J18):** `ants.save.v1 = {v, progress{levelId: {done, acorns, skipped}}, level0{p1Done, trialsUsed[], previewResult}, comicsSeen, unlocks[ids: weapons, trinkets, stickers, dances, nicknames], wardrobe{antId: {trinket, dance, nickname}}, settings}` (DR-070, DR-071) plus `ants.match.v1 = {levelId|setup, seed, buildId, inputLog}`. Both are try/catch guarded, with a `migrate()` chain. A corrupt save moves to `ants.save.bak`.
 
 **Proposed source layout (DR-010, DR-011, DR-012, DR-025):**
 ```
@@ -113,7 +113,7 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
 ## 4. Terrain
 
 - **World (DR-020):** one 960x540 screen per level. The mask is 1 cell per logical px, so 518,400 bytes. The camera never shows beyond the world.
-- **Grid (DR-021):** `TerrainGrid{w, h, cells: Uint8Array}` holds material IDs and is owned by the sim, with no canvas readback.
+- **Grid (DR-021, J25):** `TerrainGrid{w, h, cells: Uint8Array}` holds material IDs and is owned by the sim, with no canvas readback. It also has `fill(cx, cy, r, SOIL)` for the Mound Plop, which uses the same dirty-rect path.
   - `erase(cx, cy, r)` works per pixel and pushes dirty rects. `solidAt(x, y)` reads the grid.
   - Detached fragments under 60 px are deleted inside the dirty rect.
 - **Materials (DR-022, J2):**
@@ -173,13 +173,16 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
 
 - **Aim (DR-033):** −20°..+90° relative to facing. Steps are 1°/5° and 1%/5%, and touch snaps to 1°. Each ant remembers its last angle and power per weapon, and the first shot defaults to 45° and 60%.
   - The preview draws 8 dots over 0.48 s and ignores wind. Assist mode extends it to 1.0 s.
-- **Weapons (DR-002, DR-034):**
+- **Weapons (DR-002, DR-034, DR-009):**
 
 | Weapon | Damage | Blast r | Wind factor | wMul | 2P ammo | Behaviour |
 |---|---|---|---|---|---|---|
 | Seed Spitter | 30 | 28 | 0.6 | 1.15 | ∞ | explodes on first contact |
 | Dewdrop Bounce | 45 | 48 | 0.3 | 0.95 | 3 | 180-tick fuse, restitution 0.55, ≤ 3 bounces, pops on fuse or ant contact |
 | Pollen Pod | 12 × 5 | 18 | 0.8 | 1.0 | 1 | bursts at apex (if ≥ 30 px above terrain) or on impact; fan −36..+36° in 18° steps, ±4° and ±8% seeded jitter |
+| Tunnel Grub (L14, DR-009) | 40 | 30 | 0.15 | 1.0 | 1 | on hitting terrain keeps its heading with gravity off, digging r 11 × material mult per tick for 60 ticks (about 150 px); pops at tunnel end, on breaking out, or on an ant; ROCK stops it |
+| Pill Roller (L24, DR-009) | 38 | 40 | 0.5 air / 0 rolling | 0.85 | 2 | lands, then rolls along the surface (start min(200, 0.35 × landing speed), downhill 0.5·g·sinθ, decel 120·mu); one wall bounce; pops on an ant or 150 ticks after landing |
+| Mound Plop (L34, DR-009) | 6 | 34 (fill) | 0.4 | 0.9 | 2 | sticks on first contact and **fills** EMPTY/WATER within 34 px with SOIL (bridge, plug, wall); cells within 18 px of any ant stay empty |
 
 - **Damage (DR-035, J1):** `d = max(0, dist(blast, hurtbox segment) − 16)`. Damage is `round(base·lerp(1, 0.25, d/r))` when d < r, and at least 1.
   - A direct hit gives ×1.2. Damage is capped at 60 per ant per shot.
@@ -204,127 +207,137 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
 | Rest | 2, AI index L−8 | 9 / 6 + 3 pickups | silly gimmick, Seed Bundles restock |
 | Boss | boss + escorts (≤ 4 total) | 4 / 3 + Seed Bundle every 3rd round | §7 |
 
-- **Weapon unlocks (DR-052):** Seed Spitter is unlimited from L1. Dewdrop Bounce unlocks at L4, and Pollen Pod is the reward for Boss 1 (usable from L11).
+- **Weapon unlocks (DR-052, DR-009, DR-072, J23):**
+  - Seed Spitter: unlimited from L1.
+  - Dewdrop Bounce: L4.
+  - Pollen Pod: reward for Boss 1, usable from L11.
+  - **Tunnel Grub L14 · Pill Roller L24 · Mound Plop L34** (first test slot of biomes 2–4). Each unlock has a Dot card and extra ammo on its first level.
+- **Kits (DR-072):** each level fixes its own kit by level number, and rivals use the same kit and ammo. Bots never choose the Mound Plop (DR-009). Replaying an old level keeps its old kit.
+- **New-weapon ammo per slot (DR-009):** Grub/Roller/Plop are teach (or unlock level) 3/4/5, test 3/3/4, twist 2/2/4, rest 5/6/8, boss 3/3/4.
+- **Quick, rewarding start (DR-071, J26):**
+  - L1–10 take about 1.5–3 min each (about 28 min in total). TurnStart is 600 ms and skippable, and bot think time is ≤ 1.0 s.
+  - **Every clear in L1–10 gives a reward:** trinkets, sticker pages, nicknames, victory dances, plus Dewdrop at L4 and Pollen at L10. A 3-acorn clear gives a gold-shimmer variant.
+  - From L11 on, each biome gives a sticker page (L1), a dance or nickname (L5), a trinket (L9) and a boss reward (L10). The weapon unlocks at L14, L24 and L34 add to that.
+  - Everything is cosmetic: no currency, no IAP, no ads. Trinkets never recolour or cover the cap or badge.
 - **What scales (DR-050):** rival count, wind field, terrain features (1 + biome tier, max 8) and AI index. HP 100 and weapon stats stay flat.
 - **AI index (DR-050, DR-063):** the global level number. Rest levels use L − 8, and bosses use min(100, L + 5).
 - **Unlocking (DR-055):** linear, a level opens when the previous one is cleared or skipped. Acorns never gate anything. Any cleared or skipped level is replayable.
-- **Two-player (DR-057, J12):** 10 mirrored arenas (one per biome, using its wind field) plus a Random arena, all open from the start, with no boss tricks.
+- **Two-player (DR-057, DR-072, J12):** all 6 weapons from the start (with a "Starter kit only" toggle). 10 mirrored arenas (one per biome, using its wind field) plus a Random arena, all open from the start, with no boss tricks.
 
-**Level 0 "Training Grounds" (DR-058, DR-059; user edit):** offered before L1 on a new save, always skippable and replayable, with no acorns and no gating.
+**Level 0 "Training Grounds" (DR-058, DR-070; user edits):** offered before L1 on a new save. It is always skippable and replayable, gives no acorns and gates nothing.
 
-| Part | Arena | Ants | Bot | Ammo | Rules |
+| Part | Arena | Ants | Bot | Kit and ammo | Rules |
 |---|---|---|---|---|---|
-| 1 Practice | Jungle | 2 v 2 sparring Louts | AI index 0 (~11% hits) | all 3 weapons unlimited | can't lose (player ants stop at 1 HP); no timer; wind 0 → 2 → 4 → ±4; Dot tip cards; "Next" after turn 3 |
-| 2 Sneak Peek, teaser 1 | The Trail (B4) | 1 v 1 (rival 40 HP) | AI index 90, Seed only | unlimited | strong steady wind 4; ≤ 2 rounds |
-| 2 Sneak Peek, teaser 2 | Living Room (B8) | 1 v 1 (rival 40 HP) | AI index 90, Seed only | unlimited | oscillating fan, cushions; ≤ 2 rounds |
-| 2 Sneak Peek, teaser 3 | The Kitchen (B10) | 1 v 1 (rival 40 HP) | AI index 90, Seed only | unlimited | slick tiles; hood cue in round 1, fires in round 2; Gloria watches from the background |
+| 1 Practice | Jungle (with a HARD stump, a slope and a gap) | 2 v 2 sparring Louts (pop back up at 50 HP) | AI index 0 (~11% hits) | Seed, Dewdrop, Pollen unlimited | can't lose (player ants stop at 1 HP); no timer; wind 0 → 2 → 4 → ±4; Dot tip cards; "Next" after turn 3 |
+| 1 Sneak Shot | same | same | same | **1 trial shot each:** Tunnel Grub, Pill Roller, Mound Plop (greyed chips: "Unlocks at Level 14 / 24 / 34") | offered by a Dot card after turn 3; trials unlock nothing |
+| 2 Level 70 Preview | Porch test layout (L64), door shut, gust capped at 3, no Lady Latch | 3 v 2 "Porch Scouts" (**rivals 60 HP**) | **AI index 70 (~80% hits)**, same kit | all 6: Seed ∞, Dew 4, Pollen 3, Grub 3, Roller 3, Plop 4; Honey Drop at round 4 | **one attempt** (no Restart); 45 s timer; dew from round 10; about 4 min |
 
-- Each teaser is followed by a 1.5 s card ("You'll get here around Level N!"), and the run ends on "That's what's ahead. Ready?", which leads to L1. The player cannot be knocked out in any teaser: the bot can deal at most 72 damage.
+- Win card: "You beat a Level 70 bot!", with the reward **Brass Doorknob Pin** trinket. Lose card: "Dizzy! That is as tough as the Porch gets.", with the reward **Brave Scout** sticker. Both lead to L1. Replays give no second reward (DR-070).
 
-**All 100 levels** (generated from the rules above; ★ = teach; ammo "—" = weapon not unlocked yet):
+**All 100 levels** (generated from the rules above; ★ = teach; ammo is Dewdrop/Pollen/Grub/Roller/Plop with Seed always ∞; "—" = not unlocked yet):
 
-| Lvl | Biome | Slot | Ants (you v rivals) | AI index | Ammo Dew/Pollen | Focus | Par |
+| Lvl | Biome | Slot | Ants (you v rivals) | AI index | Ammo Dew/Pol/Grub/Roll/Plop | Focus | Par |
 |---|---|---|---|---|---|---|---|
-| 1 | 1 Jungle Home | teach ★ | 2 v 1 | 1 | —/— | intro: wind gauge and Seed Spitter (tutorial) | 4 |
-| 2 | 1 Jungle Home | teach ★ | 2 v 1 | 2 | —/— | practice: wind gauge, tearing leaf bridges | 4 |
-| 3 | 1 Jungle Home | teach ★ | 2 v 2 | 3 | —/— | combine with basics: wind gauge, tearing leaf bridges | 6 |
-| 4 | 1 Jungle Home | test | 2 v 2 | 4 | 4/— | test: wind gauge, tearing leaf bridges · **Dewdrop Bounce unlocks** | 6 |
-| 5 | 1 Jungle Home | test | 2 v 2 | 5 | 4/— | test: wind gauge, tearing leaf bridges | 6 |
-| 6 | 1 Jungle Home | test | 2 v 2 | 6 | 4/— | test: wind gauge, tearing leaf bridges | 6 |
-| 7 | 1 Jungle Home | twist | 2 v 2 | 7 | 3/— | twist: wind gauge + one mid-level wind flip (preview of B2) | 6 |
-| 8 | 1 Jungle Home | twist | 2 v 2 | 8 | 3/— | twist: wind gauge + one mid-level wind flip (preview of B2) | 6 |
-| 9 | 1 Jungle Home | rest | 2 v 2 | 1 (L−8) | 9/— | rest: coconut crates fall from the sky | 6 |
-| 10 | 1 Jungle Home | boss | 2 v boss + 1 | 15 (L+5) | 4/— | **Boss: Big Mama Leafy** (300 HP) | 14 |
-| 11 | 2 The Clearing | teach ★ | 2 v 2 | 11 | 5/3 | intro: sawdust mega-craters, hollow-log tunnels · **Pollen Pod unlocks** | 6 |
-| 12 | 2 The Clearing | teach ★ | 2 v 2 | 12 | 5/3 | practice: sawdust mega-craters, hollow-log tunnels | 6 |
-| 13 | 2 The Clearing | teach ★ | 2 v 2 | 13 | 5/3 | combine with basics: sawdust mega-craters, hollow-log tunnels | 6 |
-| 14 | 2 The Clearing | test | 2 v 3 | 14 | 4/3 | test: sawdust mega-craters, hollow-log tunnels | 8 |
-| 15 | 2 The Clearing | test | 2 v 3 | 15 | 4/3 | test: sawdust mega-craters, hollow-log tunnels | 8 |
-| 16 | 2 The Clearing | test | 2 v 3 | 16 | 4/3 | test: sawdust mega-craters, hollow-log tunnels | 8 |
-| 17 | 2 The Clearing | twist | 2 v 3 | 17 | 3/2 | twist: sawdust mega-craters + tearing log bridge (B1) | 8 |
-| 18 | 2 The Clearing | twist | 2 v 3 | 18 | 3/2 | twist: sawdust mega-craters + tearing log bridge (B1) | 8 |
-| 19 | 2 The Clearing | rest | 2 v 2 | 11 (L−8) | 9/6 | rest: sawdust slide | 6 |
-| 20 | 2 The Clearing | boss | 2 v boss + 1 | 25 (L+5) | 4/3 | **Boss: Foreman Chip** (330 HP) | 14 |
-| 21 | 3 The Camp | teach ★ | 3 v 2 | 21 | 5/3 | intro: bouncy tent canvas, springy marshmallow, smoke updraft | 6 |
-| 22 | 3 The Camp | teach ★ | 3 v 2 | 22 | 5/3 | practice: bouncy tent canvas, springy marshmallow, smoke updraft | 6 |
-| 23 | 3 The Camp | teach ★ | 3 v 3 | 23 | 5/3 | combine with basics: bouncy tent canvas, springy marshmallow, smoke updraft | 8 |
-| 24 | 3 The Camp | test | 3 v 3 | 24 | 4/3 | test: bouncy tent canvas, springy marshmallow, smoke updraft | 8 |
-| 25 | 3 The Camp | test | 3 v 3 | 25 | 4/3 | test: bouncy tent canvas, springy marshmallow, smoke updraft | 8 |
-| 26 | 3 The Camp | test | 3 v 3 | 26 | 4/3 | test: bouncy tent canvas, springy marshmallow, smoke updraft | 8 |
-| 27 | 3 The Camp | twist | 3 v 3 | 27 | 3/2 | twist: bouncy tent canvas + soft sawdust piles (B2) | 8 |
-| 28 | 3 The Camp | twist | 3 v 3 | 28 | 3/2 | twist: bouncy tent canvas + soft sawdust piles (B2) | 8 |
-| 29 | 3 The Camp | rest | 3 v 2 | 21 (L−8) | 9/6 | rest: marshmallow trampoline park | 6 |
-| 30 | 3 The Camp | boss | 3 v boss + 2 | 35 (L+5) | 4/3 | **Boss: Captain S'more** (360 HP) | 14 |
-| 31 | 4 The Trail | teach ★ | 3 v 3 | 31 | 5/3 | intro: puddles (swim back, lose a turn), rock pebbles | 8 |
-| 32 | 4 The Trail | teach ★ | 3 v 3 | 32 | 5/3 | practice: puddles (swim back, lose a turn), rock pebbles | 8 |
-| 33 | 4 The Trail | teach ★ | 3 v 3 | 33 | 5/3 | combine with basics: puddles (swim back, lose a turn), rock pebbles | 8 |
-| 34 | 4 The Trail | test | 3 v 3 | 34 | 4/3 | test: puddles (swim back, lose a turn), rock pebbles | 8 |
-| 35 | 4 The Trail | test | 3 v 3 | 35 | 4/3 | test: puddles (swim back, lose a turn), rock pebbles | 8 |
-| 36 | 4 The Trail | test | 3 v 3 | 36 | 4/3 | test: puddles (swim back, lose a turn), rock pebbles | 8 |
-| 37 | 4 The Trail | twist | 3 v 3 | 37 | 3/2 | twist: puddles (swim back + bouncy ramps (B3) | 8 |
-| 38 | 4 The Trail | twist | 3 v 3 | 38 | 3/2 | twist: puddles (swim back + bouncy ramps (B3) | 8 |
-| 39 | 4 The Trail | rest | 3 v 2 | 31 (L−8) | 9/6 | rest: pebble bowling | 6 |
-| 40 | 4 The Trail | boss | 3 v boss + 2 | 45 (L+5) | 4/3 | **Boss: Sergeant Gravel** (390 HP) | 14 |
-| 41 | 5 Village Garden | teach ★ | 3 v 3 | 41 | 5/3 | intro: swirling wind with sunflower preview | 8 |
-| 42 | 5 Village Garden | teach ★ | 3 v 3 | 42 | 5/3 | practice: swirling wind with sunflower preview | 8 |
-| 43 | 5 Village Garden | teach ★ | 3 v 3 | 43 | 5/3 | combine with basics: swirling wind with sunflower preview | 8 |
-| 44 | 5 Village Garden | test | 3 v 4 | 44 | 4/3 | test: swirling wind with sunflower preview | 10 |
-| 45 | 5 Village Garden | test | 3 v 4 | 45 | 4/3 | test: swirling wind with sunflower preview | 10 |
-| 46 | 5 Village Garden | test | 3 v 4 | 46 | 4/3 | test: swirling wind with sunflower preview | 10 |
-| 47 | 5 Village Garden | twist | 3 v 4 | 47 | 3/2 | twist: swirling wind with sunflower preview + puddle rain (B4) | 10 |
-| 48 | 5 Village Garden | twist | 3 v 4 | 48 | 3/2 | twist: swirling wind with sunflower preview + puddle rain (B4) | 10 |
-| 49 | 5 Village Garden | rest | 3 v 2 | 41 (L−8) | 9/6 | rest: vegetable piñatas | 6 |
-| 50 | 5 Village Garden | boss | 3 v boss + 2 | 55 (L+5) | 4/3 | **Boss: Rancher Rosa** (420 HP) | 14 |
-| 51 | 6 Picnic Park | teach ★ | 4 v 3 | 51 | 5/3 | intro: kite gusts, bread and crust layers, jelly bounce | 8 |
-| 52 | 6 Picnic Park | teach ★ | 4 v 3 | 52 | 5/3 | practice: kite gusts, bread and crust layers, jelly bounce | 8 |
-| 53 | 6 Picnic Park | teach ★ | 4 v 4 | 53 | 5/3 | combine with basics: kite gusts, bread and crust layers, jelly bounce | 10 |
-| 54 | 6 Picnic Park | test | 4 v 4 | 54 | 4/3 | test: kite gusts, bread and crust layers, jelly bounce | 10 |
-| 55 | 6 Picnic Park | test | 4 v 4 | 55 | 4/3 | test: kite gusts, bread and crust layers, jelly bounce | 10 |
-| 56 | 6 Picnic Park | test | 4 v 4 | 56 | 4/3 | test: kite gusts, bread and crust layers, jelly bounce | 10 |
-| 57 | 6 Picnic Park | twist | 4 v 4 | 57 | 3/2 | twist: kite gusts + rotating wind (B5) | 10 |
-| 58 | 6 Picnic Park | twist | 4 v 4 | 58 | 3/2 | twist: kite gusts + rotating wind (B5) | 10 |
-| 59 | 6 Picnic Park | rest | 4 v 2 | 51 (L−8) | 9/6 | rest: jelly bounce arena | 6 |
-| 60 | 6 Picnic Park | boss | 4 v boss + 2 | 65 (L+5) | 4/3 | **Boss: Duke of Crumbs** (450 HP) | 14 |
-| 61 | 7 The Porch | teach ★ | 4 v 3 | 61 | 5/3 | intro: door-creak gust, plank gaps | 8 |
-| 62 | 7 The Porch | teach ★ | 4 v 3 | 62 | 5/3 | practice: door-creak gust, plank gaps | 8 |
-| 63 | 7 The Porch | teach ★ | 4 v 4 | 63 | 5/3 | combine with basics: door-creak gust, plank gaps | 10 |
-| 64 | 7 The Porch | test | 4 v 4 | 64 | 4/3 | test: door-creak gust, plank gaps | 10 |
-| 65 | 7 The Porch | test | 4 v 4 | 65 | 4/3 | test: door-creak gust, plank gaps | 10 |
-| 66 | 7 The Porch | test | 4 v 4 | 66 | 4/3 | test: door-creak gust, plank gaps | 10 |
-| 67 | 7 The Porch | twist | 4 v 4 | 67 | 3/2 | twist: door-creak gust + jelly bounce (B6) | 10 |
-| 68 | 7 The Porch | twist | 4 v 4 | 68 | 3/2 | twist: door-creak gust + jelly bounce (B6) | 10 |
-| 69 | 7 The Porch | rest | 4 v 2 | 61 (L−8) | 9/6 | rest: mat trampoline | 6 |
-| 70 | 7 The Porch | boss | 4 v boss + 3 | 75 (L+5) | 4/3 | **Boss: Lady Latch** (480 HP) | 14 |
-| 71 | 8 Living Room | teach ★ | 4 v 4 | 71 | 5/3 | intro: oscillating fan, cushions absorb blasts | 10 |
-| 72 | 8 Living Room | teach ★ | 4 v 4 | 72 | 5/3 | practice: oscillating fan, cushions absorb blasts | 10 |
-| 73 | 8 Living Room | teach ★ | 4 v 4 | 73 | 5/3 | combine with basics: oscillating fan, cushions absorb blasts | 10 |
-| 74 | 8 Living Room | test | 4 v 4 | 74 | 4/3 | test: oscillating fan, cushions absorb blasts | 10 |
-| 75 | 8 Living Room | test | 4 v 4 | 75 | 4/3 | test: oscillating fan, cushions absorb blasts | 10 |
-| 76 | 8 Living Room | test | 4 v 4 | 76 | 4/3 | test: oscillating fan, cushions absorb blasts | 10 |
-| 77 | 8 Living Room | twist | 4 v 4 | 77 | 3/2 | twist: oscillating fan + door gust (B7) | 10 |
-| 78 | 8 Living Room | twist | 4 v 4 | 78 | 3/2 | twist: oscillating fan + door gust (B7) | 10 |
-| 79 | 8 Living Room | rest | 4 v 2 | 71 (L−8) | 9/6 | rest: toy-block tower | 6 |
-| 80 | 8 Living Room | boss | 4 v boss + 3 | 85 (L+5) | 4/3 | **Boss: The Sofa Sultan** (510 HP) | 14 |
-| 81 | 9 The Pantry | teach ★ | 4 v 4 | 81 | 5/3 | intro: vent draft, flour clouds, sugar dunes | 10 |
-| 82 | 9 The Pantry | teach ★ | 4 v 4 | 82 | 5/3 | practice: vent draft, flour clouds, sugar dunes | 10 |
-| 83 | 9 The Pantry | teach ★ | 4 v 4 | 83 | 5/3 | combine with basics: vent draft, flour clouds, sugar dunes | 10 |
-| 84 | 9 The Pantry | test | 4 v 4 | 84 | 4/3 | test: vent draft, flour clouds, sugar dunes | 10 |
-| 85 | 9 The Pantry | test | 4 v 4 | 85 | 4/3 | test: vent draft, flour clouds, sugar dunes | 10 |
-| 86 | 9 The Pantry | test | 4 v 4 | 86 | 4/3 | test: vent draft, flour clouds, sugar dunes | 10 |
-| 87 | 9 The Pantry | twist | 4 v 4 | 87 | 3/2 | twist: vent draft + rotating vent (B5) | 10 |
-| 88 | 9 The Pantry | twist | 4 v 4 | 88 | 3/2 | twist: vent draft + rotating vent (B5) | 10 |
-| 89 | 9 The Pantry | rest | 4 v 2 | 81 (L−8) | 9/6 | rest: sugar rush | 6 |
-| 90 | 9 The Pantry | boss | 4 v boss + 3 | 95 (L+5) | 4/3 | **Boss: The Sugar Baron** (540 HP) | 14 |
-| 91 | 10 The Kitchen | teach ★ | 4 v 4 | 91 | 5/3 | intro: slick tiles, toaster pop-up, hood and fridge | 10 |
-| 92 | 10 The Kitchen | teach ★ | 4 v 4 | 92 | 5/3 | practice: slick tiles, toaster pop-up, hood and fridge | 10 |
-| 93 | 10 The Kitchen | teach ★ | 4 v 4 | 93 | 5/3 | combine with basics: slick tiles, toaster pop-up, hood and fridge | 10 |
-| 94 | 10 The Kitchen | test | 4 v 4 | 94 | 4/3 | test: slick tiles, toaster pop-up, hood and fridge | 10 |
-| 95 | 10 The Kitchen | test | 4 v 4 | 95 | 4/3 | test: slick tiles, toaster pop-up, hood and fridge | 10 |
-| 96 | 10 The Kitchen | test | 4 v 4 | 96 | 4/3 | test: slick tiles, toaster pop-up, hood and fridge | 10 |
-| 97 | 10 The Kitchen | twist | 4 v 4 | 97 | 3/2 | twist: slick tiles + fan sweeps (B8) | 10 |
-| 98 | 10 The Kitchen | twist | 4 v 4 | 98 | 3/2 | twist: slick tiles + fan sweeps (B8) | 10 |
-| 99 | 10 The Kitchen | rest | 4 v 2 | 91 (L−8) | 9/6 | rest: cake-slice buffet | 6 |
-| 100 | 10 The Kitchen | boss | 4 v boss + 2 | 100 (L+5) | 4/3 | **Boss: Queen Gloria Glaze** (600 HP) | 14 |
+| 1 | 1 Jungle Home | teach ★ | 2 v 1 | 1 | —/—/—/—/— | intro: wind gauge and Seed Spitter (tutorial) · reward: Leaf Feather trinket | 4 |
+| 2 | 1 Jungle Home | teach ★ | 2 v 1 | 2 | —/—/—/—/— | practice: wind gauge, tearing leaf bridges · reward: sticker page 1 | 4 |
+| 3 | 1 Jungle Home | teach ★ | 2 v 2 | 3 | —/—/—/—/— | combine with basics: wind gauge, tearing leaf bridges · reward: ant nicknames | 6 |
+| 4 | 1 Jungle Home | test | 2 v 2 | 4 | 4/—/—/—/— | test: wind gauge, tearing leaf bridges · **Dewdrop Bounce unlocks** | 6 |
+| 5 | 1 Jungle Home | test | 2 v 2 | 5 | 4/—/—/—/— | test: wind gauge, tearing leaf bridges · reward: Wiggle dance | 6 |
+| 6 | 1 Jungle Home | test | 2 v 2 | 6 | 4/—/—/—/— | test: wind gauge, tearing leaf bridges · reward: Seed Pin trinket | 6 |
+| 7 | 1 Jungle Home | twist | 2 v 2 | 7 | 3/—/—/—/— | twist: wind gauge + one mid-level wind flip (preview of B2) · reward: sticker page 2 | 6 |
+| 8 | 1 Jungle Home | twist | 2 v 2 | 8 | 3/—/—/—/— | twist: wind gauge + one mid-level wind flip (preview of B2) · reward: Spin dance | 6 |
+| 9 | 1 Jungle Home | rest | 2 v 2 | 1 (L−8) | 9/—/—/—/— | rest: coconut crates fall from the sky · reward: Coconut Charm trinket | 6 |
+| 10 | 1 Jungle Home | boss | 2 v boss + 1 | 15 (L+5) | 4/—/—/—/— | **Boss: Big Mama Leafy** (300 HP) · reward: **Pollen Pod** + sticker page 3 | 14 |
+| 11 | 2 The Clearing | teach ★ | 2 v 2 | 11 | 5/3/—/—/— | intro: sawdust mega-craters, hollow-log tunnels · Pollen Pod in kit | 6 |
+| 12 | 2 The Clearing | teach ★ | 2 v 2 | 12 | 5/3/—/—/— | practice: sawdust mega-craters, hollow-log tunnels | 6 |
+| 13 | 2 The Clearing | teach ★ | 2 v 2 | 13 | 5/3/—/—/— | combine with basics: sawdust mega-craters, hollow-log tunnels | 6 |
+| 14 | 2 The Clearing | test | 2 v 3 | 14 | 4/3/3/—/— | test: sawdust mega-craters, hollow-log tunnels · **Tunnel Grub unlocks** | 8 |
+| 15 | 2 The Clearing | test | 2 v 3 | 15 | 4/3/3/—/— | test: sawdust mega-craters, hollow-log tunnels | 8 |
+| 16 | 2 The Clearing | test | 2 v 3 | 16 | 4/3/3/—/— | test: sawdust mega-craters, hollow-log tunnels | 8 |
+| 17 | 2 The Clearing | twist | 2 v 3 | 17 | 3/2/2/—/— | twist: sawdust mega-craters + tearing log bridge (B1) | 8 |
+| 18 | 2 The Clearing | twist | 2 v 3 | 18 | 3/2/2/—/— | twist: sawdust mega-craters + tearing log bridge (B1) | 8 |
+| 19 | 2 The Clearing | rest | 2 v 2 | 11 (L−8) | 9/6/5/—/— | rest: sawdust slide | 6 |
+| 20 | 2 The Clearing | boss | 2 v boss + 1 | 25 (L+5) | 4/3/3/—/— | **Boss: Foreman Chip** (330 HP) · reward: big trinket or dance | 14 |
+| 21 | 3 The Camp | teach ★ | 3 v 2 | 21 | 5/3/3/—/— | intro: bouncy tent canvas, springy marshmallow, smoke updraft | 6 |
+| 22 | 3 The Camp | teach ★ | 3 v 2 | 22 | 5/3/3/—/— | practice: bouncy tent canvas, springy marshmallow, smoke updraft | 6 |
+| 23 | 3 The Camp | teach ★ | 3 v 3 | 23 | 5/3/3/—/— | combine with basics: bouncy tent canvas, springy marshmallow, smoke updraft | 8 |
+| 24 | 3 The Camp | test | 3 v 3 | 24 | 4/3/3/4/— | test: bouncy tent canvas, springy marshmallow, smoke updraft · **Pill Roller unlocks** | 8 |
+| 25 | 3 The Camp | test | 3 v 3 | 25 | 4/3/3/3/— | test: bouncy tent canvas, springy marshmallow, smoke updraft | 8 |
+| 26 | 3 The Camp | test | 3 v 3 | 26 | 4/3/3/3/— | test: bouncy tent canvas, springy marshmallow, smoke updraft | 8 |
+| 27 | 3 The Camp | twist | 3 v 3 | 27 | 3/2/2/2/— | twist: bouncy tent canvas + soft sawdust piles (B2) | 8 |
+| 28 | 3 The Camp | twist | 3 v 3 | 28 | 3/2/2/2/— | twist: bouncy tent canvas + soft sawdust piles (B2) | 8 |
+| 29 | 3 The Camp | rest | 3 v 2 | 21 (L−8) | 9/6/5/6/— | rest: marshmallow trampoline park | 6 |
+| 30 | 3 The Camp | boss | 3 v boss + 2 | 35 (L+5) | 4/3/3/3/— | **Boss: Captain S'more** (360 HP) | 14 |
+| 31 | 4 The Trail | teach ★ | 3 v 3 | 31 | 5/3/3/4/— | intro: puddles (swim back, lose a turn), rock pebbles | 8 |
+| 32 | 4 The Trail | teach ★ | 3 v 3 | 32 | 5/3/3/4/— | practice: puddles (swim back, lose a turn), rock pebbles | 8 |
+| 33 | 4 The Trail | teach ★ | 3 v 3 | 33 | 5/3/3/4/— | combine with basics: puddles (swim back, lose a turn), rock pebbles | 8 |
+| 34 | 4 The Trail | test | 3 v 3 | 34 | 4/3/3/3/5 | test: puddles (swim back, lose a turn), rock pebbles · **Mound Plop unlocks** | 8 |
+| 35 | 4 The Trail | test | 3 v 3 | 35 | 4/3/3/3/4 | test: puddles (swim back, lose a turn), rock pebbles | 8 |
+| 36 | 4 The Trail | test | 3 v 3 | 36 | 4/3/3/3/4 | test: puddles (swim back, lose a turn), rock pebbles | 8 |
+| 37 | 4 The Trail | twist | 3 v 3 | 37 | 3/2/2/2/4 | twist: puddles (swim back + bouncy ramps (B3) | 8 |
+| 38 | 4 The Trail | twist | 3 v 3 | 38 | 3/2/2/2/4 | twist: puddles (swim back + bouncy ramps (B3) | 8 |
+| 39 | 4 The Trail | rest | 3 v 2 | 31 (L−8) | 9/6/5/6/8 | rest: pebble bowling | 6 |
+| 40 | 4 The Trail | boss | 3 v boss + 2 | 45 (L+5) | 4/3/3/3/4 | **Boss: Sergeant Gravel** (390 HP) · reward: big trinket or dance | 14 |
+| 41 | 5 Village Garden | teach ★ | 3 v 3 | 41 | 5/3/3/4/5 | intro: swirling wind with sunflower preview | 8 |
+| 42 | 5 Village Garden | teach ★ | 3 v 3 | 42 | 5/3/3/4/5 | practice: swirling wind with sunflower preview | 8 |
+| 43 | 5 Village Garden | teach ★ | 3 v 3 | 43 | 5/3/3/4/5 | combine with basics: swirling wind with sunflower preview | 8 |
+| 44 | 5 Village Garden | test | 3 v 4 | 44 | 4/3/3/3/4 | test: swirling wind with sunflower preview | 10 |
+| 45 | 5 Village Garden | test | 3 v 4 | 45 | 4/3/3/3/4 | test: swirling wind with sunflower preview | 10 |
+| 46 | 5 Village Garden | test | 3 v 4 | 46 | 4/3/3/3/4 | test: swirling wind with sunflower preview | 10 |
+| 47 | 5 Village Garden | twist | 3 v 4 | 47 | 3/2/2/2/4 | twist: swirling wind with sunflower preview + puddle rain (B4) | 10 |
+| 48 | 5 Village Garden | twist | 3 v 4 | 48 | 3/2/2/2/4 | twist: swirling wind with sunflower preview + puddle rain (B4) | 10 |
+| 49 | 5 Village Garden | rest | 3 v 2 | 41 (L−8) | 9/6/5/6/8 | rest: vegetable piñatas | 6 |
+| 50 | 5 Village Garden | boss | 3 v boss + 2 | 55 (L+5) | 4/3/3/3/4 | **Boss: Rancher Rosa** (420 HP) | 14 |
+| 51 | 6 Picnic Park | teach ★ | 4 v 3 | 51 | 5/3/3/4/5 | intro: kite gusts, bread and crust layers, jelly bounce | 8 |
+| 52 | 6 Picnic Park | teach ★ | 4 v 3 | 52 | 5/3/3/4/5 | practice: kite gusts, bread and crust layers, jelly bounce | 8 |
+| 53 | 6 Picnic Park | teach ★ | 4 v 4 | 53 | 5/3/3/4/5 | combine with basics: kite gusts, bread and crust layers, jelly bounce | 10 |
+| 54 | 6 Picnic Park | test | 4 v 4 | 54 | 4/3/3/3/4 | test: kite gusts, bread and crust layers, jelly bounce | 10 |
+| 55 | 6 Picnic Park | test | 4 v 4 | 55 | 4/3/3/3/4 | test: kite gusts, bread and crust layers, jelly bounce | 10 |
+| 56 | 6 Picnic Park | test | 4 v 4 | 56 | 4/3/3/3/4 | test: kite gusts, bread and crust layers, jelly bounce | 10 |
+| 57 | 6 Picnic Park | twist | 4 v 4 | 57 | 3/2/2/2/4 | twist: kite gusts + rotating wind (B5) | 10 |
+| 58 | 6 Picnic Park | twist | 4 v 4 | 58 | 3/2/2/2/4 | twist: kite gusts + rotating wind (B5) | 10 |
+| 59 | 6 Picnic Park | rest | 4 v 2 | 51 (L−8) | 9/6/5/6/8 | rest: jelly bounce arena | 6 |
+| 60 | 6 Picnic Park | boss | 4 v boss + 2 | 65 (L+5) | 4/3/3/3/4 | **Boss: Duke of Crumbs** (450 HP) · reward: big trinket or dance | 14 |
+| 61 | 7 The Porch | teach ★ | 4 v 3 | 61 | 5/3/3/4/5 | intro: door-creak gust, plank gaps | 8 |
+| 62 | 7 The Porch | teach ★ | 4 v 3 | 62 | 5/3/3/4/5 | practice: door-creak gust, plank gaps | 8 |
+| 63 | 7 The Porch | teach ★ | 4 v 4 | 63 | 5/3/3/4/5 | combine with basics: door-creak gust, plank gaps | 10 |
+| 64 | 7 The Porch | test | 4 v 4 | 64 | 4/3/3/3/4 | test: door-creak gust, plank gaps | 10 |
+| 65 | 7 The Porch | test | 4 v 4 | 65 | 4/3/3/3/4 | test: door-creak gust, plank gaps | 10 |
+| 66 | 7 The Porch | test | 4 v 4 | 66 | 4/3/3/3/4 | test: door-creak gust, plank gaps | 10 |
+| 67 | 7 The Porch | twist | 4 v 4 | 67 | 3/2/2/2/4 | twist: door-creak gust + jelly bounce (B6) | 10 |
+| 68 | 7 The Porch | twist | 4 v 4 | 68 | 3/2/2/2/4 | twist: door-creak gust + jelly bounce (B6) | 10 |
+| 69 | 7 The Porch | rest | 4 v 2 | 61 (L−8) | 9/6/5/6/8 | rest: mat trampoline | 6 |
+| 70 | 7 The Porch | boss | 4 v boss + 3 | 75 (L+5) | 4/3/3/3/4 | **Boss: Lady Latch** (480 HP) | 14 |
+| 71 | 8 Living Room | teach ★ | 4 v 4 | 71 | 5/3/3/4/5 | intro: oscillating fan, cushions absorb blasts | 10 |
+| 72 | 8 Living Room | teach ★ | 4 v 4 | 72 | 5/3/3/4/5 | practice: oscillating fan, cushions absorb blasts | 10 |
+| 73 | 8 Living Room | teach ★ | 4 v 4 | 73 | 5/3/3/4/5 | combine with basics: oscillating fan, cushions absorb blasts | 10 |
+| 74 | 8 Living Room | test | 4 v 4 | 74 | 4/3/3/3/4 | test: oscillating fan, cushions absorb blasts | 10 |
+| 75 | 8 Living Room | test | 4 v 4 | 75 | 4/3/3/3/4 | test: oscillating fan, cushions absorb blasts | 10 |
+| 76 | 8 Living Room | test | 4 v 4 | 76 | 4/3/3/3/4 | test: oscillating fan, cushions absorb blasts | 10 |
+| 77 | 8 Living Room | twist | 4 v 4 | 77 | 3/2/2/2/4 | twist: oscillating fan + door gust (B7) | 10 |
+| 78 | 8 Living Room | twist | 4 v 4 | 78 | 3/2/2/2/4 | twist: oscillating fan + door gust (B7) | 10 |
+| 79 | 8 Living Room | rest | 4 v 2 | 71 (L−8) | 9/6/5/6/8 | rest: toy-block tower | 6 |
+| 80 | 8 Living Room | boss | 4 v boss + 3 | 85 (L+5) | 4/3/3/3/4 | **Boss: The Sofa Sultan** (510 HP) | 14 |
+| 81 | 9 The Pantry | teach ★ | 4 v 4 | 81 | 5/3/3/4/5 | intro: vent draft, flour clouds, sugar dunes | 10 |
+| 82 | 9 The Pantry | teach ★ | 4 v 4 | 82 | 5/3/3/4/5 | practice: vent draft, flour clouds, sugar dunes | 10 |
+| 83 | 9 The Pantry | teach ★ | 4 v 4 | 83 | 5/3/3/4/5 | combine with basics: vent draft, flour clouds, sugar dunes | 10 |
+| 84 | 9 The Pantry | test | 4 v 4 | 84 | 4/3/3/3/4 | test: vent draft, flour clouds, sugar dunes | 10 |
+| 85 | 9 The Pantry | test | 4 v 4 | 85 | 4/3/3/3/4 | test: vent draft, flour clouds, sugar dunes | 10 |
+| 86 | 9 The Pantry | test | 4 v 4 | 86 | 4/3/3/3/4 | test: vent draft, flour clouds, sugar dunes | 10 |
+| 87 | 9 The Pantry | twist | 4 v 4 | 87 | 3/2/2/2/4 | twist: vent draft + rotating vent (B5) | 10 |
+| 88 | 9 The Pantry | twist | 4 v 4 | 88 | 3/2/2/2/4 | twist: vent draft + rotating vent (B5) | 10 |
+| 89 | 9 The Pantry | rest | 4 v 2 | 81 (L−8) | 9/6/5/6/8 | rest: sugar rush | 6 |
+| 90 | 9 The Pantry | boss | 4 v boss + 3 | 95 (L+5) | 4/3/3/3/4 | **Boss: The Sugar Baron** (540 HP) | 14 |
+| 91 | 10 The Kitchen | teach ★ | 4 v 4 | 91 | 5/3/3/4/5 | intro: slick tiles, toaster pop-up, hood and fridge | 10 |
+| 92 | 10 The Kitchen | teach ★ | 4 v 4 | 92 | 5/3/3/4/5 | practice: slick tiles, toaster pop-up, hood and fridge | 10 |
+| 93 | 10 The Kitchen | teach ★ | 4 v 4 | 93 | 5/3/3/4/5 | combine with basics: slick tiles, toaster pop-up, hood and fridge | 10 |
+| 94 | 10 The Kitchen | test | 4 v 4 | 94 | 4/3/3/3/4 | test: slick tiles, toaster pop-up, hood and fridge | 10 |
+| 95 | 10 The Kitchen | test | 4 v 4 | 95 | 4/3/3/3/4 | test: slick tiles, toaster pop-up, hood and fridge | 10 |
+| 96 | 10 The Kitchen | test | 4 v 4 | 96 | 4/3/3/3/4 | test: slick tiles, toaster pop-up, hood and fridge | 10 |
+| 97 | 10 The Kitchen | twist | 4 v 4 | 97 | 3/2/2/2/4 | twist: slick tiles + fan sweeps (B8) | 10 |
+| 98 | 10 The Kitchen | twist | 4 v 4 | 98 | 3/2/2/2/4 | twist: slick tiles + fan sweeps (B8) | 10 |
+| 99 | 10 The Kitchen | rest | 4 v 2 | 91 (L−8) | 9/6/5/6/8 | rest: cake-slice buffet | 6 |
+| 100 | 10 The Kitchen | boss | 4 v boss + 2 | 100 (L+5) | 4/3/3/3/4 | **Boss: Queen Gloria Glaze** (600 HP) | 14 |
 
 ## 7. Bosses
 
@@ -385,9 +398,12 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
   "pickups": [],
   "objectives": [ { "type": "eliminate" } ],
   "par": 8, "timer": 30, "comic": null,
+  "kit": ["seed", "dewdrop", "pollen", "grub", "roller", "plop"], "reward": null,
+  "teamHp": null, "maxAttempts": null,
   "boss": null
 }
 ```
+- `kit`, `reward`, `teamHp` (Level 0 only) and `maxAttempts` come from DR-070 to DR-072.
 - **Boss levels** add `"boss": {hp, phases, loop, trick, cue, cluster, escorts}`.
 - `size` is asserted to be `[960, 540]` in v1 (DR-020).
 
@@ -424,7 +440,8 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
 - **Cap (DR-064):** the floor applies at L ≥ 90 and is never reduced. There are no scripted misses.
   - Band: suite average 0.93–0.97. The 700 px bucket must be ≥ 0.80 (calibrated 0.89).
   - The cap depends on angle: flat 30° shots land about 90%. That is why the solver tie-break exists.
-- **Readability (DR-066):** think time is 1.8 s at L1, falling to 0.8 s at L100. The aim wobble has amplitude 3·σ_a (≤ 12°) and settles exactly on the fired values. It is cosmetic only.
+- **New weapons (DR-009):** the Roller gets an extra ±2% power refine, because landing is not monotonic on slopes. The bot never picks the Plop. With 5 or more weapons, each gets ≤ 120 sims, so the 1,200 cap holds.
+- **Readability (DR-066, DR-071):** think time is 1.8 s at L1, falling to 0.8 s at L100, and capped at 1.0 s through L10. The aim wobble has amplitude 3·σ_a (≤ 12°) and settles exactly on the fired values. It is cosmetic only.
 - **Anti-frustration (DR-067), L1–20 only:** after a bot shot that did ≥ 50 damage, or a hit when the player has ≤ 1 ant left, the next turn's σ_p, σ_a and B are multiplied by 1.5 ("rattled").
 - **How the calibration was done:** the planner ran a Python Monte-Carlo (g 600, K 25, Seed wMul 1.15, 60 Hz with 2 px steps, the DR-027 capsule, flat ground with ±60 px plateaus). Stage 2 of the build refits the constants against the real sim, logged as `DR-063 tuning` lines.
 
@@ -440,7 +457,7 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
 | `damage.test.ts` | falloff, direct ×1.2, cap 60, self ×0.5 never lethal, fall damage | DR-035, DR-026 |
 | `turn.test.ts` | FSM order, timer skip, settle rule, 12 s cap, sudden death, win/draw | DR-042, DR-043, DR-044, DR-038 |
 | `replay.test.ts` | seed + input log re-simulates to an identical state hash | DR-011, DR-047 |
-| `levels.test.ts` | all 114 levels (Level 0 practice + 3 teasers, 100 campaign, 10 arenas) pass the validator and checksums | DR-025, DR-056, DR-058, DR-059 |
+| `levels.test.ts` | all 112 levels (Level 0 practice and preview, 100 campaign, 10 arenas) pass the validator and checksums, and each level's kit is deterministic | DR-025, DR-056, DR-058, DR-070, DR-072 |
 | **`ai-cap.test.ts`** | **the bot cap; spec below** | **DR-065** |
 
 **`tests/ai-cap.test.ts` (DR-065):**
@@ -456,6 +473,7 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
   6. 700 px bucket at L ≥ 90 ≥ 0.80.
   7. Determinism: identical counts and the first 100 impacts.
   8. AI index 0 (Level 0) within [0.06, 0.16] (DR-058).
+  9. Level 70 Preview: an AI-25 stand-in for a new player wins 35–60% of 200 seeds. If not, tune rival HP (50–70), never the bot (DR-070).
 - **Runtime:** about 200k sims, roughly 10–20 s. If it goes over 30 s, halve the non-cap trials.
 
 ## 11. Hosting: GitHub Actions to GitHub Pages (DR-017, DR-016)
@@ -538,6 +556,6 @@ The action majors were verified with `git ls-remote` on 2026-11-16. Deploys only
 | Device memory and per-blast ms | estimates, no device tests | stage-1 device check (DR-014, DR-024) |
 | Bot-cap constants | calibrated in a Python model, not the real sim | stage-2 refit; asserts fixed (DR-063 to DR-065) |
 | Node 24 as CI LTS | assumed | CI run (DR-016) |
-| Keyboard power keys, vertical wind chevron (Garden), touch target sizes at 667x375 | not decided | UI.md, checkpoint C (DR-015, DR-032) |
+| Keyboard power keys, vertical wind chevron (Garden), touch target sizes at 667x375, 6-slot weapon tray, sticker album / Wardrobe / nickname screens | not decided | UI.md, checkpoint C (DR-015, DR-032) |
 | Final ant art | **placeholder, not approved** | user's new images (DR-007a) |
-| Content counts (60 stamps, 114 levels) | estimates | HANDOFF stage plan (DR-025, DR-056) |
+| Content counts (60 stamps, 112 levels, art for 3 new weapons and the rewards) | estimates | HANDOFF stage plan (DR-025, DR-056) |

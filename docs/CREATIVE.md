@@ -71,6 +71,12 @@ The spec below is the target. The rejected SVG redraw is gone, and the preview s
 
 ## 5. Sound mood (synthesized in code)
 - **Palette:** cartoon foley built from simple oscillators plus noise. Seed "ptoo" (short pitched-down pop), Dewdrop "boing" (sine pitch bend) and "splosh" (filtered noise), Pollen "puff" plus a tiny sneeze "achoo" (formant blip).
+- **Unlockable weapons (DR-009):**
+  - Tunnel Grub: "munch-munch-crunch", spitting crumbs, and it pops out wearing a dirt hat.
+  - Pill Roller: a rising "brrrr" rattle, then a dizzy unroll and a "boing".
+  - Mound Plop: a wet "splorp", leaving a mud hat on whoever it hits.
+- **Silhouettes:** Grub is a cream segmented sausage, Roller a grey striped ball, and Plop a brown blob.
+- **Reward cosmetics (DR-071):** trinkets attach beside the cap stem and never recolour or cover the cap or badge.
 - **Ant voices:** chipmunk-like gibberish blips (square wave, random pitch from the match seed), with cocky "hah!" and oops "eep!" variants.
 - **Music:** short looping chiptune-meets-marimba themes, one motif per biome built on a shared main theme. A boss variant is faster with extra percussion.
 - **First tap:** unlocks audio (brief requirement), and a first-tap "pop" confirms it.
