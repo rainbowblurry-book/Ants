@@ -62,7 +62,7 @@ Nothing appears in UI.md or PLAN.md without a Decision ID. Builder deviations ar
 - **Rejected:** keep (the user's feedback); replace (no accent earned its place yet).
 - **Revisit if:** buttons read as flat or unclickable in playtests. Then try a darker inner rim, not a white glint.
 
-## DR-005 · Ant character attitude (user edit, checkpoint A review)
+## DR-005 · Ant character attitude (user edit, checkpoint A review) — SUPERSEDED by DR-006
 - **Question:** How do we make the fighting ants feel rowdy while staying family-friendly?
 - **Options:** (1) facial attitude only (brow, smirk) · (2) full rowdy kit: scowl, half-lidded eye, big mandibles, chipped-tooth grin, shaking raised fist, dented and tilted acorn-cap helmet, wide stance · (3) battle gear (bandanas, slings, war paint)
 - **Debate:** GD: the raised fist makes a clear silhouette, so you can read their mood even at 80 px. AD: a dented cap tilted like a bad-boy beanie gives scrappy charm, while war paint pushes them toward "soldier". TL: everything stays inside one symbol and no extra textures are needed.
@@ -70,3 +70,16 @@ Nothing appears in UI.md or PLAN.md without a Decision ID. Builder deviations ar
 - **Reason:** It is clearly scrappy and funny without weapons-as-props or injuries (pillar 1), and it reads at phone size.
 - **Rejected:** (1) too subtle at small sizes; (3) more militaristic and busier, and it competes with the team badge.
 - **Revisit if:** faces turn to mush at the final in-game ant size. Then drop the tooth and keep the fist, brow and mandibles.
+
+## DR-006 · Ant character design, rebuilt from scratch (user edit: DR-005 read as "a bird with a beak" on small screens)
+- **Question:** Which ant body plan stays clearly an ant from a 35 px sprite up to a poster?
+- **Options:** (1) side-profile crawler with forward mandibles (DR-005) · (2) upright chibi with a front-facing face, elbowed antennae, pinched waist, striped gaster, symmetric side jaws · (3) four-legged 3/4 crawler with a big head
+- **Debate:** GD: in profile, the mandibles plus a single eye read as a beak, while two front-facing eyes and a grin read as a character and show attitude at any size. AD: the ant cues that survive shrinking are the elbowed antennae, the waist knot and the big striped gaster, and an upright chibi poses well for the poster, landing screen and comics. TL: one shared silhouette drawn at two levels of detail (full and small) means one rig and one atlas, with no per-size redraws.
+- **Winner:** (2) Upright chibi ant. Its defining features:
+  - **Ant cues:** elbowed antennae with round tips, a big round head (about 40% of height), a pinched waist knot, an oval thorax, and a large striped gaster tilted back.
+  - **Rowdy cues:** angry V-brows, a toothy grin with one chipped tooth, symmetric side jaws (never a forward point), a raised shaking fist drawn in front of the body, and a dented acorn-cap helmet tilted -12°.
+  - **Team identity:** helmet colour plus the badge shape on the gaster (blue circle, amber triangle).
+  - **LODs:** `full` for 90 px tall and up (poster, landing, comics); `small` below 90 px (in-game), with no middle legs, tooth or motion lines, heavier strokes and bigger eyes and badge.
+- **Reason:** It reads as an ant, and as rowdy, at 35, 48, 62, 86 and 300+ px (see `preview/chars-*.png`). The silhouette scales for poster and landing art.
+- **Rejected:** (1) the beak problem; (3) four legs on the ground hide the fist and face, and the head turns into a blob at small sizes.
+- **Revisit if:** in-game ants must shrink below 40 px, or animation rigging needs a different limb layout.
