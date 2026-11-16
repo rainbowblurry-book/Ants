@@ -5,7 +5,7 @@ name: Deploy Ants to GitHub Pages
 # proven green before it is merged. Only main builds and deploys.
 on:
   push:
-    branches: [main, 'build/**']
+    branches: [main, "build/**"]
   pull_request:
   workflow_dispatch:
 

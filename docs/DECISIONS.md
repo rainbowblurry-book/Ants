@@ -2680,3 +2680,50 @@ Records and rulings were checked against the pillars: pillar 2 (one-glance HUD, 
 - **Revisit if:** Biome 1 playtests change the slot template (DR-051).
 - **Builds on:** DR-025, DR-051, DR-056, DR-071
 - **Judge:** Accepted.
+
+---
+
+# Build · Overrides (OVR records, DR-193)
+
+Logged by the builder. Tier T is applied at once. Tier G waits for the user's approval.
+
+## OVR-001 · CI also runs on the stage branches
+- **Overrides:** DR-017 and PLAN §11 (workflow triggers and concurrency), DR-192 (where e2e runs).
+- **Reason:** HANDOFF §2 says a stage merges to `main` only when its acceptance tests pass in CI. The PLAN §11 workflow runs only on `main` and on pull requests, and the builder may not open pull requests unless asked. So a stage branch could never be proven green before the merge.
+- **Change:**
+  - `push` triggers on `main` and `build/**` (was `main` only).
+  - The `test` and `e2e` jobs run on those pushes and on pull requests.
+  - `build` and `deploy` run only when the ref is `main` (push or manual run). Deploys still come from `main` only.
+  - `build` needs both `test` and `e2e`, so a broken screen cannot deploy.
+  - Concurrency group is `pages-<ref>` (was `pages`), so a stage-branch run can never cancel a queued `main` deploy.
+  - The `e2e` job builds with `BASE_PATH=/Ants/`, installs Chromium with `npx playwright install --with-deps chromium`, and uploads `test-results` with `actions/upload-artifact@v7` (major checked with `git ls-remote` on 2026-11-16).
+- **Impact:** `.github/workflows/deploy.yml`, `playwright.config.ts`. No game code.
+- **Tier:** T
+- **Status:** applied (stage 0)
+- **Revert plan:** remove `build/**` from the triggers and restore the `pages` group if the user switches to one pull request per stage (DR-194 "Revisit if").
+
+## OVR-002 · Tool pins that PLAN §2 does not list
+- **Overrides:** DR-016 and PLAN §2 (adds pins; changes none).
+- **Reason:** DR-192 needs Playwright, and `tsc` needs Node types. PLAN §2 gives no version for either. HANDOFF §2 rule 4 says to log a verified replacement instead of inventing one.
+- **Change:**
+  - `@playwright/test` **1.63.0** (released 2026-09-04). Verified: it runs the whole e2e suite here. It is not the newest release that is 14 days old (that is 1.64.1). I chose it because it matches the Chromium build already in the builder's container, so local runs and CI use the same Playwright.
+  - `@types/node` **24.19.2** (released 2026-10-09), to match Node 24 in CI.
+  - `package-lock.json` was written by npm 11.21.2. npm 10.9.9 crashes while resolving vitest 5.0.5's optional peers (`Cannot read properties of null (reading 'edgesOut')`). `npm ci` works with both npm 10 and npm 11. The pins did not change.
+- **Impact:** `package.json`, `package-lock.json`.
+- **Tier:** T
+- **Status:** applied (stage 0)
+- **Revert plan:** bump Playwright in one commit and re-run `npm run e2e`.
+
+## OVR-003 · Token generator and fonts arrive in stage 0, not stage 4
+- **Overrides:** HANDOFF §3 stage order (stage 4 lists `tools/gen-theme.ts`; stage 7 lists the fonts and the HTML shells' behaviour).
+- **Reason:** HANDOFF §2 rule 5 bans colour literals outside `theme.json` from the first commit. Stage 0 must ship `index.html` with inline splash, rotate and fatal shells, and a Phaser `backgroundColor`. Both need colours. The spike also needs Lilita One for its bitmap text.
+- **Change:**
+  - `tools/gen-theme.ts` exists now. It generates `src/ui/theme.ts` and `src/ui/theme.css` (colours, fonts, logical size). Stage 4 extends it with the component tokens. `vite.config.ts` injects the same variables into the inline `<style>` of `index.html`.
+  - Self-hosted font files are in `public/fonts/` now: Lilita One 400, Nunito 700 and 800 (latin woff2 subsets from the `@fontsource` 5.3.0 packages, unmodified), with their OFL texts beside them (J27, DR-174).
+  - The spike bakes its bitmap fonts in the browser. The build-time bake (`tools/bake-fonts.ts`) is still stage 4.
+  - A dev and test hook `?s=1` / `?s=2` forces the render scale. It changes nothing for players.
+  - The HTML shells are static markup plus a minimal fatal handler. The progress feed, audio gate, rotate pause and crash-loop breaker are still stage 7.
+- **Impact:** `tools/gen-theme.ts`, `src/ui/theme.ts`, `src/ui/theme.css`, `vite.config.ts`, `index.html`, `public/fonts/`, `tests/theme-gen.test.ts`.
+- **Tier:** T
+- **Status:** applied (stage 0)
+- **Revert plan:** none needed. Stages 4 and 7 build on these files.
