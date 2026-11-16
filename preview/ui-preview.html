@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Ants UI Preview</title>
+<!-- Fonts: Lilita One (SIL OFL 1.1), Nunito (SIL OFL 1.1) via Google Fonts. DR-003 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ===== Layer 1: primitive tokens ===== */
+:root{
+  --prim-plum-900:#2E1A47; --prim-plum-700:#4A2F6B; --prim-plum-300:#9C8BB5;
+  --prim-butter-100:#FFF1D0; --prim-butter-300:#FFD978; --prim-butter-500:#F7B932;
+  --prim-rasp-500:#E8456B; --prim-rasp-700:#B52A4C;
+  --prim-blue-500:#0072B2; --prim-blue-700:#00527F;
+  --prim-amber-500:#E69F00; --prim-amber-700:#A66F00;
+  --prim-teal-500:#1FA38A; --prim-teal-700:#137463;
+  --prim-leaf-200:#C8F27A; --prim-leaf-400:#7CCB3E; --prim-leaf-600:#3E9A3A; --prim-leaf-800:#22662C;
+  --prim-soil-400:#C98545; --prim-soil-600:#94592B; --prim-soil-800:#5E3519;
+  --prim-sky-100:#EAFBD8; --prim-sky-400:#8EE0CC;
+  --prim-ant-500:#9C4A2F; --prim-stone-400:#B7AFC4; --prim-white:#FFFFFF;
+
+/* ===== Layer 2: semantic tokens ===== */
+  --color-ink:var(--prim-plum-900);
+  --color-ink-soft:var(--prim-plum-700);
+  --color-panel:var(--prim-butter-100);
+  --color-action:var(--prim-rasp-500);   --color-action-shade:var(--prim-rasp-700);
+  --color-info:var(--prim-teal-500);     --color-info-shade:var(--prim-teal-700);
+  --color-secondary:var(--prim-butter-300); --color-secondary-shade:var(--prim-butter-500);
+  --color-team-a:var(--prim-blue-500);   --color-team-a-shade:var(--prim-blue-700);
+  --color-team-b:var(--prim-amber-500);  --color-team-b-shade:var(--prim-amber-700);
+  --color-locked:var(--prim-stone-400);
+  --color-glint:var(--prim-white);
+  --font-display:'Lilita One','Arial Rounded MT Bold','Trebuchet MS',sans-serif;
+  --font-body:'Nunito','Trebuchet MS',sans-serif;
+  --text-min:16px; --text-body:20px; --text-label:24px; --text-title:34px;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-6:24px;
+  --radius-panel:24px; --radius-pill:999px;
+  --outline:4px;
+
+/* ===== Layer 3: component tokens ===== */
+  --btn-h:56px;               /* DR-003: min touch 48, preferred 56 */
+  --btn-radius:var(--radius-pill);
+  --btn-outline:var(--outline);
+  --btn-drop:5px;
+  --fire-size:96px;
+  --hud-pill-h:48px;
+  --node-size:64px; --node-boss-size:88px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--color-ink);overflow:hidden;overscroll-behavior:none;
+  touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#viewport{position:fixed;inset:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#fitbox{position:relative;width:100%;height:100%}
+#stage{position:absolute;left:50%;top:50%;width:960px;height:540px;transform-origin:50% 50%;
+  overflow:hidden;border-radius:18px;font-family:var(--font-body);color:var(--color-ink)}
+.screen{position:absolute;inset:0;display:none}
+.screen.on{display:block}
+.bg{position:absolute;inset:0;width:100%;height:100%}
+
+/* ===== Jelly button (DR-003): plum outline, flat shade band, one hard curved glint ===== */
+.jelly{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  height:var(--btn-h);min-width:var(--btn-h);padding:0 26px;border:var(--btn-outline) solid var(--color-ink);
+  border-radius:var(--btn-radius);background:var(--j-bg,var(--color-action));color:var(--j-fg,#fff);
+  font-family:var(--font-display);font-size:var(--text-label);letter-spacing:.5px;cursor:pointer;
+  box-shadow:inset 0 -9px 0 var(--j-shade,var(--color-action-shade)),0 var(--btn-drop) 0 var(--color-ink);
+  text-shadow:0 2px 0 var(--j-shade,var(--color-action-shade));transition:transform 60ms ease-out,box-shadow 60ms ease-out}
+.jelly::before{content:"";position:absolute;top:6px;left:16px;width:34%;height:9px;border-radius:999px;
+  background:var(--color-glint);opacity:.9}
+.jelly:active,.jelly.pressed{transform:translateY(4px);box-shadow:inset 0 -6px 0 var(--j-shade,var(--color-action-shade)),0 1px 0 var(--color-ink)}
+.jelly.info{--j-bg:var(--color-info);--j-shade:var(--color-info-shade)}
+.jelly.second{--j-bg:var(--color-secondary);--j-shade:var(--color-secondary-shade);--j-fg:var(--color-ink);text-shadow:none}
+.jelly.round{padding:0;width:var(--btn-h)}
+.jelly.round::before{left:12px;width:22px;height:8px}
+.jelly svg{flex:none}
+.jelly.disabled{--j-bg:var(--color-locked);--j-shade:#8E869C;--j-fg:#5b5266;text-shadow:none}
+
+.panel{background:var(--color-panel);border:var(--outline) solid var(--color-ink);border-radius:var(--radius-panel);
+  box-shadow:0 6px 0 var(--color-ink)}
+.pill{display:inline-flex;align-items:center;gap:8px;height:var(--hud-pill-h);padding:0 16px;
+  background:var(--color-panel);border:var(--outline) solid var(--color-ink);border-radius:var(--radius-pill);
+  box-shadow:0 4px 0 var(--color-ink);font-family:var(--font-display);font-size:var(--text-label)}
+.abs{position:absolute}
+
+/* ===== Landing ===== */
+#landing .menu{position:absolute;right:48px;top:150px;display:flex;flex-direction:column;gap:18px;width:290px}
+#landing .menu .jelly{width:100%;height:64px;font-size:28px;justify-content:flex-start;padding-left:22px}
+#landing .menu .jelly.second{height:56px;font-size:24px}
+#landing .tag{position:absolute;left:66px;top:236px;font-family:var(--font-display);font-size:30px;color:var(--color-panel);
+  text-shadow:0 3px 0 var(--color-ink),2px 0 0 var(--color-ink),-2px 0 0 var(--color-ink),0 -2px 0 var(--color-ink)}
+.corner-tr{position:absolute;top:16px;right:16px;display:flex;gap:12px}
+.corner-tl{position:absolute;top:16px;left:16px;display:flex;gap:12px}
+.ver{position:absolute;left:18px;bottom:12px;font-size:var(--text-min);font-weight:800;color:var(--color-panel);opacity:.9}
+
+/* ===== Battle HUD ===== */
+#hud-turn{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px}
+#hud-turn .pill{padding:0 8px 0 10px;gap:10px}
+.timer{width:40px;height:40px;border-radius:50%;background:var(--color-team-a);border:3px solid var(--color-ink);
+  color:#fff;display:grid;place-items:center;font-family:var(--font-display);font-size:22px}
+.wind{display:flex;align-items:center;gap:6px;height:44px;padding:0 14px;border-radius:999px;background:var(--color-info);
+  border:var(--outline) solid var(--color-ink);box-shadow:0 4px 0 var(--color-ink);color:#fff;font-family:var(--font-display);font-size:22px}
+.wind .chev{width:22px;height:22px}
+.wind .chev.off{opacity:.28}
+.teams{position:absolute;top:14px;left:14px;display:flex;flex-direction:column;gap:8px}
+.teambar{display:flex;align-items:center;gap:8px;height:40px;padding:0 12px 0 6px;background:var(--color-panel);
+  border:3px solid var(--color-ink);border-radius:999px;box-shadow:0 3px 0 var(--color-ink);font-family:var(--font-display);font-size:20px}
+.hp{width:96px;height:16px;border-radius:999px;border:3px solid var(--color-ink);background:#fff;overflow:hidden}
+.hp i{display:block;height:100%;border-radius:999px}
+.tagant{position:absolute;display:flex;align-items:center;gap:4px;height:30px;padding:0 9px 0 4px;background:var(--color-panel);
+  border:3px solid var(--color-ink);border-radius:999px;font-family:var(--font-display);font-size:18px;transform:translateX(-50%)}
+.bottom-l{position:absolute;left:16px;bottom:14px;display:flex;align-items:flex-end;gap:12px}
+.dial{width:136px;height:136px;border-radius:50%;background:var(--color-panel);border:var(--outline) solid var(--color-ink);
+  box-shadow:0 5px 0 var(--color-ink);position:relative}
+.walk{display:flex;gap:10px;margin-bottom:6px}
+.walk .jelly{width:64px;height:64px}
+.tray{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:10px;padding:8px 12px;
+  background:var(--color-panel);border:var(--outline) solid var(--color-ink);border-radius:var(--radius-panel);box-shadow:0 5px 0 var(--color-ink)}
+.slot{width:64px;height:64px;border-radius:20px;border:3px solid var(--color-ink);background:#fff;display:grid;place-items:center;position:relative}
+.slot.sel{background:var(--color-butter,var(--prim-butter-300));transform:translateY(-6px);box-shadow:0 6px 0 var(--color-ink)}
+.slot .n{position:absolute;right:-6px;bottom:-6px;min-width:24px;height:24px;border-radius:12px;background:var(--color-ink);color:#fff;
+  font-family:var(--font-display);font-size:16px;display:grid;place-items:center;padding:0 5px}
+.wname{position:absolute;left:50%;bottom:104px;transform:translateX(-50%);white-space:nowrap}
+.firewrap{position:absolute;right:18px;bottom:14px;width:124px;height:124px}
+.firewrap svg{position:absolute;inset:0}
+.fire{position:absolute;left:14px;top:14px;width:var(--fire-size);height:var(--fire-size);border-radius:50%;padding:0;font-size:30px}
+.fire::before{left:20px;top:12px;width:36px;height:12px}
+
+/* ===== Level select ===== */
+#levels .head{position:absolute;top:14px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:14px}
+.biome-title{height:60px;padding:0 26px;font-size:32px}
+.node{position:absolute;width:var(--node-size);height:var(--node-size);border-radius:50%;border:var(--outline) solid var(--color-ink);
+  display:grid;place-items:center;font-family:var(--font-display);font-size:28px;color:#fff;transform:translate(-50%,-50%);
+  box-shadow:inset 0 -8px 0 rgba(46,26,71,.28),0 5px 0 var(--color-ink);text-shadow:0 2px 0 rgba(46,26,71,.45);cursor:pointer}
+.node::before{content:"";position:absolute;top:7px;left:13px;width:22px;height:8px;border-radius:999px;background:#fff;opacity:.9}
+.node.done{background:var(--prim-leaf-600)}
+.node.cur{background:var(--color-action)}
+.node.cur::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:5px solid var(--color-panel);
+  box-shadow:0 0 0 3px var(--color-ink),inset 0 0 0 3px var(--color-ink)}
+.node.locked{background:var(--color-locked);color:var(--color-ink-soft);text-shadow:none}
+.node.rest{background:var(--color-info)}
+.node.boss{width:var(--node-boss-size);height:var(--node-boss-size);background:var(--prim-plum-700);font-size:22px}
+.acorns{position:absolute;transform:translateX(-50%);display:flex;gap:2px}
+.card{position:absolute;right:20px;top:96px;width:268px;padding:16px 18px 18px}
+.card h3{font-family:var(--font-display);font-weight:400;font-size:30px;line-height:1.05}
+.card .sub{font-size:var(--text-body);font-weight:800;color:var(--color-ink-soft);margin-top:2px}
+.card .row{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px 0 6px;border-radius:999px;border:3px solid var(--color-ink);
+  background:#fff;font-weight:900;font-size:17px}
+.card .jelly{width:100%;margin-top:16px;height:64px;font-size:30px}
+.pips{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:9px;align-items:center}
+.pips i{width:16px;height:16px;border-radius:50%;background:var(--color-panel);border:3px solid var(--color-ink);opacity:.75}
+.pips i.on{background:var(--color-action);opacity:1;width:34px;border-radius:999px}
+
+/* ===== Comic ===== */
+#comic .frame{position:absolute;left:40px;top:28px;width:880px;height:420px;border:6px solid var(--color-ink);border-radius:34px;overflow:hidden;
+  box-shadow:0 8px 0 var(--color-ink);background:var(--prim-sky-400)}
+.caption{position:absolute;left:24px;top:22px;max-width:380px;padding:12px 18px;transform:rotate(-1.5deg)}
+.caption b{display:block;font-family:var(--font-display);font-weight:400;font-size:20px;color:var(--color-action)}
+.caption span{font-family:var(--font-display);font-size:30px;line-height:1.1}
+.bubble{position:absolute;padding:12px 18px;background:#fff;border:var(--outline) solid var(--color-ink);border-radius:30px;
+  font-weight:900;font-size:22px;line-height:1.15;max-width:250px}
+.comic-ui{position:absolute;left:40px;right:40px;bottom:18px;height:60px;display:flex;align-items:center;justify-content:space-between}
+.cpips{display:flex;gap:10px}
+.cpips i{width:18px;height:18px;border-radius:50%;border:3px solid var(--color-ink);background:var(--color-panel)}
+.cpips i.on{background:var(--color-action)}
+
+/* ===== Rotate overlay ===== */
+#rotate{display:none;position:fixed;inset:0;background:var(--color-ink);color:var(--color-panel);z-index:9;
+  flex-direction:column;align-items:center;justify-content:center;gap:18px;font-family:var(--font-display);font-size:28px;text-align:center;padding:24px}
+@media (orientation:portrait){#rotate{display:flex}#viewport{display:none}}
+@media (prefers-reduced-motion:no-preference){
+  .node.cur::after{animation:ring 1.4s ease-in-out infinite}
+  @keyframes ring{50%{transform:scale(1.06)}}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7FD9C6"/><stop offset=".7" stop-color="#D7F7C8"/><stop offset="1" stop-color="#F1FFD9"/>
+    </linearGradient>
+    <linearGradient id="g-soil" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#C98545"/><stop offset="1" stop-color="#8A4F25"/>
+    </linearGradient>
+
+    <!-- Leaf: curved everywhere -->
+    <symbol id="leaf" viewBox="-4 -36 132 72" overflow="visible">
+      <path d="M0,0 C28,-44 92,-44 124,0 C92,44 28,44 0,0 Z" fill="var(--lf,#3E9A3A)" stroke="#2E1A47" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M4,0 Q62,-6 118,0" fill="none" stroke="#2E1A47" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+      <path d="M40,-14 Q52,-22 64,-22" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".55"/>
+    </symbol>
+
+    <!-- Jungle backdrop (DR-001 Flash vector: bold ink, flat fills, rim light) -->
+    <symbol id="jungle" viewBox="0 0 960 540">
+      <rect width="960" height="540" fill="url(#g-sky)"/>
+      <circle cx="800" cy="78" r="52" fill="#FFE58A" stroke="#2E1A47" stroke-width="4" opacity=".95"/>
+      <path d="M774,56 Q792,44 812,48" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <path d="M0,330 C90,250 190,250 280,300 C360,240 470,230 560,290 C650,230 760,220 860,280 C910,260 940,262 960,270 L960,540 L0,540 Z"
+            fill="#7CC7A0" stroke="#2E1A47" stroke-width="3" stroke-opacity=".35"/>
+      <path d="M0,370 C120,310 230,320 330,360 C430,300 560,300 660,350 C760,310 880,320 960,340 L960,540 L0,540 Z"
+            fill="#5CB386" stroke="#2E1A47" stroke-width="3" stroke-opacity=".45"/>
+      <!-- trunks + canopy -->
+      <path d="M96,540 C104,420 92,300 118,170" stroke="#2E1A47" stroke-width="32" fill="none" stroke-linecap="round"/>
+      <path d="M96,540 C104,420 92,300 118,170" stroke="#8E5A3B" stroke-width="24" fill="none" stroke-linecap="round"/>
+      <path d="M874,540 C866,430 884,320 852,200" stroke="#2E1A47" stroke-width="30" fill="none" stroke-linecap="round"/>
+      <path d="M874,540 C866,430 884,320 852,200" stroke="#8E5A3B" stroke-width="22" fill="none" stroke-linecap="round"/>
+      <use href="#leaf" x="-40" y="120" width="190" height="104" transform="rotate(-18 50 170)" style="--lf:#47A548"/>
+      <use href="#leaf" x="110" y="100" width="170" height="92" transform="rotate(14 190 150)" style="--lf:#3E9A3A"/>
+      <use href="#leaf" x="740" y="140" width="180" height="98" transform="rotate(-160 830 190)" style="--lf:#47A548"/>
+      <use href="#leaf" x="820" y="200" width="160" height="88" transform="rotate(200 900 240)" style="--lf:#3E9A3A"/>
+      <!-- vines -->
+      <path d="M300,0 C290,60 320,110 304,170" stroke="#2E1A47" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <path d="M300,0 C290,60 320,110 304,170" stroke="#4FA84A" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <circle cx="304" cy="176" r="10" fill="#E8456B" stroke="#2E1A47" stroke-width="3.5"/>
+      <path d="M640,0 C656,40 626,80 642,120" stroke="#2E1A47" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <path d="M640,0 C656,40 626,80 642,120" stroke="#4FA84A" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <circle cx="642" cy="126" r="9" fill="#FFD978" stroke="#2E1A47" stroke-width="3.5"/>
+    </symbol>
+
+    <!-- Ant core: body uses --team for the acorn-cap helmet -->
+    <symbol id="ant-core" viewBox="0 0 96 84" overflow="visible">
+      <g fill="none" stroke="#2E1A47" stroke-width="4.5" stroke-linecap="round">
+        <path d="M40,54 Q30,62 26,76"/><path d="M47,55 Q48,66 44,78"/><path d="M53,54 Q62,62 66,76"/>
+      </g>
+      <ellipse cx="25" cy="48" rx="20" ry="16" fill="#9C4A2F" stroke="#2E1A47" stroke-width="4"/>
+      <path d="M12,40 Q18,34 26,34" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".8"/>
+      <ellipse cx="47" cy="48" rx="10" ry="9" fill="#9C4A2F" stroke="#2E1A47" stroke-width="4"/>
+      <g fill="none" stroke="#2E1A47" stroke-width="3.5" stroke-linecap="round">
+        <path d="M60,22 Q55,6 44,7"/><path d="M70,20 Q76,4 88,6"/>
+      </g>
+      <circle cx="44" cy="7" r="4" fill="#2E1A47"/><circle cx="88" cy="6" r="4" fill="#2E1A47"/>
+      <circle cx="65" cy="36" r="16" fill="#9C4A2F" stroke="#2E1A47" stroke-width="4"/>
+      <path d="M48,33 C48,18 82,18 82,33 C72,29 58,29 48,33 Z" fill="var(--team)" stroke="#2E1A47" stroke-width="4" stroke-linejoin="round"/>
+      <circle cx="65" cy="21" r="3.5" fill="#2E1A47"/>
+      <path d="M54,26 Q58,23 63,23" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".85"/>
+      <ellipse cx="71" cy="39" rx="6.5" ry="7.5" fill="#fff" stroke="#2E1A47" stroke-width="3"/>
+      <circle cx="73" cy="40" r="3.2" fill="#2E1A47"/>
+      <path d="M66,46 Q71,51 77,45" stroke="#2E1A47" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </symbol>
+    <!-- Team badges: shape + color (colorblind-safe, DR-003) -->
+    <symbol id="badge-a" viewBox="-12 -12 24 24"><circle r="8.5" fill="var(--prim-blue-500,#0072B2)" stroke="#fff" stroke-width="3"/><circle r="10.5" fill="none" stroke="#2E1A47" stroke-width="1.8"/></symbol>
+    <symbol id="badge-b" viewBox="-12 -12 24 24"><path d="M0,-7 L7.5,6 L-7.5,6 Z" fill="#E69F00" stroke="#E69F00" stroke-width="5" stroke-linejoin="round"/><path d="M0,-7 L7.5,6 L-7.5,6 Z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" transform="scale(1.32) translate(0,.4)"/><path d="M0,-7 L7.5,6 L-7.5,6 Z" fill="none" stroke="#2E1A47" stroke-width="1.6" stroke-linejoin="round" transform="scale(1.58) translate(0,.6)"/></symbol>
+    <symbol id="ant-a" viewBox="0 0 96 84" overflow="visible"><g style="--team:#0072B2"><use href="#ant-core"/></g><use href="#badge-a" x="13" y="36" width="24" height="24"/></symbol>
+    <symbol id="ant-b" viewBox="0 0 96 84" overflow="visible"><g style="--team:#E69F00"><use href="#ant-core"/></g><use href="#badge-b" x="13" y="36" width="24" height="24"/></symbol>
+
+    <!-- Weapon icons (DR-002) -->
+    <symbol id="w-seed" viewBox="0 0 48 48"><ellipse cx="24" cy="25" rx="11" ry="15" transform="rotate(30 24 25)" fill="#E9C36B" stroke="#2E1A47" stroke-width="3.5"/><path d="M20,15 Q24,12 27,14" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M8,30 Q4,30 2,30 M10,36 Q6,37 4,38" stroke="#2E1A47" stroke-width="3" stroke-linecap="round" opacity=".5"/></symbol>
+    <symbol id="w-dew" viewBox="0 0 48 48"><path d="M24,5 C30,16 38,22 38,31 C38,39 31,44 24,44 C17,44 10,39 10,31 C10,22 18,16 24,5 Z" fill="#7FD4F2" stroke="#2E1A47" stroke-width="3.5" stroke-linejoin="round"/><circle cx="20" cy="30" r="3.4" fill="#fff" stroke="#2E1A47" stroke-width="2"/><circle cx="29" cy="30" r="3.4" fill="#fff" stroke="#2E1A47" stroke-width="2"/><circle cx="20.6" cy="30.6" r="1.5" fill="#2E1A47"/><circle cx="29.6" cy="30.6" r="1.5" fill="#2E1A47"/><path d="M16,20 Q18,16 21,14" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="w-pollen" viewBox="0 0 48 48"><g fill="#FFD23F" stroke="#2E1A47" stroke-width="3"><circle cx="24" cy="14" r="8"/><circle cx="34" cy="22" r="8"/><circle cx="30" cy="34" r="8"/><circle cx="18" cy="34" r="8"/><circle cx="14" cy="22" r="8"/></g><circle cx="24" cy="25" r="7" fill="#F7A21B" stroke="#2E1A47" stroke-width="3"/><path d="M20,11 Q22,9 25,9" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></symbol>
+
+    <symbol id="acorn" viewBox="0 0 24 26"><path d="M5,11 C5,20 9,24 12,24 C15,24 19,20 19,11 Z" fill="#C98545" stroke="#2E1A47" stroke-width="2.5" stroke-linejoin="round"/><path d="M3,11 C3,5 21,5 21,11 C15,9.5 9,9.5 3,11 Z" fill="#7A4A22" stroke="#2E1A47" stroke-width="2.5" stroke-linejoin="round"/><path d="M12,6 Q12,3 14,2" stroke="#2E1A47" stroke-width="2.5" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="acorn-off" viewBox="0 0 24 26"><path d="M5,11 C5,20 9,24 12,24 C15,24 19,20 19,11 Z" fill="#FFF1D0" stroke="#2E1A47" stroke-width="2.5" stroke-linejoin="round" opacity=".9"/><path d="M3,11 C3,5 21,5 21,11 C15,9.5 9,9.5 3,11 Z" fill="#D9CDB0" stroke="#2E1A47" stroke-width="2.5" stroke-linejoin="round"/></symbol>
+
+    <!-- UI icons, all round-capped -->
+    <symbol id="i-full" viewBox="0 0 32 32"><g fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5,12 V7 Q5,5 7,5 H12"/><path d="M20,5 H25 Q27,5 27,7 V12"/><path d="M27,20 V25 Q27,27 25,27 H20"/><path d="M12,27 H7 Q5,27 5,25 V20"/></g></symbol>
+    <symbol id="i-sound" viewBox="0 0 32 32"><path d="M5,12 H10 L17,6 V26 L10,20 H5 Q3,20 3,18 V14 Q3,12 5,12 Z" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/><path d="M22,11 Q26,16 22,21 M25,7 Q32,16 25,25" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 32 32"><rect x="7" y="5" width="6.5" height="22" rx="3.2" fill="currentColor"/><rect x="18.5" y="5" width="6.5" height="22" rx="3.2" fill="currentColor"/></symbol>
+    <symbol id="i-back" viewBox="0 0 32 32"><path d="M19,6 L9,16 L19,26" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-next" viewBox="0 0 32 32"><path d="M13,6 L23,16 L13,26" fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M8,4 L16,12 L8,20" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 32 32"><path d="M10,14 V10 Q10,4 16,4 Q22,4 22,10 V14" fill="none" stroke="#4A2F6B" stroke-width="4" stroke-linecap="round"/><rect x="6" y="13" width="20" height="15" rx="6" fill="#4A2F6B"/></symbol>
+    <symbol id="i-crown" viewBox="0 0 40 32"><path d="M6,26 L4,10 L13,17 L20,6 L27,17 L36,10 L34,26 Z" fill="#FFD23F" stroke="#2E1A47" stroke-width="3.5" stroke-linejoin="round"/><circle cx="4" cy="9" r="3.5" fill="#FFD23F" stroke="#2E1A47" stroke-width="2.5"/><circle cx="20" cy="5" r="3.5" fill="#FFD23F" stroke="#2E1A47" stroke-width="2.5"/><circle cx="36" cy="9" r="3.5" fill="#FFD23F" stroke="#2E1A47" stroke-width="2.5"/></symbol>
+    <symbol id="i-ant" viewBox="0 0 32 32"><g fill="currentColor"><circle cx="9" cy="18" r="6"/><circle cx="17" cy="18" r="3.5"/><circle cx="24" cy="14" r="5.5"/></g><path d="M23,9 Q21,3 17,4 M27,9 Q29,3 32,4" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="i-people" viewBox="0 0 36 32"><g fill="currentColor"><circle cx="11" cy="9" r="5.5"/><circle cx="25" cy="9" r="5.5"/><path d="M2,28 Q2,17 11,17 Q20,17 20,28 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M16,28 Q16,17 25,17 Q34,17 34,28 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></g></symbol>
+    <symbol id="i-gear" viewBox="0 0 32 32"><g stroke="currentColor" stroke-width="6" stroke-linecap="round"><path d="M16,3 V8 M16,24 V29 M3,16 H8 M24,16 H29 M6.8,6.8 L10.3,10.3 M21.7,21.7 L25.2,25.2 M6.8,25.2 L10.3,21.7 M21.7,10.3 L25.2,6.8"/></g><circle cx="16" cy="16" r="9" fill="currentColor"/><circle cx="16" cy="16" r="3.8" fill="var(--prim-butter-300,#FFD978)"/></symbol>
+    <symbol id="i-rest" viewBox="0 0 40 32"><path d="M4,10 Q20,30 36,10" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round"/><path d="M4,6 V14 M36,6 V14" stroke="#fff" stroke-width="4" stroke-linecap="round"/><path d="M26,4 Q30,4 30,8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></symbol>
+  </defs>
+</svg>
+
+<div id="viewport"><div id="fitbox"><div id="stage">
+
+<!-- ================= LANDING ================= -->
+<section class="screen" id="landing" data-screen="landing">
+  <svg class="bg" viewBox="0 0 960 540"><use href="#jungle"/>
+    <!-- foreground mound -->
+    <path d="M-20,470 C80,420 180,410 280,440 C380,470 460,420 560,440 C660,460 760,430 980,450 L980,560 L-20,560 Z" fill="url(#g-soil)" stroke="#2E1A47" stroke-width="5"/>
+    <path d="M-20,470 C80,420 180,410 280,440 C380,470 460,420 560,440 C660,460 760,430 980,450" fill="none" stroke="#3E9A3A" stroke-width="22" stroke-linecap="round" transform="translate(0,9)"/>
+    <path d="M-20,470 C80,420 180,410 280,440 C380,470 460,420 560,440 C660,460 760,430 980,450" fill="none" stroke="#9BD94A" stroke-width="8" stroke-linecap="round" transform="translate(0,3)"/>
+    <path d="M-20,470 C80,420 180,410 280,440 C380,470 460,420 560,440 C660,460 760,430 980,450" fill="none" stroke="#2E1A47" stroke-width="5" stroke-linecap="round"/>
+    <use href="#ant-a" x="120" y="350" width="104" height="91"/>
+    <g transform="translate(470,358) scale(-1,1)"><use href="#ant-b" x="0" y="0" width="104" height="91"/></g>
+    <!-- a seed mid-flight, comic arc -->
+    <path d="M226,372 C270,300 330,290 360,320" fill="none" stroke="#2E1A47" stroke-width="4" stroke-dasharray="0 14" stroke-linecap="round"/>
+    <use href="#w-seed" x="350" y="300" width="40" height="40"/>
+    <!-- LOGO -->
+    <g transform="translate(60,46) rotate(-4)">
+      <text x="0" y="150" font-family="Lilita One, Arial Rounded MT Bold, sans-serif" font-size="168" fill="#FFD23F" stroke="#2E1A47" stroke-width="22" stroke-linejoin="round" paint-order="stroke" letter-spacing="2">ANTS!</text>
+      <path d="M22,58 Q40,44 64,46" stroke="#fff" stroke-width="10" fill="none" stroke-linecap="round"/>
+    </g>
+  </svg>
+  <div class="tag">Small ants. Big shots.</div>
+  <div class="corner-tl"><button class="jelly round second" aria-label="Sound on"><svg width="28" height="28"><use href="#i-sound"/></svg></button></div>
+  <div class="corner-tr"><button class="jelly round second" aria-label="Fullscreen"><svg width="26" height="26"><use href="#i-full"/></svg></button></div>
+  <nav class="menu">
+    <button class="jelly" data-go="levels"><svg width="34" height="34" style="color:#fff"><use href="#i-ant"/></svg>Campaign</button>
+    <button class="jelly info" data-go="battle"><svg width="36" height="32" style="color:#fff"><use href="#i-people"/></svg>2 Players</button>
+    <button class="jelly second"><svg width="28" height="28" style="color:var(--color-ink)"><use href="#i-gear"/></svg>Settings</button>
+  </nav>
+  <div class="ver">Preview · not final art</div>
+</section>
+
+<!-- ================= BATTLE HUD ================= -->
+<section class="screen" id="battle" data-screen="battle">
+  <svg class="bg" viewBox="0 0 960 540">
+    <use href="#jungle"/>
+    <defs>
+      <path id="terrain" d="M-10,392 C70,350 150,330 230,352 C292,370 320,318 400,312 C452,308 480,318 496,338 C506,352 520,372 548,372 C576,372 588,346 606,330 C640,300 700,296 752,318 C808,342 850,300 900,292 C930,288 950,296 970,302 L970,560 L-10,560 Z"/>
+      <clipPath id="clip-terrain"><use href="#terrain"/></clipPath>
+    </defs>
+    <use href="#terrain" fill="url(#g-soil)"/>
+    <g clip-path="url(#clip-terrain)">
+      <use href="#terrain" fill="none" stroke="#3E9A3A" stroke-width="40"/>
+      <use href="#terrain" fill="none" stroke="#9BD94A" stroke-width="14"/>
+      <g fill="#7A4A22" stroke="#2E1A47" stroke-width="3" opacity=".9">
+        <ellipse cx="120" cy="470" rx="22" ry="13"/><ellipse cx="330" cy="430" rx="16" ry="10"/><ellipse cx="640" cy="460" rx="26" ry="15"/><ellipse cx="840" cy="420" rx="15" ry="9"/><ellipse cx="500" cy="500" rx="18" ry="11"/>
+      </g>
+      <path d="M260,400 C280,440 250,470 270,520 M720,380 C700,420 740,450 720,500" stroke="#5E3519" stroke-width="7" fill="none" stroke-linecap="round"/>
+    </g>
+    <use href="#terrain" fill="none" stroke="#2E1A47" stroke-width="5" stroke-linejoin="round"/>
+    <!-- crater puff remnants -->
+    <g fill="#FFF1D0" stroke="#2E1A47" stroke-width="3" opacity=".9"><circle cx="530" cy="356" r="7"/><circle cx="562" cy="350" r="5"/></g>
+    <!-- ants -->
+    <use href="#ant-a" x="150" y="270" width="80" height="70"/>
+    <use href="#ant-a" x="355" y="245" width="80" height="70"/>
+    <g transform="translate(756,248) scale(-1,1)"><use href="#ant-b" width="80" height="70"/></g>
+    <g transform="translate(930,222) scale(-1,1)"><use href="#ant-b" width="80" height="70"/></g>
+    <!-- active marker -->
+    <path d="M395,196 C395,188 405,188 405,196 L405,206 L414,206 C420,206 422,212 418,216 L404,230 C402,232 398,232 396,230 L382,216 C378,212 380,206 386,206 L395,206 Z" fill="#E8456B" stroke="#2E1A47" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- aim preview: first part of arc only -->
+    <path d="M432,262 C470,210 510,186 548,180" fill="none" stroke="#fff" stroke-width="9" stroke-dasharray="0 18" stroke-linecap="round"/>
+    <path d="M432,262 C470,210 510,186 548,180" fill="none" stroke="#2E1A47" stroke-width="13" stroke-dasharray="0 18" stroke-linecap="round" opacity=".0"/>
+    <circle cx="560" cy="178" r="11" fill="none" stroke="#fff" stroke-width="4"/>
+  </svg>
+  <!-- ant tags -->
+  <div class="tagant" style="left:190px;top:236px"><svg width="22" height="22"><use href="#badge-a"/></svg>80</div>
+  <div class="tagant" style="left:395px;top:160px;border-color:var(--color-action)"><svg width="22" height="22"><use href="#badge-a"/></svg>100</div>
+  <div class="tagant" style="left:716px;top:214px"><svg width="22" height="22"><use href="#badge-b"/></svg>65</div>
+  <div class="tagant" style="left:890px;top:188px"><svg width="22" height="22"><use href="#badge-b"/></svg>100</div>
+
+  <div class="teams">
+    <div class="teambar"><svg width="28" height="28"><use href="#badge-a"/></svg><div class="hp"><i style="width:90%;background:var(--color-team-a)"></i></div>180</div>
+    <div class="teambar"><svg width="28" height="28"><use href="#badge-b"/></svg><div class="hp"><i style="width:82%;background:var(--color-team-b)"></i></div>165</div>
+  </div>
+  <div id="hud-turn">
+    <div class="pill"><svg width="30" height="30"><use href="#badge-a"/></svg>Blue Colony's turn<div class="timer">24</div></div>
+    <div class="wind" aria-label="Wind 3 to the right"><span>Wind</span>
+      <svg class="chev"><use href="#i-chev"/></svg><svg class="chev"><use href="#i-chev"/></svg><svg class="chev"><use href="#i-chev"/></svg><svg class="chev off"><use href="#i-chev"/></svg><svg class="chev off"><use href="#i-chev"/></svg>
+    </div>
+  </div>
+  <div class="corner-tr"><button class="jelly round second" aria-label="Pause" data-go="landing"><svg width="26" height="26"><use href="#i-pause"/></svg></button><button class="jelly round second" aria-label="Fullscreen"><svg width="26" height="26"><use href="#i-full"/></svg></button></div>
+
+  <div class="bottom-l">
+    <div class="dial" aria-label="Aim angle 52 degrees">
+      <svg width="128" height="128" viewBox="0 0 128 128">
+        <path d="M18,64 A46,46 0 0 1 110,64" fill="none" stroke="#2E1A47" stroke-width="3" stroke-dasharray="0 10" stroke-linecap="round"/>
+        <path d="M64,64 L92,28" stroke="#E8456B" stroke-width="8" stroke-linecap="round"/>
+        <circle cx="64" cy="64" r="9" fill="#2E1A47"/>
+        <circle cx="94" cy="26" r="14" fill="#E8456B" stroke="#2E1A47" stroke-width="4"/>
+        <path d="M88,21 Q91,18 95,18" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <text x="64" y="104" text-anchor="middle" font-family="Lilita One, sans-serif" font-size="28" fill="#2E1A47">52°</text>
+      </svg>
+    </div>
+    <div class="walk">
+      <button class="jelly round info" aria-label="Walk left"><svg width="28" height="28" style="color:#fff"><use href="#i-back"/></svg></button>
+      <button class="jelly round info" aria-label="Walk right"><svg width="28" height="28" style="color:#fff"><use href="#i-next"/></svg></button>
+    </div>
+  </div>
+
+  <div class="pill wname" style="height:38px;font-size:20px">Seed Spitter</div>
+  <div class="tray" role="radiogroup" aria-label="Weapons">
+    <div class="slot sel" role="radio" aria-checked="true"><svg width="46" height="46"><use href="#w-seed"/></svg><span class="n">∞</span></div>
+    <div class="slot" role="radio" aria-checked="false"><svg width="46" height="46"><use href="#w-dew"/></svg><span class="n">3</span></div>
+    <div class="slot" role="radio" aria-checked="false"><svg width="46" height="46"><use href="#w-pollen"/></svg><span class="n">1</span></div>
+  </div>
+
+  <div class="firewrap">
+    <svg viewBox="0 0 124 124"><circle cx="62" cy="62" r="56" fill="#FFF1D0" stroke="#2E1A47" stroke-width="4"/>
+      <circle cx="62" cy="62" r="56" fill="none" stroke="#FFD23F" stroke-width="9" stroke-linecap="round" stroke-dasharray="246 400" transform="rotate(-90 62 62)"/>
+      <circle cx="62" cy="62" r="56" fill="none" stroke="#2E1A47" stroke-width="4"/></svg>
+    <button class="jelly fire" aria-label="Fire, hold to charge power">FIRE</button>
+  </div>
+</section>
+
+<!-- ================= LEVEL SELECT ================= -->
+<section class="screen" id="levels" data-screen="levels">
+  <svg class="bg" viewBox="0 0 960 540"><use href="#jungle"/>
+    <path d="M-20,250 C200,200 500,230 980,220 L980,560 L-20,560 Z" fill="#5CB386" opacity=".35"/>
+    <path d="M90,216 C150,180 170,250 210,216 C250,180 290,250 330,216 C370,180 410,250 450,216 C490,180 530,250 570,216 C640,170 660,330 570,384 C530,410 490,350 450,384 C410,410 370,350 330,384 C290,410 250,350 210,384 C170,410 140,370 100,390"
+          fill="none" stroke="#2E1A47" stroke-width="18" stroke-linecap="round" opacity=".85"/>
+    <path d="M90,216 C150,180 170,250 210,216 C250,180 290,250 330,216 C370,180 410,250 450,216 C490,180 530,250 570,216 C640,170 660,330 570,384 C530,410 490,350 450,384 C410,410 370,350 330,384 C290,410 250,350 210,384 C170,410 140,370 100,390"
+          fill="none" stroke="#FFF1D0" stroke-width="10" stroke-linecap="round" stroke-dasharray="0 22"/>
+  </svg>
+  <div class="head">
+    <button class="jelly round second abs" style="left:16px;top:0" aria-label="Back" data-go="landing"><svg width="28" height="28"><use href="#i-back"/></svg></button>
+    <button class="jelly round info disabled" aria-label="Previous biome"><svg width="26" height="26"><use href="#i-back"/></svg></button>
+    <div class="pill biome-title">1 · Jungle Home</div>
+    <button class="jelly round info" aria-label="Next biome"><svg width="26" height="26" style="color:#fff"><use href="#i-next"/></svg></button>
+    <div class="pill abs" style="right:16px;top:4px"><svg width="26" height="28"><use href="#acorn"/></svg>8 / 30</div>
+  </div>
+
+  <button class="node done" style="left:90px;top:216px">1</button>
+  <button class="node done" style="left:210px;top:216px">2</button>
+  <button class="node done" style="left:330px;top:216px">3</button>
+  <button class="node cur" style="left:450px;top:216px" data-go="comic">4</button>
+  <button class="node locked" style="left:570px;top:216px"><svg width="30" height="30"><use href="#i-lock"/></svg></button>
+  <button class="node locked" style="left:570px;top:384px"><svg width="30" height="30"><use href="#i-lock"/></svg></button>
+  <button class="node locked" style="left:450px;top:384px"><svg width="30" height="30"><use href="#i-lock"/></svg></button>
+  <button class="node locked" style="left:330px;top:384px"><svg width="30" height="30"><use href="#i-lock"/></svg></button>
+  <button class="node rest" style="left:210px;top:384px" aria-label="Level 9, rest level"><svg width="38" height="30"><use href="#i-rest"/></svg></button>
+  <button class="node boss" style="left:96px;top:392px" aria-label="Level 10, boss"><svg width="46" height="38"><use href="#i-crown"/></svg></button>
+
+  <div class="acorns" style="left:90px;top:254px"><svg width="20" height="22"><use href="#acorn"/></svg><svg width="20" height="22"><use href="#acorn"/></svg><svg width="20" height="22"><use href="#acorn"/></svg></div>
+  <div class="acorns" style="left:210px;top:254px"><svg width="20" height="22"><use href="#acorn"/></svg><svg width="20" height="22"><use href="#acorn"/></svg><svg width="20" height="22"><use href="#acorn-off"/></svg></div>
+  <div class="acorns" style="left:330px;top:254px"><svg width="20" height="22"><use href="#acorn"/></svg><svg width="20" height="22"><use href="#acorn"/></svg><svg width="20" height="22"><use href="#acorn"/></svg></div>
+
+  <div class="panel card">
+    <h3>Level 4<br>Root Ridge</h3>
+    <div class="sub">Lob over the big root.</div>
+    <div class="row"><span class="chip"><svg width="28" height="28"><use href="#w-dew"/></svg>New: Dewdrop</span></div>
+    <div class="row">Best: <svg width="22" height="24"><use href="#acorn-off"/></svg><svg width="22" height="24"><use href="#acorn-off"/></svg><svg width="22" height="24"><use href="#acorn-off"/></svg></div>
+    <div class="row" style="color:var(--color-ink-soft)">Wind: gentle breeze</div>
+    <button class="jelly" data-go="battle">Play</button>
+  </div>
+  <div class="pips"><i class="on"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</section>
+
+<!-- ================= COMIC PANEL ================= -->
+<section class="screen" id="comic" data-screen="comic">
+  <svg class="bg" viewBox="0 0 960 540"><rect width="960" height="540" fill="#4A2F6B"/>
+    <g fill="#2E1A47" opacity=".5"><circle cx="80" cy="480" r="60"/><circle cx="900" cy="60" r="80"/><circle cx="880" cy="500" r="40"/></g></svg>
+  <div class="frame">
+    <svg viewBox="0 0 880 420" width="880" height="420" style="position:absolute;inset:0">
+      <rect width="880" height="420" fill="url(#g-sky)"/>
+      <!-- sun rays: rounded wedges -->
+      <g opacity=".35" fill="#FFF1D0"><path d="M640,0 Q700,180 760,0 Z"/><path d="M500,0 Q620,200 600,0 Z"/></g>
+      <path d="M0,300 C120,260 260,270 360,300 C470,330 620,300 880,290 L880,420 L0,420 Z" fill="#7CCB3E" stroke="#2E1A47" stroke-width="5"/>
+      <path d="M0,330 C160,310 300,330 440,340 C560,350 720,330 880,330 L880,420 L0,420 Z" fill="#3E9A3A" opacity=".55"/>
+      <!-- stumps of cleared jungle -->
+      <g stroke="#2E1A47" stroke-width="4" stroke-linejoin="round">
+        <path d="M60,300 C60,270 64,262 90,262 C116,262 120,270 120,300 Z" fill="#8E5A3B"/><ellipse cx="90" cy="263" rx="30" ry="9" fill="#E9C36B"/>
+        <path d="M770,296 C770,274 772,268 790,268 C808,268 810,274 810,296 Z" fill="#8E5A3B"/><ellipse cx="790" cy="269" rx="20" ry="6" fill="#E9C36B"/>
+      </g>
+      <!-- giant friendly sneaker stepping in (human as environment, never a target) -->
+      <ellipse cx="560" cy="318" rx="210" ry="22" fill="#2E1A47" opacity=".22"/>
+      <g stroke="#2E1A47" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+        <path d="M430,-10 L440,150 C442,180 420,200 400,214 C376,232 380,276 420,284 L740,296 C790,298 800,256 770,236 C730,210 690,170 680,120 L660,-10 Z" fill="#E8456B"/>
+        <path d="M392,268 C390,290 406,302 430,302 L752,312 C786,312 796,296 790,276 C700,284 500,282 392,268 Z" fill="#FFF1D0"/>
+        <path d="M470,150 Q540,140 600,160 M480,120 Q545,108 610,130 M490,90 Q550,78 615,98" fill="none" stroke-width="7"/>
+        <path d="M440,230 Q480,214 520,226" fill="none" stroke="#fff" stroke-width="8" opacity=".85"/>
+      </g>
+      <!-- motion lines -->
+      <g stroke="#2E1A47" stroke-width="5" stroke-linecap="round" opacity=".6"><path d="M360,90 Q380,92 396,90"/><path d="M350,140 Q372,142 392,138"/><path d="M800,180 Q818,176 836,178"/></g>
+      <!-- startled ants -->
+      <use href="#ant-a" x="150" y="230" width="96" height="84"/>
+      <g transform="translate(320,236) scale(-1,1)"><use href="#ant-a" width="86" height="75"/></g>
+      <g stroke="#2E1A47" stroke-width="5" stroke-linecap="round"><path d="M206,212 Q208,200 206,190"/><path d="M228,220 Q238,210 244,198"/><path d="M186,218 Q176,208 172,198"/></g>
+    </svg>
+    <div class="panel caption"><b>Chapter 2 · The Clearing</b><span>One morning, the sky grew a shoe.</span></div>
+    <div class="bubble" style="left:56px;top:132px">Is that... a really big beetle?</div>
+    <svg style="position:absolute;left:150px;top:222px" width="60" height="40" viewBox="0 0 60 40"><path d="M8,0 C14,18 30,30 46,34 C34,24 32,14 34,0 Z" fill="#fff" stroke="#2E1A47" stroke-width="4" stroke-linejoin="round"/><path d="M10,-4 L36,-4" stroke="#fff" stroke-width="8"/></svg>
+  </div>
+  <div class="comic-ui">
+    <button class="jelly second" data-go="levels">Skip</button>
+    <div class="cpips"><i class="on"></i><i></i><i></i><i></i></div>
+    <button class="jelly" data-go="battle">Next<svg width="24" height="24" style="color:#fff"><use href="#i-next"/></svg></button>
+  </div>
+</section>
+
+</div></div></div>
+
+<div id="rotate"><svg width="120" height="120" viewBox="0 0 120 120"><rect x="34" y="14" width="52" height="92" rx="14" fill="none" stroke="#FFF1D0" stroke-width="7"/><path d="M96,70 C104,92 88,108 64,108" fill="none" stroke="#E8456B" stroke-width="7" stroke-linecap="round"/><path d="M72,98 L62,108 L72,118" fill="none" stroke="#E8456B" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  Turn your device sideways<br>to play!</div>
+
+<script>
+  // FIT scaling of the fixed 960x540 logical stage inside the safe area
+  const stage=document.getElementById('stage'), box=document.getElementById('fitbox');
+  function fit(){const s=Math.min(box.clientWidth/960, box.clientHeight/540);
+    stage.style.transform=`translate(-50%,-50%) scale(${s})`;}
+  addEventListener('resize',fit); fit();
+  // screen routing via ?s=name or #name
+  function show(n){document.querySelectorAll('.screen').forEach(e=>e.classList.toggle('on',e.id===n));}
+  const q=new URLSearchParams(location.search).get('s')||location.hash.slice(1)||'landing';
+  show(q);
+  document.addEventListener('click',e=>{const b=e.target.closest('[data-go]'); if(b){show(b.dataset.go);}});
+  // no pinch / double-tap zoom
+  document.addEventListener('gesturestart',e=>e.preventDefault());
+  document.addEventListener('dblclick',e=>e.preventDefault());
+</script>
+</body>
+</html>
