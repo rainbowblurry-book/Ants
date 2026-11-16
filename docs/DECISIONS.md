@@ -83,3 +83,17 @@ Nothing appears in UI.md or PLAN.md without a Decision ID. Builder deviations ar
 - **Reason:** It reads as an ant, and as rowdy, at 35, 48, 62, 86 and 300+ px (see `preview/chars-*.png`). The silhouette scales for poster and landing art.
 - **Rejected:** (1) the beak problem; (3) four legs on the ground hide the fist and face, and the head turns into a blob at small sizes.
 - **Revisit if:** in-game ants must shrink below 40 px, or animation rigging needs a different limb layout.
+
+## DR-007 · Ant character locked to user-supplied concept (supersedes DR-006)
+- **Question:** Which ant design do we build the art on?
+- **Options:** (1) keep DR-006 SVG chibi · (2) adopt the user's Gemini concept sheet (`art/reference/ant-concept.webp`) as the design reference, redrawn as original SVG · (3) commission another concept round
+- **Debate:** GD: the concept reads as an ant at 40 px, and its four expressions (cocky, aiming, oops, dizzy) map directly onto game states. AD: it has the right ant cues: elbowed antennae, three clear body parts, six legs, a huge expressive face and an acorn cap; the scaly cap texture and soft shading must be flattened to fit DR-001/DR-003a. TL: two poses (hero 3/4 and side gameplay) plus 4 face swaps make a small rig and a cheap atlas.
+- **Winner:** (2). The rules for the redraw:
+  - **Body:** upright 3/4 hero pose (hand on hip, fist raised) for posters, landing and comics; side-view gameplay pose with all 6 legs on the ground, facing right and mirrored for left.
+  - **Head and face:** a big head with a wide mouth; four expression sets: cocky, aiming, oops, dizzy (stars, X-eyes, tongue; no injury).
+  - **Art rules:** flat fills only, no gradients and no white glints; a smooth acorn cap with no scale texture; a thick plum `#2E1A47` outline.
+  - **Teams:** **Amber `#E69F00` + rounded triangle** for the second team, replacing the concept's green to keep the Okabe-Ito colorblind-safe pair from DR-003. Blue `#0072B2` + circle for the first team.
+- **Reason:** The user approved this concept ("these are more like it"). It passes the small-size check on its own sheet.
+- **Rejected:** (1) the user found it unconvincing; (3) not needed.
+- **Licensing note:** the concept is an AI-generated reference image used only as reference. Shipped art is original SVG drawn in `/art` and does not trace the image.
+- **Revisit if:** the side-view pose is unreadable at the final in-game size (then enlarge the head and drop the middle legs in the small LOD).
