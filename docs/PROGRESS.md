@@ -67,7 +67,9 @@ These ran at 844x390 (DPR 3), 667x375 (DPR 2) and 1280x720 (DPR 1): 26 Playwrigh
 **Tests**
 - `npm test`: 2 files, 7 tests (render scale rule, theme tokens in sync).
 - `npm run e2e`: 26 checks pass, 1 skipped by design (the rotate overlay check is for touch devices only).
-- CI and Pages: see "Stage 0 CI" below.
+- **CI (GitHub Actions):** green. Stage branch run 3 and `main` run 4 passed `test` (typecheck, lint, unit tests) and `e2e` (the 26 Playwright checks, built with the `/Ants/` base path). On `main`, `build` and `deploy` also passed.
+- **Pages:** `https://rainbowblurry-book.github.io/Ants/` answers HTTP 200 with the new `index.html` (checked 2026-11-16). The builder could not run a browser against the live URL from its container. The same build, served under `/Ants/`, is what the CI browser checks ran against. A look on a real phone is still open (see "Open items").
+- Run 1 on the stage branch failed on lint only (quote style in the workflow file) and was fixed in the next commit.
 
 **Overrides logged:** OVR-001 (CI runs on stage branches), OVR-002 (Playwright and Node-types pins), OVR-003 (token generator and fonts arrive early). All Tier T. No Tier G.
 
@@ -168,6 +170,7 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 **When the art is drawn:** add a Decision Record (DR-007b) that marks DR-007a's placeholders as replaced. Re-run the preview screenshots, and check the side pose reads clearly at 88x63 and at 667x375.
 
 ## Open items carried forward
+- **Stage 0, for the user (optional, 1 minute):** open `https://rainbowblurry-book.github.io/Ants/` on a phone in landscape. The bottom-left line shows `S=2` and the frame time. About 16.7 ms means the phone's GPU handles S=2 at 60 fps. A number that stays over 20 ms means that phone should use smooth mode (S=1), which stage 13 offers automatically (DR-013).
 - **Ant art:** the reference images are in `art/source/`. The final SVG ant art is not drawn yet and waits for the user's go-ahead. UI.md §5 maps each sprite key to its reference file.
 - **Real-device checks** (UI.md §7, PLAN §12):
   - the S=2 render spike
