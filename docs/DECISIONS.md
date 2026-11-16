@@ -1125,3 +1125,50 @@ interface WindField {
 - **Revisit if:** Early levels are still too punishing after playtest.
 - **Judge:** Accepted.
 
+
+---
+
+# Checkpoint B · User edit after review (DR-058, DR-059)
+
+## DR-058 · Level 0 "Training Grounds" (user edit)
+- **Question:** How do new players try everything safely before Level 1?
+- **Options:** (1) no extra level; L1–3 teach as planned · (2) a Level 0 practice match: a very weak bot, unlimited ammo on all three weapons, no way to lose · (3) a non-combat sandbox with target dummies only
+- **Debate (compact):**
+  - GD: the user wants a place to "play to get ideas". A real match against a bot that rarely hits teaches the turn loop better than dummies, and "can't lose" keeps it relaxed.
+  - AD: it reuses the Jungle kit and Dot's tip cards, so no new art is needed beyond a "Training Grounds" sign on the level select.
+  - TL: it is one level file, a new AI index 0 and a "min 1 HP" flag for the player team. All of it is deterministic and testable.
+- **Winner:** (2).
+  - **Where it appears:** it is offered automatically on a new save before L1, with "Skip to Level 1" always visible. It appears on the level select as a "0" leaf sign before L1, replayable any time. It gives no acorns and gates nothing: L1 is open either way (DR-055).
+  - **Part 1, Practice:** the Jungle arena, 2 player ants vs 2 sparring rivals (Leafcutter Louts, amber).
+    - The bot runs at **AI index 0**: σ_p 40%, σ_a 12°, σ_w 3, k −0.8, b 3, B 30%, p_bf 0.12, which gives **~11% benchmark hits** (planner-calibrated, DR-063 model). It misses the way a beginner does: way too hard or too soft, and it ignores the wind.
+    - **The player cannot lose.** Player ants stop at 1 HP and pop back up dizzy.
+    - **Unlimited ammo** for Seed Spitter, Dewdrop Bounce and Pollen Pod.
+    - No turn timer.
+    - Scripted wind: 0 on turns 1–2, 2 on turns 3–4, 4 on turns 5–6, then a seeded ±4.
+    - One Dot tip card per new thing, tap to close: move, aim, power, fire, wind gauge, hop, Dewdrop, Pollen.
+    - A "Next" button appears after the player's 3rd turn. Part 1 ends when the rivals are knocked out or the player presses Next.
+  - The campaign still unlocks weapons as in DR-052. The L4 and L11 cards say "Dewdrop Bounce joins your kit" and "Pollen Pod joins your kit", so Level 0 is a free trial and not a permanent unlock.
+- **Reason:** the user asked for it. It also lowers the first-play barrier (pillar 4), and every miss stays funny (pillar 1).
+- **Rejected:** (1) it doesn't let players experiment freely; (3) dummies don't teach turns, wind reading against a bot, or retreating.
+- **Revisit if:** many players skip it (shorten the tip cards), or playtesters still lose L1 (then add a 4th tip card on bracketing).
+
+## DR-059 · Sneak Peek: 3 high-level teasers inside Level 0 (user edit)
+- **Question:** How do players get a taste of what the later game looks like, so they know what's coming and can plan?
+- **Options:** (1) a non-interactive trailer · (2) three short playable teasers back-to-back against capped-accuracy bots in late biomes · (3) unlock one late level early
+- **Debate (compact):**
+  - GD: playing beats watching. Short rounds that can't be lost, with a bot that clearly can aim, set a goal ("I want to beat that!") without frustration.
+  - AD: three late biomes with a title card each show off the variety: strong wind, a moving fan, and a kitchen boss cue.
+  - TL: these are three level files using existing fields, a round cap and a bot weapon lock. No new systems.
+- **Winner:** (2). **Part 2, Sneak Peek** follows Part 1 directly. It can also be launched alone from the Level 0 sign.
+  - **Rounds:** three 1v1 rounds, each lasting at most 2 rounds or until the rival is knocked out. A 1.5 s card sits between rounds ("Biome 4 · The Trail. You'll get here around Level 31!"). A Skip button is always shown.
+  - **Rival:** 40 HP. The **bot is at AI index 90** (about 95% accurate, the cap) and is locked to Seed Spitter, so it can deal at most 72 damage in 2 rounds. **The player's 100 HP ant cannot be knocked out.**
+  - **Player:** unlimited ammo on all three weapons, no timer.
+  - **Teaser 1, The Trail (B4):** a steady strong wind of 4 (DR-032). Lesson: "The wind gets strong."
+  - **Teaser 2, Living Room (B8):** the oscillating fan (A 4, P 6 s) and cushions. Lesson: "Wind that moves."
+  - **Teaser 3, The Kitchen (B10):** slick tiles. A Crumb Crown rival uses the hood telegraph: the cue plays on round 1 and the updraft fires on round 2 (DR-053 rule). Queen Gloria Glaze watches from her cake in the background, so the finale stays a surprise. Lesson: "Bosses warn you first."
+  - **End card:** "That's what's ahead. Ready?", which leads to Level 1. Win or lose, every teaser simply moves on. There are no acorns and no penalty.
+- **Reason:** this is the user's "3 high-level teasers in quick succession". Players see late mechanics and a near-perfect bot early, which makes goals and planning part of the fun (pillar 4), and they can't lose.
+- **Rejected:** (1) passive; (3) breaks the teach/test/twist order (DR-008).
+- **Revisit if:** the teasers scare young players. Then lower the teaser bot to AI index 70 and keep the visuals.
+- **Process note:** like DR-003a, these are user edits after review, debated by the planner without a subagent.
+- **Cross-record effects:** DR-063 gains an "index 0" row outside the 1–100 curve. DR-065 gains assert 8 (L0 hit rate in [0.06, 0.16]). DR-055: Level 0 never blocks L1. DR-052: Level 0 ammo is a trial only.

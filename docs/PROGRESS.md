@@ -19,6 +19,7 @@
   - bot AI with its error model and a calibrated curve
   - the test list, including the `ai-cap` headless test spec
   - the GitHub Pages workflow and the repo setting, plus risks
+- After the user's review: Level 0 added (DR-058, DR-059) to `PLAN.md` §6, §9 and §10.
 - `docs/DECISIONS.md`: 51 new records (DR-010 to DR-067) from six Sonnet debate subagents at medium effort (tech, terrain, physics, turn flow, campaign, bot AI). They are followed by the planner's judging summary (J1–J22) and a judge's line on every record.
 - Bot-AI calibration: a planner Monte-Carlo, not committed, using the plan's physics. At levels 90–100 the bot lands about 95% of benchmark shots inside the lethal radius in stable wind. Level 1 lands about 25%, level 20 about 39%, and the curve rises steadily in between.
 - Verified on 2026-11-16:
@@ -32,6 +33,7 @@
 - **Physics:** DR-030 g 600, full 45° shot 864 px · DR-031/032 wind levels ±5 at 25 px/s² plus Level, Column and Oscillate fields · DR-033 set-then-fire, wind-free short preview · DR-035 linear falloff, direct ×1.2, cap 60.
 - **Turns:** DR-041 alternate teams, fixed ant rotation · DR-042 turn state machine with a 3 s retreat · DR-043 30 s timer, skip on timeout · DR-044 rising "dew" sudden death · DR-045 two-player tap gate.
 - **Campaign:** DR-050 max 4 ants per side, AI index = level · DR-052 Dewdrop at L4, Pollen after Boss 1 · DR-053 4-round telegraphed boss loop · DR-055 no acorn gates, skip after 3 losses.
+- **Level 0 (user edit):** DR-058 "Training Grounds": a practice match against a ~11%-accurate bot, all 3 weapons unlimited, can't lose · DR-059 Sneak Peek: 3 quick teasers (Trail, Living Room, Kitchen) against a capped-accuracy bot, can't lose.
 - **Bot AI:** DR-061 human-like input errors · DR-062 lethal radius = 0.5·blast radius from the hurtbox · DR-063/064 calibrated curve with a floor at L90+ (95%) · DR-065 `tests/ai-cap.test.ts`.
 
 ## Ant art reference (`art/source/`, uploaded by the user 2026-11-16)

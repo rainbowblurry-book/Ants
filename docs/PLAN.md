@@ -210,6 +210,17 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
 - **Unlocking (DR-055):** linear, a level opens when the previous one is cleared or skipped. Acorns never gate anything. Any cleared or skipped level is replayable.
 - **Two-player (DR-057, J12):** 10 mirrored arenas (one per biome, using its wind field) plus a Random arena, all open from the start, with no boss tricks.
 
+**Level 0 "Training Grounds" (DR-058, DR-059; user edit):** offered before L1 on a new save, always skippable and replayable, with no acorns and no gating.
+
+| Part | Arena | Ants | Bot | Ammo | Rules |
+|---|---|---|---|---|---|
+| 1 Practice | Jungle | 2 v 2 sparring Louts | AI index 0 (~11% hits) | all 3 weapons unlimited | can't lose (player ants stop at 1 HP); no timer; wind 0 → 2 → 4 → ±4; Dot tip cards; "Next" after turn 3 |
+| 2 Sneak Peek, teaser 1 | The Trail (B4) | 1 v 1 (rival 40 HP) | AI index 90, Seed only | unlimited | strong steady wind 4; ≤ 2 rounds |
+| 2 Sneak Peek, teaser 2 | Living Room (B8) | 1 v 1 (rival 40 HP) | AI index 90, Seed only | unlimited | oscillating fan, cushions; ≤ 2 rounds |
+| 2 Sneak Peek, teaser 3 | The Kitchen (B10) | 1 v 1 (rival 40 HP) | AI index 90, Seed only | unlimited | slick tiles; hood cue in round 1, fires in round 2; Gloria watches from the background |
+
+- Each teaser is followed by a 1.5 s card ("You'll get here around Level N!"), and the run ends on "That's what's ahead. Ready?", which leads to L1. The player cannot be knocked out in any teaser: the bot can deal at most 72 damage.
+
 **All 100 levels** (generated from the rules above; ★ = teach; ammo "—" = weapon not unlocked yet):
 
 | Lvl | Biome | Slot | Ants (you v rivals) | AI index | Ammo Dew/Pollen | Focus | Par |
@@ -400,6 +411,7 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
 
 | Level | σ_p % | σ_a ° | σ_w | k | b | B % | p_bf | Benchmark hit % |
 |---|---|---|---|---|---|---|---|---|
+| 0 (Level 0 only) | 40 | 12 | 3 | −0.8 | 3 | 30 | 0.12 | 11 |
 | 1 | 15 | 9 | 1.2 | −0.5 | 1.5 | 12 | 0.12 | 25 |
 | 10 | 11.5 | 6.2 | 1.0 | −0.3 | 1.0 | 9.5 | 0.08 | 32 |
 | 20 | 9 | 5 | 0.8 | −0.2 | 0.6 | 7 | 0.04 | 39 |
@@ -428,7 +440,7 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
 | `damage.test.ts` | falloff, direct ×1.2, cap 60, self ×0.5 never lethal, fall damage | DR-035, DR-026 |
 | `turn.test.ts` | FSM order, timer skip, settle rule, 12 s cap, sudden death, win/draw | DR-042, DR-043, DR-044, DR-038 |
 | `replay.test.ts` | seed + input log re-simulates to an identical state hash | DR-011, DR-047 |
-| `levels.test.ts` | all 110 levels pass the validator and checksums | DR-025, DR-056 |
+| `levels.test.ts` | all 114 levels (Level 0 practice + 3 teasers, 100 campaign, 10 arenas) pass the validator and checksums | DR-025, DR-056, DR-058, DR-059 |
 | **`ai-cap.test.ts`** | **the bot cap; spec below** | **DR-065** |
 
 **`tests/ai-cap.test.ts` (DR-065):**
@@ -443,6 +455,7 @@ TurnStart ──► Move/Aim ──► Fire ──► Resolve ──────
   5. Monotonic: hit(L+10) ≥ hit(L) − 0.02.
   6. 700 px bucket at L ≥ 90 ≥ 0.80.
   7. Determinism: identical counts and the first 100 impacts.
+  8. AI index 0 (Level 0) within [0.06, 0.16] (DR-058).
 - **Runtime:** about 200k sims, roughly 10–20 s. If it goes over 30 s, halve the non-cap trials.
 
 ## 11. Hosting: GitHub Actions to GitHub Pages (DR-017, DR-016)
@@ -527,4 +540,4 @@ The action majors were verified with `git ls-remote` on 2026-11-16. Deploys only
 | Node 24 as CI LTS | assumed | CI run (DR-016) |
 | Keyboard power keys, vertical wind chevron (Garden), touch target sizes at 667x375 | not decided | UI.md, checkpoint C (DR-015, DR-032) |
 | Final ant art | **placeholder, not approved** | user's new images (DR-007a) |
-| Content counts (60 stamps, 110 levels) | estimates | HANDOFF stage plan (DR-025, DR-056) |
+| Content counts (60 stamps, 114 levels) | estimates | HANDOFF stage plan (DR-025, DR-056) |
