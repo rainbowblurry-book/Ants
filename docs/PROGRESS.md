@@ -42,7 +42,7 @@ Best results, in order of preference:
 4. **Upload into the repo** at `art/source/ants/` (or attach in chat). File names like `hero.png`, `side.png`, `face-cocky.png`.
 
 ## Open items carried forward
-- Ant art: waiting for the user's images (see above).
+- Ant art: the user uploaded new reference images to `art/source/` (`heropose`, `sidepose`, `cocky`, `aim`, `oops`, `dizzy` .jpeg) during checkpoint B. They have **not been reviewed or used yet**. Ant art stays placeholder until the user says to start.
 - UI.md (checkpoint C) must decide:
   - touch target sizes at 667x375 (FIT 0.69)
   - keyboard power keys
