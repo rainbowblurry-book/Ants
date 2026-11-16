@@ -110,3 +110,11 @@ Nothing appears in UI.md or PLAN.md without a Decision ID. Builder deviations ar
 - **Rejected:** (2) sharp-tool props and an awkward bathroom; (3) too little variety.
 - **Revisit if:** PLAN.md finds two biomes whose mechanics overlap too much, or the build budget forces fewer unique terrains.
 - **Process note:** story content is not a screen or system, so the planner ran this as a compact debate without a subagent.
+
+## DR-007a · Ant art status: placeholder cut-outs, final art NOT approved
+- **Question:** The SVG redraw of DR-007 (especially the helmets) was rejected. What do we show until final art arrives?
+- **Options:** (1) keep iterating SVG redraws now · (2) use cut-outs from the user's concept image as placeholders and lock the rest of the work · (3) stick-figure stand-ins
+- **Debate (compact):** GD: the gameplay plan doesn't depend on final art, so unblock the plan. AD: the user's concept image is closest to what they want, so cut-outs are the honest stand-in. TL: cut-outs (`art/reference/placeholder/*.png`, made by `cut_placeholders.py`) keep the sizes and positions realistic for layout checks.
+- **Winner:** (2). Hero and side poses are cut from `ant-concept.webp` with the background keyed out. Caps are hue-shifted to team blue and amber. Faces are taken as tiles.
+- **Status:** **Ant art is NOT approved.** The user will supply better images later (see PROGRESS "How to send ant art"). The final art must be original, flat SVG following CREATIVE §2 and must not ship the AI image.
+- **Revisit when:** the user delivers new ant images.

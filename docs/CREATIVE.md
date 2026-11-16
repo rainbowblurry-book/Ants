@@ -11,7 +11,9 @@ Reference files: `art/reference/` (approved preview, screenshots, `ant-concept.w
 - **Terrain (pillar 3):** soil body plus a grass or surface band along the top edge (biome-specific), with a lighter rim line on top. The outline is generated from the destructible mask (blur, threshold, stroke), so every crater gets the same rounded inked edge.
 - **Humans:** shown only as giant environment props (shoes, tents, furniture, hands in comics) or off-screen presences. They are never targets, never menacing, and their faces are never shown close up.
 
-## 2. Ant character (DR-007, from the user-supplied concept)
+## 2. Ant character (DR-007, DR-007a) · ⚠ FINAL ART NOT APPROVED, placeholders in use
+The spec below is the target. The rejected SVG redraw is gone, and the preview shows cut-outs from the user's concept until the user supplies better images.
+
 **Body plan:**
 - **Head:** a big round head, about 40% of hero height, carrying the face.
 - **Helmet:** an acorn-cap helmet in team colour, tilted about 8–12°, with a darker brim band, a few flat shade "scale" dots and a curly stem.

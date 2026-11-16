@@ -1,6 +1,8 @@
 # Progress
 
-**Current stage:** Checkpoint A **complete**, waiting for the user's go-ahead to start checkpoint B.
+**Current stage:** Checkpoint A **complete except ant art**, waiting for the user's go-ahead to start checkpoint B.
+
+> ⚠ **ANT ART IS NOT APPROVED.** The preview uses cut-outs from the user's concept image (`art/reference/placeholder/`, DR-007a). The user rejected the SVG redraws (helmets looked wrong). Do not draw new ant art until the user sends better images; then follow "How to send ant art" below.
 **Branch:** `claude/eager-mccarthy-jpc952` on `rainbowblurry-book/Ants`.
 
 ## Done (checkpoint A)
@@ -16,7 +18,15 @@
 - DR-007 ant from the user's concept (blue+circle, amber+triangle, 4 faces, hero and side poses)
 - DR-008 biome sequence: Jungle, Clearing, Camp, Trail, Village Garden, Picnic Park, Porch, Living Room, Pantry, Kitchen; teach/test/twist/rest/boss
 
+## How to send ant art (for the user)
+Best results, in order of preference:
+1. **Separate files, one pose per file:** transparent PNG at least 1024 px tall, or SVG. One file each for: hero pose, side gameplay pose (facing right), and each face (cocky, aim, oops, dizzy).
+2. **Plain flat background** (pure white or pure green `#00FF00`), no text, no drop shadows, and nothing touching the character.
+3. **Same character, same scale, same cap** in every file. One colour version is enough; team colours are applied in code.
+4. **Upload into the repo** at `art/source/ants/` (or attach in chat). File names like `hero.png`, `side.png`, `face-cocky.png`.
+
 ## Open items carried forward
+- Ant art: waiting for the user's images (see above).
 - Minimum touch size at 667x375 (FIT scale 0.69): decide in UI.md (checkpoint C).
 - Final in-game ant size (preview uses 96 px wide side pose): decide in PLAN.md.
 
