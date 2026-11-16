@@ -1,6 +1,6 @@
 # Progress
 
-**Current stage:** Checkpoint C **complete**. Waiting for the user's approval before checkpoint D (`docs/HANDOFF.md`).
+**Current stage:** Planning **complete** (A–D). Checkpoint D (`docs/HANDOFF.md`) is written and pushed to `main`. Next: the builder (Fable) starts at HANDOFF stage 0.
 
 > ⚠ **ANT ART: the reference is in `art/source/`, but final art is not drawn or approved yet.** The user's Gemini images in `art/source/` are now **the** design reference for the ants (see "Ant art reference" below). They replace `art/reference/ant-concept.webp` as the main reference. The preview still shows the old placeholder cut-outs (DR-007a). Draw the final ant art only when the user asks, from these images.
 **Branch:** `claude/eager-mccarthy-jpc952` on `rainbowblurry-book/Ants`.
@@ -37,7 +37,12 @@
 - **Verified:** I recomputed every text-on-fill contrast ratio (WCAG 2.x) with a script on 2026-11-16. The old raspberry `#E8456B` failed. The new `action` `#EE6083` with plum text gives 4.90, and the scrim was raised to 70% (60% gave 3.79).
 - **Process note:** the HUD and Settings agents hit a rate limit before saving their files. I copied their records from their reports. No screenshots were taken in C (it is a spec only).
 
-## Key decisions so far
+**Checkpoint D:**
+- `docs/HANDOFF.md`: a one-page Decisions Summary, builder rules, and 14 stages (0–13). Each stage has files, acceptance tests and a HARD/ROUTINE tag. The milestones are M1 hot-seat at stage 5, M2 campaign at stage 8, and v1.0.0 at stage 13.
+- DR-190 to DR-197 cover stage order, tagging, test gates, the override tiers, branching, the asset manifest and placeholders, src layout, and content pacing.
+- **Process note:** the Sonnet limit was exhausted, and the user asked for D to be done now, so the planner ran D's compact debates itself.
+- `main` is fast-forwarded to the planning branch.
+
 - **Look:** DR-001 Flash vector world · DR-002 Seed Spitter / Dewdrop Bounce / Pollen Pod · DR-003/003a jelly UI, no glints · DR-004 Phaser 3.90.0 · DR-007/007a ant concept (placeholder art) · DR-008 biome order and rhythm.
 - **Tech:** DR-010 60 Hz fixed step, rules in plain TS · DR-011 sfc32 streams, banned APIs, 0.1° trig table · DR-013 960x540 FIT with 2x crisp canvas (needs spike) · DR-014 96 MB texture budget · DR-017 Actions to Pages.
 - **Terrain:** DR-020 one 960x540 screen · DR-021 `Uint8Array` grid owned by the sim · DR-022 8 materials · DR-024 chunked outline redraw · DR-025 build-time masks · DR-027 ant 88x63, capsule hurtbox.
@@ -105,10 +110,4 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 - **GitHub Pages:** done by the user (Settings → Pages → Source: "GitHub Actions").
 
 ## Next step
-Checkpoint D, after the user approves C: `docs/HANDOFF.md`.
-- It starts with a one-page Decisions Summary ("we chose X over Y because Z").
-- Then a stage-by-stage build plan: files and acceptance tests per stage, each stage tagged hard (Fable, high effort) or routine (Sonnet subagent, medium effort).
-- Stage 0 is the S=2 spike.
-- The builder follows the decisions and logs any deviation as an `OVR-###` record.
-
-Draft records for D's process questions already exist from an earlier debate this session: stage order, the hard/routine rule, the test stack, the Pages workflow, the override tiers, src layout, and placeholder art. They were run without PLAN.md and are not committed. Re-run them against PLAN.md before use; for example, they pinned Actions v4, where PLAN.md says v5–v7.
+The build starts in a new chat with Fable, following `docs/HANDOFF.md` from stage 0. The builder stops after each stage, and for playtests at M1 and M2.

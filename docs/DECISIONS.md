@@ -2541,3 +2541,142 @@ Records and rulings were checked against the pillars: pillar 2 (one-glance HUD, 
 - DR-057 still says ammo 4/3 and crates every 4 rounds. J12 and J11 already amend this (3/1, every 3rd round).
 - DR-180 "Pickups" label covers both Honey Drop and Seed Bundle (J11); DR-045 only names honey drops.
 - The turn chip at top-left and gate button at bottom-centre must be checked against the HUD and pause-button rects from the parallel records.
+
+
+---
+
+# Checkpoint D · Build process (DR-190 to DR-197)
+
+**Process note:** the brief asks for Sonnet subagent debates. The account's Sonnet limit was exhausted until 22:40 UTC, and the user asked for D to be done now. So the planner ran these as compact 3-voice debates itself, as was done for DR-008. Earlier drafts (P-1 to P-8, written this session without PLAN.md) were used only as prompts and corrected to PLAN.md (Actions majors v5–v7, not v4). The user may ask for a Sonnet re-run.
+
+## DR-190 · Build stage order and milestones
+- **Question:** In what order is the game built, and where are the playable milestones?
+- **Options:** (1) systems in PLAN order, UI last · (2) headless sim first, then render and HUD for a two-player slice, then bot and menus for a campaign slice, then content · (3) art pipeline first
+- **Debate (compact):** GD: get two humans playing on a phone early, then a bot. / AD: final ant art is not approved (DR-007a), so art must never gate play. / TL: determinism tests must exist before any pixels, and the S=2 spike decides the render path (DR-013).
+- **Winner:** (2). There are 14 stages, 0 to 13 (HANDOFF.md).
+  - **M1 "Hot-seat slice"** = end of stage 5: one arena, 2 players, 6 weapons, placeholder art, live on Pages.
+  - **M2 "Campaign slice"** = end of stage 8: Level 0 plus Biome 1 (L1–L10), with bot, menus, saves and rewards L1–10.
+  - **M3 "Release"** = stage 13.
+- **Reason:** every milestone is deployable and playtestable, and every stage ends on green tests.
+- **Rejected:** (1) late UI hides layout problems; (3) blocks play on unapproved art.
+- **Revisit if:** stage 5 is not playable on a phone, or the S=2 spike fails (then S=1 per DR-013 and continue).
+- **Builds on:** DR-010, DR-013, DR-016, DR-017, DR-007a
+- **Judge:** Accepted.
+
+## DR-191 · Hard versus routine tagging
+- **Question:** Which stages go to Fable at high effort, and which to a Sonnet subagent at medium effort?
+- **Options:** (1) by size · (2) by the cost of a silent mistake · (3) everything hard
+- **Debate (compact):** GD: feel and balance bugs hide. / AD: data entry and screens from a spec are mechanical. / TL: a mistake in the sim, RNG, turn FSM or bot looks fine until a replay desyncs.
+- **Winner:** (2). A stage is **HARD** if any of these hold:
+  - it touches the fixed-step sim or the RNG
+  - it owns the turn state machine or the input buffer
+  - it needs numeric tuning against a test cap
+  - it sets an architecture other stages import
+  - it owns performance
+  
+  Every other stage is **ROUTINE**. Within a hard stage, Fable may hand clearly mechanical sub-tasks to Sonnet subagents.
+- **Reason:** the tag follows risk, not volume.
+- **Rejected:** (1) size is a poor proxy; (3) wastes budget on data.
+- **Revisit if:** a routine stage fails its acceptance tests twice. Then re-tag it HARD and log an OVR.
+- **Builds on:** DR-010, DR-011, DR-042, DR-065
+- **Judge:** Accepted.
+
+## DR-192 · Test layers and gates
+- **Question:** Which tests gate each stage?
+- **Options:** (1) Vitest only · (2) Vitest for sim, data and tokens, plus Playwright for UI at three viewports · (3) Playwright for everything
+- **Debate (compact):** GD: the bot cap needs about 200k headless shots. / AD: clipped HUDs only show in screenshots. / TL: the sim runs in node in seconds, and Playwright drives `vite preview`.
+- **Winner:** (2).
+  - `npm test` is Vitest: PLAN §10 plus UI.md §6 checks 1, 2, 3 and 8.
+  - `npm run e2e` is Playwright at 844x390, 667x375 and 1280x720 with `--trace off`. It covers boot, one full turn, rotate, the pseudo-locale, and screenshots saved as CI artifacts.
+  - CI runs `typecheck`, `lint` and `test` on every push. e2e runs on `main` and on pull requests.
+  - A stage is done only when its listed tests pass in CI.
+- **Reason:** fast logic gates, with visual gates only where pixels matter.
+- **Rejected:** (1) no layout proof; (3) too slow for ai-cap.
+- **Revisit if:** CI takes over 10 minutes. Then move e2e to nightly.
+- **Builds on:** DR-016, DR-065, DR-087, DR-088
+- **Judge:** Accepted. This amends the PLAN §11 workflow by adding an `e2e` job.
+
+## DR-193 · Override protocol for the builder
+- **Question:** How may the builder deviate from a decision?
+- **Options:** (1) freely, with a note in the commit · (2) a logged OVR record in two tiers · (3) never
+- **Debate (compact):** GD: gameplay must not drift silently. / AD: the user approves look changes. / TL: forced technical fixes must not stall the build.
+- **Winner:** (2). Record shape in DECISIONS.md:
+  - `## OVR-### · title`
+  - **Overrides** (the DR or J id)
+  - **Reason**
+  - **Change** (exact values)
+  - **Impact** (files and tests)
+  - **Tier**
+  - **Status**
+  - **Revert plan**
+  
+  The two tiers:
+  - **Tier T** (technical, nothing visible or gameplay changes): the builder applies it and logs it in the same commit.
+  - **Tier G** (a gameplay number, look, UI, copy or scope): the builder logs it as `proposed`, carries on with unrelated work, and applies it only after the user approves.
+  
+  A deviation is allowed only when a decision is proven infeasible or breaks a test or a pillar. The commit message cites the OVR id. Numbers are sequential and never reused.
+- **Reason:** keeps the decision trail honest without freezing the build.
+- **Rejected:** (1) erodes the trail; (3) breaks on real surprises.
+- **Revisit if:** more than 5 Tier G overrides pile up in one stage.
+- **Builds on:** DECISIONS.md header
+- **Judge:** Accepted.
+
+## DR-194 · Branching and deploy during the build
+- **Question:** Where does the builder commit, and when does code reach Pages?
+- **Options:** (1) commit straight to `main` · (2) one branch per stage, merged to `main` when the stage's tests pass · (3) one long-lived dev branch
+- **Debate (compact):** GD: each merged stage should be playable online. / AD: no half-built screens should go public. / TL: the PLAN §11 workflow deploys only from `main`.
+- **Winner:** (2). Branches are named `build/stage-NN-name`. Merge to `main` when CI is green. Tag the milestones `m1-hotseat`, `m2-campaign` and `v1.0.0`. Never force-push `main`.
+- **Reason:** `main` always deploys a working game.
+- **Rejected:** (1) a broken deploy is one commit away; (3) nothing deploys for weeks.
+- **Revisit if:** the user wants pull-request reviews. Then open a pull request per stage.
+- **Builds on:** DR-017
+- **Judge:** Accepted.
+
+## DR-195 · Asset manifest and the placeholder policy
+- **Question:** How do we build while the ant art is unapproved?
+- **Options:** (1) wait for final art · (2) placeholders behind one manifest · (3) code-drawn shapes
+- **Debate (compact):** GD: layouts need real silhouettes. / AD: the AI concept image must never ship. / TL: one manifest maps keys to frames and anchors, so a swap is a file change, not a code change.
+- **Winner:** (2).
+  - `src/assets/manifest.ts` is the only place frame names, anchors (`trinketAnchor`), hurtbox offsets and atlas paths live.
+  - Code requests keys such as `ant.side.blue.idle`.
+  - Stage 4 packs `art/reference/placeholder/*.png` plus flat token shapes into a placeholder atlas. Each entry carries `placeholder: true`.
+  - Final art arrives through the stage 12 pipeline under the same keys.
+  - A test fails if a key lacks a frame, or if code names a frame directly.
+  - The release build (stage 13) fails while any `placeholder: true` remains.
+- **Reason:** gameplay moves now, and the concept image cannot ship by accident.
+- **Rejected:** (1) stalls everything; (3) wrong sizes.
+- **Revisit if:** the final rig needs frame data the schema cannot hold.
+- **Builds on:** DR-007a, DR-014, DR-088, DR-162
+- **Judge:** Accepted.
+
+## DR-196 · Source layout
+- **Question:** Final `src/` folders?
+- **Options:** (1) PLAN §1 layout plus `assets/`, `i18n/`, `audio/` and `nav/` · (2) feature folders · (3) flat
+- **Debate (compact):** GD: levels and weapons are data. / AD: a restyle touches `theme.json` only. / TL: `src/sim` and `src/ai` never import Phaser, enforced by Biome and the ban-scan test.
+- **Winner:** (1).
+  - PLAN §1 folders, plus:
+    - `src/assets/` (manifest)
+    - `src/i18n/` (`en.json`, `en-XA` generated)
+    - `src/audio/` (synth)
+    - `src/ui/` (theme loader, generated `theme.ts` and `theme.css`, components, `Layout`, `Focus`, `Nav`)
+    - `src/html/` (splash, rotate, settings, fatal)
+  - `index.html` holds the inline splash, rotate and fatal markup.
+- **Reason:** matches PLAN, and keeps the boundaries enforceable.
+- **Rejected:** (2) splits the shared sim; (3) mixes sim and render.
+- **Revisit if:** the theme needs runtime switching.
+- **Builds on:** DR-010, DR-012, DR-088
+- **Judge:** Accepted.
+
+## DR-197 · Content production pacing
+- **Question:** How are 112 levels, 33 comic panels, 78 stickers and the reward art produced without blocking code?
+- **Options:** (1) all content in one stage · (2) Biome 1 content inside the M2 slice, then batches per biome · (3) content last
+- **Debate (compact):** GD: tune the teach/test/twist rhythm on Biome 1 before copying it 9 times. / AD: one biome's art set proves the style. / TL: the validator and contact sheets make batches cheap to review.
+- **Winner:** (2).
+  - Stage 8 builds Level 0, L1–L10, the Biome 1 comic and the L1–10 rewards.
+  - Stage 9 adds biomes 2–10 in batches of 2, each batch with its levels, boss, comic, stickers and rewards, plus the 10 two-player arenas.
+  - Each batch must pass the validator, the contact-sheet review and the ai-cap test.
+- **Reason:** learn on one biome, then repeat.
+- **Rejected:** (1) a huge unreviewable stage; (3) late surprises.
+- **Revisit if:** Biome 1 playtests change the slot template (DR-051).
+- **Builds on:** DR-025, DR-051, DR-056, DR-071
+- **Judge:** Accepted.

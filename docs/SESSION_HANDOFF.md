@@ -1,5 +1,5 @@
 # Handoff: Project Ants planning, checkpoint C done → await approval, then D
-Seq: 2 | Date: 2026-11-16 | Branch@commit: claude/eager-mccarthy-jpc952@fd987a9 | Status: in progress (C done, waiting for the user's approval before D)
+Seq: 3 | Date: 2026-11-16 | Branch@commit: main (same as claude/eager-mccarthy-jpc952) | Status: planning done (A–D); the build starts at HANDOFF stage 0
 Saved to: rainbowblurry-book/Ants, docs/SESSION_HANDOFF.md (not docs/HANDOFF.md: that name is the checkpoint D deliverable)
 
 ## Goal
@@ -42,6 +42,7 @@ Plan (not build) a Phaser 3 ant artillery game. You act as the **planner**: writ
 - Real-device checks are still open: the S=2 spike, safe-area `env()` values, and Hop-row reach (UI.md §7).
 
 ## Next steps
+0. **Superseded by seq 3:** the user approved C, and D is done (`docs/HANDOFF.md`, DR-190 to DR-197) and pushed to `main`. The builder follows `docs/HANDOFF.md` §2–§3, starting at stage 0. The steps below are history.
 1. Wait for the user's approval of C, and apply any edits they ask for as new DRs or J rulings.
 2. Run the D debates: build stage order, the hard/routine tag rule, the test stack, the override tiers, src layout and the placeholder-art manifest.
    - Use Sonnet at medium effort, with PLAN §10–§12, UI.md §6 and J48–J50 as required context.
@@ -59,4 +60,5 @@ Plan (not build) a Phaser 3 ant artillery game. You act as the **planner**: writ
 - `art/source/`: the ant reference images. `art/reference/`: the approved preview.
 
 ## Previous handoffs
+- seq 2 (2026-11-16): C done, await approval.
 - seq 1 (2026-11-16): B done, start C then D.
