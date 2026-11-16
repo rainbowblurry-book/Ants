@@ -152,7 +152,7 @@ html,body{height:100%;background:var(--color-ink);overflow:hidden;overscroll-beh
 /* ===== Comic ===== */
 #comic .frame{position:absolute;left:40px;top:28px;width:880px;height:420px;border:6px solid var(--color-ink);border-radius:34px;overflow:hidden;
   box-shadow:0 8px 0 var(--color-ink);background:var(--prim-sky-400)}
-.caption{position:absolute;left:24px;top:22px;max-width:380px;padding:12px 18px;transform:rotate(-1.5deg)}
+.caption{position:absolute;right:24px;bottom:20px;max-width:560px;padding:12px 18px;transform:rotate(-1.5deg)}
 .caption b{display:block;font-family:var(--font-display);font-weight:400;font-size:20px;color:var(--color-action)}
 .caption span{font-family:var(--font-display);font-size:30px;line-height:1.1}
 .bubble{position:absolute;padding:12px 18px;background:#fff;border:var(--outline) solid var(--color-ink);border-radius:30px;
@@ -216,94 +216,103 @@ html,body{height:100%;background:var(--color-ink);overflow:hidden;overscroll-beh
       <circle cx="642" cy="126" r="9" fill="#FFD978" stroke="#2E1A47" stroke-width="3.5"/>
     </symbol>
 
-    <!-- ANT CHARACTER (DR-006): upright chibi, front-facing face, elbowed antennae,
-         pinched waist, striped gaster, symmetric side jaws. Two LODs share one silhouette. -->
-    <symbol id="ant-full" viewBox="0 0 100 110" overflow="visible">
-      <g fill="none" stroke="#2E1A47" stroke-linecap="round" stroke-linejoin="round">
-        <!-- middle legs -->
-        <path d="M50,68 Q40,72 36,82" stroke-width="4"/><path d="M62,68 Q72,74 74,82" stroke-width="4"/>
-        <!-- standing legs -->
-        <path d="M53,76 Q49,88 45,98" stroke-width="5"/><path d="M60,76 Q64,88 68,98" stroke-width="5"/>
+    <!-- ANT CHARACTER (DR-007): from user concept sheet, redrawn flat. Hero pose 120x150, side pose 140x100. -->
+    <symbol id="hero-body" viewBox="0 0 120 150" overflow="visible">
+      <path d="M66,86 Q50,96 42,112" fill="none" stroke="#2E1A47" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M66,86 Q50,96 42,112" fill="none" stroke="#7A3418" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M74,86 Q90,98 98,112" fill="none" stroke="#2E1A47" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M74,86 Q90,98 98,112" fill="none" stroke="#7A3418" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="rotate(-18 46 110)">
+        <ellipse cx="46" cy="110" rx="27" ry="22" fill="#B4532A" stroke="#2E1A47" stroke-width="4"/>
+        <path d="M30,92 Q24,110 30,128" fill="none" stroke="#7A3418" stroke-width="5" stroke-linecap="round"/>
+        <path d="M46,88 Q40,110 46,132" fill="none" stroke="#7A3418" stroke-width="5" stroke-linecap="round"/>
       </g>
-      <ellipse cx="42" cy="99" rx="7" ry="4.5" fill="#6E2F1C" stroke="#2E1A47" stroke-width="3"/>
-      <ellipse cx="71" cy="99" rx="7" ry="4.5" fill="#6E2F1C" stroke="#2E1A47" stroke-width="3"/>
-      <!-- gaster with stripes -->
-      <g transform="rotate(-24 28 72)">
-        <ellipse cx="28" cy="72" rx="21" ry="17" fill="#A84B2C" stroke="#2E1A47" stroke-width="4"/>
-        <path d="M17,57 Q12,72 17,87" fill="none" stroke="#6E2F1C" stroke-width="4" stroke-linecap="round"/>
-        <path d="M38,57 Q44,72 38,87" fill="none" stroke="#6E2F1C" stroke-width="4" stroke-linecap="round"/>
-      </g>
-      <!-- waist + thorax -->
-      <circle cx="46" cy="66" r="5.5" fill="#A84B2C" stroke="#2E1A47" stroke-width="3.5"/>
-      <ellipse cx="57" cy="64" rx="10" ry="13" fill="#A84B2C" stroke="#2E1A47" stroke-width="4"/>
-      <!-- hand on hip -->
-      <path d="M51,58 Q42,61 46,69" fill="none" stroke="#2E1A47" stroke-width="4.5" stroke-linecap="round"/>
-      <!-- elbowed antennae -->
-      <g fill="none" stroke="#2E1A47" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M53,20 L50,8 Q49,4 45,5 L36,8"/><path d="M68,20 L71,8 Q72,4 76,5 L84,9"/>
-      </g>
-      <circle cx="35" cy="8.5" r="4" fill="#2E1A47"/><circle cx="85" cy="9.5" r="4" fill="#2E1A47"/>
-      <!-- head -->
-      <circle cx="60" cy="37" r="20" fill="#A84B2C" stroke="#2E1A47" stroke-width="4"/>
-      <!-- side jaws (symmetric, not a beak) -->
-      <path d="M42,45 C36,49 38,57 45,57 C44,53 45,50 48,48 Z" fill="#6E2F1C" stroke="#2E1A47" stroke-width="3" stroke-linejoin="round"/>
-      <path d="M78,45 C84,49 82,57 75,57 C76,53 75,50 72,48 Z" fill="#6E2F1C" stroke="#2E1A47" stroke-width="3" stroke-linejoin="round"/>
-      <!-- eyes, angry brows -->
-      <ellipse cx="53" cy="38" rx="6" ry="7" fill="#fff" stroke="#2E1A47" stroke-width="2.8"/>
-      <ellipse cx="67" cy="38" rx="6" ry="7" fill="#fff" stroke="#2E1A47" stroke-width="2.8"/>
-      <circle cx="55" cy="39.5" r="3.2" fill="#2E1A47"/><circle cx="69" cy="39.5" r="3.2" fill="#2E1A47"/>
-      <path d="M45,29 Q51,29 58,33" fill="none" stroke="#2E1A47" stroke-width="4.5" stroke-linecap="round"/>
-      <path d="M62,33 Q69,29 75,29" fill="none" stroke="#2E1A47" stroke-width="4.5" stroke-linecap="round"/>
-      <!-- grin + chipped tooth -->
-      <path d="M52,48 Q60,54 69,47" fill="none" stroke="#2E1A47" stroke-width="3" stroke-linecap="round"/>
-      <path d="M58,50.6 L58.4,54.6 Q60,55.6 61.6,54.6 L62,50.8" fill="#fff" stroke="#2E1A47" stroke-width="2" stroke-linejoin="round"/>
-      <!-- dented acorn-cap helmet, tilted -->
-      <g transform="rotate(-12 60 21)">
-        <path d="M41,25 C41,7 79,7 79,25 C69,21 51,21 41,25 Z" fill="var(--team)" stroke="#2E1A47" stroke-width="4" stroke-linejoin="round"/>
-        <path d="M55,13 Q59,17 63,13" fill="none" stroke="#2E1A47" stroke-width="2.5" stroke-linecap="round"/>
-        <path d="M60,8 Q60,3 64,1" fill="none" stroke="#2E1A47" stroke-width="3.5" stroke-linecap="round"/>
-      </g>
-      <!-- raised fist (drawn in front) -->
-      <path d="M64,58 Q84,56 90,42" fill="none" stroke="#2E1A47" stroke-width="5" stroke-linecap="round"/>
-      <circle cx="92" cy="35" r="7.5" fill="#A84B2C" stroke="#2E1A47" stroke-width="3.5"/>
-      <path d="M102,27 Q105,34 102,41 M98,22 Q102,22 104,19" fill="none" stroke="#2E1A47" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M64,92 Q56,114 50,140" fill="none" stroke="#2E1A47" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M64,92 Q56,114 50,140" fill="none" stroke="#B4532A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M72,92 Q80,114 86,140" fill="none" stroke="#2E1A47" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M72,92 Q80,114 86,140" fill="none" stroke="#B4532A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <ellipse cx="47" cy="142" rx="8" ry="4.5" fill="#7A3418" stroke="#2E1A47" stroke-width="3"/>
+      <ellipse cx="90" cy="142" rx="8" ry="4.5" fill="#7A3418" stroke="#2E1A47" stroke-width="3"/>
+      <circle cx="63" cy="92" r="5.5" fill="#B4532A" stroke="#2E1A47" stroke-width="3.5"/>
+      <ellipse cx="70" cy="80" rx="10" ry="14" fill="#B4532A" stroke="#2E1A47" stroke-width="4"/>
+      <path d="M66,72 Q50,72 52,88" fill="none" stroke="#2E1A47" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M66,72 Q50,72 52,88" fill="none" stroke="#B4532A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
     </symbol>
-    <!-- small LOD (< ~90 px tall): no middle legs, no tooth, no motion lines; heavier strokes -->
-    <symbol id="ant-small" viewBox="0 0 100 110" overflow="visible">
-      <g fill="none" stroke="#2E1A47" stroke-linecap="round"><path d="M53,76 Q49,88 45,98" stroke-width="6.5"/><path d="M60,76 Q64,88 68,98" stroke-width="6.5"/></g>
-      <ellipse cx="42" cy="99" rx="8" ry="5" fill="#6E2F1C" stroke="#2E1A47" stroke-width="3.5"/>
-      <ellipse cx="71" cy="99" rx="8" ry="5" fill="#6E2F1C" stroke="#2E1A47" stroke-width="3.5"/>
-      <g transform="rotate(-24 28 72)">
-        <ellipse cx="28" cy="72" rx="21" ry="17" fill="#A84B2C" stroke="#2E1A47" stroke-width="5"/>
-        <path d="M38,57 Q44,72 38,87" fill="none" stroke="#6E2F1C" stroke-width="5" stroke-linecap="round"/>
+    <symbol id="hero-head" viewBox="0 0 120 150" overflow="visible">
+      <g fill="none" stroke="#2E1A47" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M58,20 L50,4 Q47,-2 41,0 L31,4"/><path d="M76,20 L86,5 Q90,-1 96,2 L104,8"/>
       </g>
-      <circle cx="46" cy="66" r="5.5" fill="#A84B2C" stroke="#2E1A47" stroke-width="4"/>
-      <ellipse cx="57" cy="64" rx="10" ry="13" fill="#A84B2C" stroke="#2E1A47" stroke-width="5"/>
-      <g fill="none" stroke="#2E1A47" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M53,20 L50,8 Q49,4 45,5 L36,8"/><path d="M68,20 L71,8 Q72,4 76,5 L84,9"/>
+      <circle cx="31" cy="4.5" r="4.5" fill="#2E1A47"/><circle cx="104" cy="8.5" r="4.5" fill="#2E1A47"/>
+      <circle cx="66" cy="50" r="28" fill="#B4532A" stroke="#2E1A47" stroke-width="4"/>
+      <g transform="rotate(-8 66 28)">
+        <path d="M37,38 C35,10 97,10 95,38 C83,31 49,31 37,38 Z" fill="var(--team)" stroke="#2E1A47" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M38,36 C50,30 82,30 94,36" fill="none" stroke="var(--team-shade)" stroke-width="5" stroke-linecap="round"/>
+        <g fill="var(--team-shade)"><ellipse cx="55" cy="22" rx="4" ry="3"/><ellipse cx="68" cy="18" rx="4" ry="3"/><ellipse cx="81" cy="23" rx="4" ry="3"/></g>
+        <path d="M66,13 Q65,6 70,3" fill="none" stroke="#2E1A47" stroke-width="5" stroke-linecap="round"/>
       </g>
-      <circle cx="35" cy="8.5" r="5" fill="#2E1A47"/><circle cx="85" cy="9.5" r="5" fill="#2E1A47"/>
-      <circle cx="60" cy="37" r="20" fill="#A84B2C" stroke="#2E1A47" stroke-width="5"/>
-      <path d="M42,45 C36,49 38,57 45,57 C44,53 45,50 48,48 Z" fill="#6E2F1C" stroke="#2E1A47" stroke-width="3.5" stroke-linejoin="round"/>
-      <path d="M78,45 C84,49 82,57 75,57 C76,53 75,50 72,48 Z" fill="#6E2F1C" stroke="#2E1A47" stroke-width="3.5" stroke-linejoin="round"/>
-      <ellipse cx="53" cy="38" rx="7" ry="8" fill="#fff" stroke="#2E1A47" stroke-width="3.5"/>
-      <ellipse cx="67" cy="38" rx="7" ry="8" fill="#fff" stroke="#2E1A47" stroke-width="3.5"/>
-      <circle cx="55" cy="40" r="3.8" fill="#2E1A47"/><circle cx="69" cy="40" r="3.8" fill="#2E1A47"/>
-      <path d="M44,28 Q51,28 58,33 M62,33 Q69,28 76,28" fill="none" stroke="#2E1A47" stroke-width="6" stroke-linecap="round"/>
-      <path d="M52,49 Q60,55 69,48" fill="none" stroke="#2E1A47" stroke-width="4" stroke-linecap="round"/>
-      <g transform="rotate(-12 60 21)">
-        <path d="M41,25 C41,7 79,7 79,25 C69,21 51,21 41,25 Z" fill="var(--team)" stroke="#2E1A47" stroke-width="5" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="hero-fist" viewBox="0 0 120 150" overflow="visible">
+      <path d="M78,72 Q104,72 110,48" fill="none" stroke="#2E1A47" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><path d="M78,72 Q104,72 110,48" fill="none" stroke="#B4532A" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="112" cy="40" r="9.5" fill="#B4532A" stroke="#2E1A47" stroke-width="3.5"/>
+      <path d="M106,36 Q110,34 114,36 M106,41 Q110,39 114,41" fill="none" stroke="#2E1A47" stroke-width="2.2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="face-cocky" viewBox="0 0 120 150" overflow="visible">
+      <ellipse cx="56" cy="47" rx="8" ry="9" fill="#fff" stroke="#2E1A47" stroke-width="3"/><ellipse cx="77" cy="47" rx="8" ry="9" fill="#fff" stroke="#2E1A47" stroke-width="3"/>
+      <circle cx="59" cy="48" r="4.2" fill="#2E1A47"/><circle cx="80" cy="48" r="4.2" fill="#2E1A47"/>
+      <path d="M46,36 Q54,35 62,40" fill="none" stroke="#2E1A47" stroke-width="5" stroke-linecap="round"/><path d="M71,40 Q79,35 88,36" fill="none" stroke="#2E1A47" stroke-width="5" stroke-linecap="round"/>
+      <path d="M49,59 Q66,82 85,58 Q67,64 49,59 Z" fill="#5A1E2A" stroke="#2E1A47" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M52,60 Q67,65 82,59 L80,63 Q67,68 54,63 Z" fill="#fff"/>
+      <ellipse cx="68" cy="72" rx="7" ry="3.5" fill="#E8456B"/>
+    </symbol>
+    <symbol id="face-aim" viewBox="0 0 120 150" overflow="visible">
+      <path d="M49,48 Q56,44 63,48" fill="none" stroke="#2E1A47" stroke-width="4.5" stroke-linecap="round"/>
+      <ellipse cx="77" cy="47" rx="8" ry="8" fill="#fff" stroke="#2E1A47" stroke-width="3"/><circle cx="80" cy="47" r="4.2" fill="#2E1A47"/>
+      <path d="M46,40 Q55,38 63,42" fill="none" stroke="#2E1A47" stroke-width="5" stroke-linecap="round"/><path d="M70,39 Q79,34 88,36" fill="none" stroke="#2E1A47" stroke-width="5" stroke-linecap="round"/>
+      <path d="M56,64 Q67,66 78,60" fill="none" stroke="#2E1A47" stroke-width="3.5" stroke-linecap="round"/>
+      <ellipse cx="79" cy="63" rx="3.5" ry="3" fill="#E8456B" stroke="#2E1A47" stroke-width="2"/>
+    </symbol>
+    <symbol id="face-oops" viewBox="0 0 120 150" overflow="visible">
+      <circle cx="56" cy="47" r="9.5" fill="#fff" stroke="#2E1A47" stroke-width="3"/><circle cx="77" cy="47" r="9.5" fill="#fff" stroke="#2E1A47" stroke-width="3"/>
+      <circle cx="56" cy="48" r="3" fill="#2E1A47"/><circle cx="77" cy="48" r="3" fill="#2E1A47"/>
+      <path d="M47,32 Q54,27 61,31" fill="none" stroke="#2E1A47" stroke-width="4.5" stroke-linecap="round"/><path d="M72,31 Q79,27 86,32" fill="none" stroke="#2E1A47" stroke-width="4.5" stroke-linecap="round"/>
+      <ellipse cx="66" cy="66" rx="7" ry="8" fill="#5A1E2A" stroke="#2E1A47" stroke-width="3"/>
+      <path d="M90,40 Q96,44 94,52" fill="none" stroke="#7FD4F2" stroke-width="4" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="face-dizzy" viewBox="0 0 120 150" overflow="visible">
+      <g stroke="#2E1A47" stroke-width="4" stroke-linecap="round"><path d="M51,42 L61,52 M61,42 L51,52"/><path d="M72,42 L82,52 M82,42 L72,52"/></g>
+      <path d="M53,63 Q59,59 65,63 Q71,67 79,62" fill="none" stroke="#2E1A47" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M66,64 Q66,73 71,73 Q75,72 74,64" fill="#E8456B" stroke="#2E1A47" stroke-width="2.5" stroke-linejoin="round"/>
+      <ellipse cx="66" cy="16" rx="38" ry="9" fill="none" stroke="#2E1A47" stroke-width="2.5" stroke-dasharray="6 7" stroke-linecap="round"/>
+      <path transform="translate(30,16) scale(1.5)" d="M0,-5 L1.5,-1.6 L5,-1.2 L2.3,1.2 L3,4.8 L0,3 L-3,4.8 L-2.3,1.2 L-5,-1.2 L-1.5,-1.6 Z" fill="#FFD23F" stroke="#2E1A47" stroke-width="0.93" stroke-linejoin="round"/><path transform="translate(98,12) scale(1.3)" d="M0,-5 L1.5,-1.6 L5,-1.2 L2.3,1.2 L3,4.8 L0,3 L-3,4.8 L-2.3,1.2 L-5,-1.2 L-1.5,-1.6 Z" fill="#FFD23F" stroke="#2E1A47" stroke-width="1.08" stroke-linejoin="round"/><path transform="translate(70,4) scale(1.1)" d="M0,-5 L1.5,-1.6 L5,-1.2 L2.3,1.2 L3,4.8 L0,3 L-3,4.8 L-2.3,1.2 L-5,-1.2 L-1.5,-1.6 Z" fill="#FFD23F" stroke="#2E1A47" stroke-width="1.27" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="side-body" viewBox="0 0 140 100" overflow="visible">
+      <path d="M74,60 Q66,74 60,92" fill="none" stroke="#2E1A47" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M74,60 Q66,74 60,92" fill="none" stroke="#7A3418" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M80,62 Q84,78 82,94" fill="none" stroke="#2E1A47" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M80,62 Q84,78 82,94" fill="none" stroke="#7A3418" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M84,58 Q98,70 104,90" fill="none" stroke="#2E1A47" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M84,58 Q98,70 104,90" fill="none" stroke="#7A3418" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="rotate(-12 36 58)">
+        <ellipse cx="36" cy="58" rx="29" ry="22" fill="#B4532A" stroke="#2E1A47" stroke-width="4"/>
+        <path d="M22,38 Q16,58 22,78" fill="none" stroke="#7A3418" stroke-width="5" stroke-linecap="round"/>
+        <path d="M40,36 Q34,58 40,80" fill="none" stroke="#7A3418" stroke-width="5" stroke-linecap="round"/>
       </g>
-      <path d="M64,58 Q84,56 90,42" fill="none" stroke="#2E1A47" stroke-width="6.5" stroke-linecap="round"/>
-      <circle cx="92" cy="35" r="8.5" fill="#A84B2C" stroke="#2E1A47" stroke-width="4.5"/>
+      <circle cx="66" cy="60" r="5.5" fill="#B4532A" stroke="#2E1A47" stroke-width="3.5"/>
+      <ellipse cx="80" cy="56" rx="13" ry="10" transform="rotate(-20 80 56)" fill="#B4532A" stroke="#2E1A47" stroke-width="4"/>
+      <path d="M72,62 Q62,76 52,94" fill="none" stroke="#2E1A47" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M72,62 Q62,76 52,94" fill="none" stroke="#B4532A" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M80,64 Q78,80 74,96" fill="none" stroke="#2E1A47" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M80,64 Q78,80 74,96" fill="none" stroke="#B4532A" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M88,60 Q102,72 112,92" fill="none" stroke="#2E1A47" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M88,60 Q102,72 112,92" fill="none" stroke="#B4532A" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+      <g fill="none" stroke="#2E1A47" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round"><path d="M100,18 L94,5 Q92,0 86,2 L79,6"/><path d="M114,18 L122,6 Q125,1 130,4 L136,10"/></g>
+      <circle cx="79" cy="6.5" r="4" fill="#2E1A47"/><circle cx="136" cy="10.5" r="4" fill="#2E1A47"/>
+      <circle cx="108" cy="40" r="21" fill="#B4532A" stroke="#2E1A47" stroke-width="4"/>
+      <ellipse cx="116" cy="38" rx="8" ry="9" fill="#fff" stroke="#2E1A47" stroke-width="3"/><circle cx="119" cy="39" r="4.3" fill="#2E1A47"/>
+      <path d="M106,28 Q114,26 123,30" fill="none" stroke="#2E1A47" stroke-width="4.5" stroke-linecap="round"/>
+      <path d="M106,52 Q116,60 126,50" fill="none" stroke="#2E1A47" stroke-width="3.5" stroke-linecap="round"/>
+      <g transform="rotate(10 108 26)">
+        <path d="M86,32 C84,8 132,8 130,32 C118,26 98,26 86,32 Z" fill="var(--team)" stroke="#2E1A47" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M87,30 C98,25 118,25 129,30" fill="none" stroke="var(--team-shade)" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M108,12 Q107,6 112,3" fill="none" stroke="#2E1A47" stroke-width="4.5" stroke-linecap="round"/>
+      </g>
     </symbol>
     <!-- Team badges: shape + color (colorblind-safe, DR-003) -->
     <symbol id="badge-a" viewBox="-12 -12 24 24"><circle r="8.5" fill="#0072B2" stroke="#fff" stroke-width="3"/><circle r="10.5" fill="none" stroke="#2E1A47" stroke-width="1.8"/></symbol>
     <symbol id="badge-b" viewBox="-12 -12 24 24"><path d="M0,-7 L7.5,6 L-7.5,6 Z" fill="#E69F00" stroke="#E69F00" stroke-width="5" stroke-linejoin="round"/><path d="M0,-7 L7.5,6 L-7.5,6 Z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" transform="scale(1.32) translate(0,.4)"/><path d="M0,-7 L7.5,6 L-7.5,6 Z" fill="none" stroke="#2E1A47" stroke-width="1.6" stroke-linejoin="round" transform="scale(1.58) translate(0,.6)"/></symbol>
-    <symbol id="ant-a" viewBox="0 0 100 110" overflow="visible"><g style="--team:#0072B2"><use href="#ant-full"/></g><use href="#badge-a" x="14" y="58" width="26" height="26"/></symbol>
-    <symbol id="ant-b" viewBox="0 0 100 110" overflow="visible"><g style="--team:#E69F00"><use href="#ant-full"/></g><use href="#badge-b" x="14" y="58" width="26" height="26"/></symbol>
-    <symbol id="ant-a-sm" viewBox="0 0 100 110" overflow="visible"><g style="--team:#0072B2"><use href="#ant-small"/></g><use href="#badge-a" x="12" y="56" width="30" height="30"/></symbol>
-    <symbol id="ant-b-sm" viewBox="0 0 100 110" overflow="visible"><g style="--team:#E69F00"><use href="#ant-small"/></g><use href="#badge-b" x="12" y="56" width="30" height="30"/></symbol>
+    <symbol id="hero-a-cocky" viewBox="0 0 120 150" overflow="visible"><g style="--team:#0072B2;--team-shade:#00527F"><use href="#hero-body"/><use href="#badge-a" x="30" y="96" width="28" height="28"/><use href="#hero-head"/><use href="#face-cocky"/><use href="#hero-fist"/></g></symbol>
+    <symbol id="hero-a-aim" viewBox="0 0 120 150" overflow="visible"><g style="--team:#0072B2;--team-shade:#00527F"><use href="#hero-body"/><use href="#badge-a" x="30" y="96" width="28" height="28"/><use href="#hero-head"/><use href="#face-aim"/><use href="#hero-fist"/></g></symbol>
+    <symbol id="hero-a-oops" viewBox="0 0 120 150" overflow="visible"><g style="--team:#0072B2;--team-shade:#00527F"><use href="#hero-body"/><use href="#badge-a" x="30" y="96" width="28" height="28"/><use href="#hero-head"/><use href="#face-oops"/><use href="#hero-fist"/></g></symbol>
+    <symbol id="hero-a-dizzy" viewBox="0 0 120 150" overflow="visible"><g style="--team:#0072B2;--team-shade:#00527F"><use href="#hero-body"/><use href="#badge-a" x="30" y="96" width="28" height="28"/><use href="#hero-head"/><use href="#face-dizzy"/><use href="#hero-fist"/></g></symbol>
+    <symbol id="side-a" viewBox="0 0 140 100" overflow="visible"><g style="--team:#0072B2;--team-shade:#00527F"><use href="#side-body"/><use href="#badge-a" x="18" y="42" width="30" height="30"/></g></symbol>
+    <symbol id="hero-b-cocky" viewBox="0 0 120 150" overflow="visible"><g style="--team:#E69F00;--team-shade:#A66F00"><use href="#hero-body"/><use href="#badge-b" x="30" y="96" width="28" height="28"/><use href="#hero-head"/><use href="#face-cocky"/><use href="#hero-fist"/></g></symbol>
+    <symbol id="hero-b-aim" viewBox="0 0 120 150" overflow="visible"><g style="--team:#E69F00;--team-shade:#A66F00"><use href="#hero-body"/><use href="#badge-b" x="30" y="96" width="28" height="28"/><use href="#hero-head"/><use href="#face-aim"/><use href="#hero-fist"/></g></symbol>
+    <symbol id="hero-b-oops" viewBox="0 0 120 150" overflow="visible"><g style="--team:#E69F00;--team-shade:#A66F00"><use href="#hero-body"/><use href="#badge-b" x="30" y="96" width="28" height="28"/><use href="#hero-head"/><use href="#face-oops"/><use href="#hero-fist"/></g></symbol>
+    <symbol id="hero-b-dizzy" viewBox="0 0 120 150" overflow="visible"><g style="--team:#E69F00;--team-shade:#A66F00"><use href="#hero-body"/><use href="#badge-b" x="30" y="96" width="28" height="28"/><use href="#hero-head"/><use href="#face-dizzy"/><use href="#hero-fist"/></g></symbol>
+    <symbol id="side-b" viewBox="0 0 140 100" overflow="visible"><g style="--team:#E69F00;--team-shade:#A66F00"><use href="#side-body"/><use href="#badge-b" x="18" y="42" width="30" height="30"/></g></symbol>
 
     <!-- Weapon icons (DR-002) -->
     <symbol id="w-seed" viewBox="0 0 48 48"><ellipse cx="24" cy="25" rx="11" ry="15" transform="rotate(30 24 25)" fill="#E9C36B" stroke="#2E1A47" stroke-width="3.5"/><path d="M8,30 Q4,30 2,30 M10,36 Q6,37 4,38" stroke="#2E1A47" stroke-width="3" stroke-linecap="round" opacity=".5"/></symbol>
@@ -339,8 +348,8 @@ html,body{height:100%;background:var(--color-ink);overflow:hidden;overscroll-beh
     <path d="M-20,470 C80,420 180,410 280,440 C380,470 460,420 560,440 C660,460 760,430 980,450" fill="none" stroke="#3E9A3A" stroke-width="22" stroke-linecap="round" transform="translate(0,9)"/>
     <path d="M-20,470 C80,420 180,410 280,440 C380,470 460,420 560,440 C660,460 760,430 980,450" fill="none" stroke="#9BD94A" stroke-width="8" stroke-linecap="round" transform="translate(0,3)"/>
     <path d="M-20,470 C80,420 180,410 280,440 C380,470 460,420 560,440 C660,460 760,430 980,450" fill="none" stroke="#2E1A47" stroke-width="5" stroke-linecap="round"/>
-    <use href="#ant-a" x="96" y="300" width="132" height="145"/>
-    <g transform="translate(520,306) scale(-1,1)"><use href="#ant-b" x="0" y="0" width="132" height="145"/></g>
+    <use href="#hero-a-cocky" x="92" y="276" width="130" height="162"/>
+    <g transform="translate(530,282) scale(-1,1)"><use href="#hero-b-aim" x="0" y="0" width="130" height="162"/></g>
     <!-- a seed mid-flight, comic arc -->
     <path d="M210,330 C250,270 320,262 350,300" fill="none" stroke="#2E1A47" stroke-width="4" stroke-dasharray="0 14" stroke-linecap="round"/>
     <use href="#w-seed" x="342" y="282" width="40" height="40"/>
@@ -382,10 +391,10 @@ html,body{height:100%;background:var(--color-ink);overflow:hidden;overscroll-beh
     <!-- crater puff remnants -->
     <g fill="#FFF1D0" stroke="#2E1A47" stroke-width="3" opacity=".9"><circle cx="530" cy="356" r="7"/><circle cx="562" cy="350" r="5"/></g>
     <!-- ants -->
-    <use href="#ant-a-sm" x="150" y="253" width="80" height="88"/>
-    <use href="#ant-a-sm" x="352" y="226" width="80" height="88"/>
-    <g transform="translate(760,232) scale(-1,1)"><use href="#ant-b-sm" width="80" height="88"/></g>
-    <g transform="translate(936,206) scale(-1,1)"><use href="#ant-b-sm" width="80" height="88"/></g>
+    <use href="#side-a" x="142" y="268" width="96" height="69"/>
+    <use href="#side-a" x="344" y="241" width="96" height="69"/>
+    <g transform="translate(768,247) scale(-1,1)"><use href="#side-b" width="96" height="69"/></g>
+    <g transform="translate(944,221) scale(-1,1)"><use href="#side-b" width="96" height="69"/></g>
     <!-- active marker -->
     <path d="M395,184 C395,176 405,188 405,196 L405,194 L414,194 C420,194 422,200 418,204 L404,218 C402,220 398,220 396,218 L382,204 C378,200 380,194 386,194 L395,194 Z" fill="#E8456B" stroke="#2E1A47" stroke-width="3.5" stroke-linejoin="round"/>
     <!-- aim preview: first part of arc only -->
@@ -394,10 +403,10 @@ html,body{height:100%;background:var(--color-ink);overflow:hidden;overscroll-beh
     <circle cx="560" cy="178" r="11" fill="none" stroke="#fff" stroke-width="4"/>
   </svg>
   <!-- ant tags -->
-  <div class="tagant" style="left:194px;top:216px"><svg width="22" height="22"><use href="#badge-a"/></svg>80</div>
+  <div class="tagant" style="left:200px;top:228px"><svg width="22" height="22"><use href="#badge-a"/></svg>80</div>
   <div class="tagant" style="left:395px;top:146px;border-color:var(--color-action)"><svg width="22" height="22"><use href="#badge-a"/></svg>100</div>
-  <div class="tagant" style="left:716px;top:196px"><svg width="22" height="22"><use href="#badge-b"/></svg>65</div>
-  <div class="tagant" style="left:892px;top:170px"><svg width="22" height="22"><use href="#badge-b"/></svg>100</div>
+  <div class="tagant" style="left:712px;top:208px"><svg width="22" height="22"><use href="#badge-b"/></svg>65</div>
+  <div class="tagant" style="left:888px;top:182px"><svg width="22" height="22"><use href="#badge-b"/></svg>100</div>
 
   <div class="teams">
     <div class="teambar"><svg width="28" height="28"><use href="#badge-a"/></svg><div class="hp"><i style="width:90%;background:var(--color-team-a)"></i></div>180</div>
@@ -513,13 +522,13 @@ html,body{height:100%;background:var(--color-ink);overflow:hidden;overscroll-beh
       <!-- motion lines -->
       <g stroke="#2E1A47" stroke-width="5" stroke-linecap="round" opacity=".6"><path d="M360,90 Q380,92 396,90"/><path d="M350,140 Q372,142 392,138"/><path d="M800,180 Q818,176 836,178"/></g>
       <!-- startled ants -->
-      <use href="#ant-a" x="146" y="210" width="96" height="106"/>
-      <g transform="translate(330,220) scale(-1,1)"><use href="#ant-a" width="86" height="95"/></g>
+      <use href="#hero-a-oops" x="150" y="206" width="88" height="110"/>
+      <g transform="translate(330,218) scale(-1,1)"><use href="#hero-a-oops" width="80" height="100"/></g>
       <g stroke="#2E1A47" stroke-width="5" stroke-linecap="round"><path d="M206,212 Q208,200 206,190"/><path d="M228,220 Q238,210 244,198"/><path d="M186,218 Q176,208 172,198"/></g>
     </svg>
     <div class="panel caption"><b>Chapter 2 · The Clearing</b><span>One morning, the sky grew a shoe.</span></div>
-    <div class="bubble" style="left:56px;top:118px">Is that... a really big beetle?</div>
-    <svg style="position:absolute;left:150px;top:200px" width="60" height="40" viewBox="0 0 60 40"><path d="M8,0 C14,18 30,30 46,34 C34,24 32,14 34,0 Z" fill="#fff" stroke="#2E1A47" stroke-width="4" stroke-linejoin="round"/><path d="M10,-4 L36,-4" stroke="#fff" stroke-width="8"/></svg>
+    <div class="bubble" style="left:56px;top:96px">Is that... a really big beetle?</div>
+    <svg style="position:absolute;left:150px;top:166px" width="60" height="40" viewBox="0 0 60 40"><path d="M8,0 C14,18 30,30 46,34 C34,24 32,14 34,0 Z" fill="#fff" stroke="#2E1A47" stroke-width="4" stroke-linejoin="round"/><path d="M10,-4 L36,-4" stroke="#fff" stroke-width="8"/></svg>
   </div>
   <div class="comic-ui">
     <button class="jelly second" data-go="levels">Skip</button>
@@ -533,18 +542,18 @@ html,body{height:100%;background:var(--color-ink);overflow:hidden;overscroll-beh
 <section class="screen" id="chars" data-screen="chars">
   <svg class="bg" viewBox="0 0 960 540"><use href="#jungle"/>
     <path d="M-20,470 C200,440 500,450 980,440 L980,560 L-20,560 Z" fill="url(#g-soil)" stroke="#2E1A47" stroke-width="5"/>
-    <use href="#ant-a" x="40" y="96" width="320" height="352"/>
-    <g transform="translate(640,170) scale(-1,1)"><use href="#ant-b" width="250" height="275"/></g>
+    <use href="#hero-a-cocky" x="40" y="96" width="280" height="350"/>
+    <g transform="translate(600,190) scale(-1,1)"><use href="#hero-b-cocky" width="210" height="262"/></g>
   </svg>
   <div class="pill abs" style="left:50%;top:16px;transform:translateX(-50%);height:56px;font-size:30px">Meet the Colony</div>
-  <div class="panel abs" style="right:20px;top:96px;width:250px;padding:14px 16px">
-    <div style="font-family:var(--font-display);font-size:22px;margin-bottom:6px">Scale check</div>
-    <svg width="218" height="250" viewBox="0 0 218 250">
-      <use href="#ant-a" x="0" y="0" width="96" height="106"/><use href="#ant-b-sm" x="110" y="20" width="78" height="86"/>
-      <use href="#ant-a-sm" x="0" y="130" width="56" height="62"/><use href="#ant-b-sm" x="70" y="140" width="44" height="48"/><use href="#ant-a-sm" x="128" y="150" width="32" height="35"/>
-      <text x="0" y="122" font-family="Nunito" font-weight="800" font-size="15" fill="#2E1A47">full · 106px</text>
-      <text x="110" y="122" font-family="Nunito" font-weight="800" font-size="15" fill="#2E1A47">small · 86px</text>
-      <text x="0" y="214" font-family="Nunito" font-weight="800" font-size="15" fill="#2E1A47">62 · 48 · 35px</text>
+  <div class="panel abs" style="right:16px;top:86px;width:300px;padding:12px 14px">
+    <div style="font-family:var(--font-display);font-size:20px">Faces</div>
+    <svg width="270" height="200" viewBox="0 0 270 200"><svg x="4" y="0" width="64" height="74" viewBox="30 -8 76 88"><use href="#hero-a-cocky" width="120" height="150"/></svg><text x="36" y="88" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="14" fill="#2E1A47">cocky</text><svg x="80" y="0" width="64" height="74" viewBox="30 -8 76 88"><use href="#hero-a-aim" width="120" height="150"/></svg><text x="112" y="88" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="14" fill="#2E1A47">aim</text><svg x="156" y="0" width="64" height="74" viewBox="30 -8 76 88"><use href="#hero-a-oops" width="120" height="150"/></svg><text x="188" y="88" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="14" fill="#2E1A47">oops</text><svg x="4" y="100" width="64" height="74" viewBox="30 -8 76 88"><use href="#hero-a-dizzy" width="120" height="150"/></svg><text x="36" y="186" text-anchor="middle" font-family="Nunito" font-weight="900" font-size="14" fill="#2E1A47">dizzy</text>
+    </svg>
+    <div style="font-family:var(--font-display);font-size:20px;margin-top:2px">In-game sizes</div>
+    <svg width="270" height="110" viewBox="0 0 270 110">
+      <use href="#side-a" x="0" y="8" width="112" height="80"/><use href="#side-b" x="122" y="30" width="78" height="56"/><use href="#side-a" x="212" y="52" width="48" height="34"/>
+      <text x="0" y="106" font-family="Nunito" font-weight="800" font-size="14" fill="#2E1A47">112 · 78 · 48 px wide</text>
     </svg>
   </div>
 </section>

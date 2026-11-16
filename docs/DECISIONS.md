@@ -97,3 +97,16 @@ Nothing appears in UI.md or PLAN.md without a Decision ID. Builder deviations ar
 - **Rejected:** (1) the user found it unconvincing; (3) not needed.
 - **Licensing note:** the concept is an AI-generated reference image used only as reference. Shipped art is original SVG drawn in `/art` and does not trace the image.
 - **Revisit if:** the side-view pose is unreadable at the final in-game size (then enlarge the head and drop the middle legs in the small LOD).
+
+## DR-008 · Biome sequence and per-biome structure
+- **Question:** Which 10 biomes, in what order, and how is each biome paced?
+- **Options:** (1) Jungle, Clearing, Camp, Trail, Village Garden, Picnic Park, Porch, Living Room, Pantry, Kitchen · (2) Jungle, Clearing, Camp, Village, Shed, Garage, House, Bathroom, Pantry, Kitchen · (3) a shorter outdoor arc (3 jungle variants) then 7 indoor rooms
+- **Debate (compact):**
+  - GD: (1) gives every biome a distinct terrain and wind toy (bouncy tent, slick tiles, fan rhythm), and the "follow the Queen's pot" thread explains the route.
+  - AD: (1) alternates open outdoor palettes with cosy indoor ones, which keeps the levels looking varied. (2)'s shed and garage risk sharp tools and bathroom jokes.
+  - TL: wind in (1) is either one system per biome or two telegraphed ones, so all are deterministic and seedable. (3) repeats terrain types.
+- **Winner:** (1). The structure inside each biome is L1–3 teach, L4–6 test, L7–8 twist, L9 rest, L10 telegraphed boss.
+- **Reason:** It follows the brief's arc (jungle, clearing, camp, village, house, kitchen). Each biome adds exactly one new terrain-and-wind idea (pillar 3), and the difficulty rhythm is fixed (pillar 4).
+- **Rejected:** (2) sharp-tool props and an awkward bathroom; (3) too little variety.
+- **Revisit if:** PLAN.md finds two biomes whose mechanics overlap too much, or the build budget forces fewer unique terrains.
+- **Process note:** story content is not a screen or system, so the planner ran this as a compact debate without a subagent.
