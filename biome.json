@@ -1,0 +1,79 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!.claude",
+      "!art",
+      "!preview",
+      "!docs",
+      "!public",
+      "!src/ui/theme.ts",
+      "!src/ui/theme.css",
+      "!src/ui/theme.json",
+      "!package-lock.json",
+      "!skills-lock.json",
+      "!.mcp.json",
+      "!**/*.md"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended"
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["src/sim/**", "src/ai/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "phaser": "DR-010: src/sim and src/ai never import Phaser."
+                }
+              }
+            },
+            "noRestrictedGlobals": {
+              "level": "error",
+              "options": {
+                "deniedGlobals": {
+                  "Date": "DR-011: no wall-clock time in sim code. Use the sim tick.",
+                  "performance": "DR-011: no wall-clock time in sim code. Use the sim tick."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+name: Deploy Ants to GitHub Pages
+
+# PLAN §11 (DR-017), plus the e2e job from DR-192.
+# OVR-001: tests also run on the stage branches (build/**), so a stage can be
+# proven green before it is merged. Only main builds and deploys.
+on:
+  push:
+    branches: [main, 'build/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      BASE_PATH: /Ants/
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: e2e-results
+          path: test-results
+          if-no-files-found: ignore
+          retention-days: 14
+
+  build:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [test, e2e]
+    runs-on: ubuntu-latest
+    env:
+      BASE_PATH: /Ants/
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/configure-pages@v6
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
