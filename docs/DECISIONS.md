@@ -2727,3 +2727,16 @@ Logged by the builder. Tier T is applied at once. Tier G waits for the user's ap
 - **Tier:** T
 - **Status:** applied (stage 0)
 - **Revert plan:** none needed. Stages 4 and 7 build on these files.
+
+## OVR-004 · The match save also stores its tick, a state hash and one slot per mode
+- **Overrides:** PLAN §1 and DR-047 (shape of `ants.match.v1`). Adds fields; removes none.
+- **Reason:** PLAN §1 lists `{levelId|setup, seed, buildId, inputLog}`. That is not enough to resume. The log only holds ticks where something was pressed, so the tick the save was made on is missing. And without a check, a replay that drifts (a changed level file, a bug) would resume into a wrong match in silence. DR-047 also says "one slot per mode", but names a single key.
+- **Change:**
+  - `ants.match.v1 = { v: 1, campaign?: slot, versus?: slot }`.
+  - Each slot is `{ mode, levelId | (setup + terrainSeed), seed, buildId, tick, hash, inputLog }`.
+  - `tick` is the sim tick of the save. `hash` is `Match.stateHash()` at that tick.
+  - Resume replays the log to `tick` and compares the hash. A different `buildId` gives "build"; a failed replay or a different hash gives "failed". Both lead to DR-173's "Restart level" offer.
+- **Impact:** `src/save/matchSlot.ts`, `tests/save.test.ts`. Nothing the player sees.
+- **Tier:** T
+- **Status:** applied (stage 3)
+- **Revert plan:** drop `hash` if hashing at every TurnEnd ever costs frame time (it reads the 518,400-cell grid once).

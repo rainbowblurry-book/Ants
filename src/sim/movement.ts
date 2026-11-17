@@ -70,7 +70,7 @@ export interface Ant {
   /** Set when the ant swam back from water: it loses its next turn (DR-026). */
   skipNextTurn: boolean;
   /** Why the ant was knocked out, if it was. */
-  koBy?: 'hp' | 'void';
+  koBy?: 'hp' | 'void' | 'dew';
 }
 
 /** BlastAnt view used by damage.ts. */

@@ -1,35 +1,30 @@
 /**
- * Match skeleton (DR-010, DR-011, DR-015).
+ * A match (DR-010, DR-011, DR-015, DR-041 to DR-044, DR-047).
  *
- * Holds the seed, the streams, the terrain, the wind, the ants, the live shot
- * and the tick-stamped command log. The turn state machine, timer and win
- * check arrive in stage 3; until then commands apply on the tick they name.
+ * Holds the seed, the streams, the terrain, the wind, the ants, the live shot,
+ * the turn machine and the tick-stamped command log. Scenes only read state
+ * and call `push` and `step`.
  *
  * A match is fully described by (seed, levelId, [(tick, command)]), so it can
- * be re-simulated exactly.
+ * be re-simulated exactly: see `replay.ts`.
  */
-import { type Ant, backflip, hop, isActive, stepAnt, walkStep } from './movement.ts';
-import { type Ammo, collectPickups, type Pickup } from './pickups.ts';
+import { type Command, type CommandBody, isValidCommand } from './commands.ts';
+import type { Ant } from './movement.ts';
+import type { Ammo, Pickup } from './pickups.ts';
 import { createStreams, SIM_STREAMS, type Streams } from './rng.ts';
 import type { TerrainGrid } from './terrain.ts';
-import { fire, type Shot, stepShot, WEAPONS, type WeaponId, type World } from './weapons/index.ts';
+import {
+  defaultRules,
+  type MatchEvent,
+  type MatchResult,
+  type Phase,
+  TurnMachine,
+  type TurnRules,
+} from './turn.ts';
+import { type Body, type Shot, WEAPON_IDS, WEAPONS, type World } from './weapons/index.ts';
 import type { WindField } from './wind.ts';
 
-/** Commands are stamped with the sim tick they apply on (DR-015). */
-export type Command =
-  | {
-      tick: number;
-      kind: 'fire';
-      ant: number;
-      weapon: WeaponId;
-      angleDeci: number;
-      powerMille: number;
-    }
-  | { tick: number; kind: 'walk'; ant: number; dir: -1 | 0 | 1 }
-  | { tick: number; kind: 'hop'; ant: number }
-  | { tick: number; kind: 'flip'; ant: number };
-
-type CommandBody = Command extends infer C ? (C extends Command ? Omit<C, 'tick'> : never) : never;
+export type { Command, CommandBody } from './commands.ts';
 
 export interface MatchConfig {
   seed: number | string;
@@ -40,6 +35,8 @@ export interface MatchConfig {
   pickups?: Pickup[];
   /** Ammo per team; defaults to the two-player row (DR-034, J24). */
   ammo?: Ammo[];
+  /** Turn rules; anything left out takes the DR-042 to DR-044 defaults. */
+  rules?: Partial<TurnRules>;
 }
 
 export function defaultAmmo(): Ammo {
@@ -53,20 +50,30 @@ export function defaultAmmo(): Ammo {
   };
 }
 
+const PHASE_CODE: Record<Phase, number> = {
+  turnStart: 1,
+  aim: 2,
+  fire: 3,
+  resolve: 4,
+  turnEnd: 5,
+  matchEnd: 6,
+};
+
 export class Match {
   readonly seed: number | string;
   readonly levelId: string;
   readonly streams: Streams;
   readonly world: World;
   readonly ammo: Ammo[];
+  readonly turns: TurnMachine;
   tick = 0;
-  turn = 0;
+  /** Every command accepted by `push`, in order (the replay input). */
   readonly log: Command[] = [];
   shot: Shot | null = null;
   /** Finished shots, newest last (events for tests and the renderer). */
   readonly shots: Shot[] = [];
-  private pending: Command[] = [];
-  private walking: (-1 | 0 | 1)[];
+  /** Turn and match events, oldest first. Not sim state. */
+  readonly events: MatchEvent[] = [];
 
   constructor(cfg: MatchConfig) {
     this.seed = cfg.seed;
@@ -81,8 +88,12 @@ export class Match {
       pickups: cfg.pickups ?? [],
     };
     this.ammo = cfg.ammo ?? [defaultAmmo(), defaultAmmo()];
-    this.walking = cfg.ants.map(() => 0);
-    cfg.wind.onTurnStart(0, this.streams.wind);
+    this.turns = new TurnMachine(this, { ...defaultRules(cfg.terrain), ...cfg.rules });
+  }
+
+  /** The `wind` stream: the coin flip and the wind rolls. */
+  get windRng() {
+    return this.streams.wind;
   }
 
   get terrain(): TerrainGrid {
@@ -93,59 +104,43 @@ export class Match {
     return this.world.ants;
   }
 
-  /** Queues a command for the next tick and records it in the log. */
-  push(cmd: CommandBody): void {
-    const full = { ...cmd, tick: this.tick + 1 } as Command;
-    this.pending.push(full);
-    this.log.push(full);
+  get phase(): Phase {
+    return this.turns.phase;
   }
 
-  /** Advances one fixed 60 Hz step. */
+  /** The ant whose turn it is. */
+  get activeAnt(): Ant | undefined {
+    return this.world.ants[this.turns.ant];
+  }
+
+  /** Set once the match has been decided (it is announced when TurnEnd finishes). */
+  get result(): MatchResult | null {
+    return this.turns.result;
+  }
+
+  get over(): boolean {
+    return this.turns.phase === 'matchEnd';
+  }
+
+  /**
+   * Queues a command for the next tick and records it in the log. Commands
+   * address the ant whose turn it is. Returns false, and logs nothing, if the
+   * command is malformed or the match is over.
+   */
+  push(cmd: CommandBody): boolean {
+    if (this.over || !isValidCommand(cmd)) return false;
+    const full = { ...cmd, tick: this.tick + 1 } as Command;
+    this.log.push(full);
+    this.turns.push(this, full);
+    return true;
+  }
+
+  /** Advances one fixed 60 Hz step. Does nothing once the match is over. */
   step(): void {
+    if (this.over) return;
     this.tick++;
     this.world.tick = this.tick;
-    for (const c of this.pending) this.apply(c);
-    this.pending = [];
-    if (this.shot) {
-      stepShot(this.world, this.shot);
-      if (this.shot.bodies.length === 0) {
-        this.shots.push(this.shot);
-        this.shot = null;
-      }
-    }
-    const ants = this.world.ants;
-    for (let i = 0; i < ants.length; i++) {
-      const a = ants[i] as Ant;
-      if (!isActive(a)) continue;
-      const dir = this.walking[i] ?? 0;
-      if (dir !== 0 && a.state === 'ground') walkStep(a, this.world.grid, dir);
-      else stepAnt(a, this.world.grid);
-      collectPickups(a, this.world.pickups, this.ammo[a.team] as Ammo);
-    }
-  }
-
-  private apply(c: Command): void {
-    const ant = this.world.ants[c.ant];
-    if (!ant || !isActive(ant)) return;
-    switch (c.kind) {
-      case 'fire': {
-        if (this.shot) return;
-        const pool = this.ammo[ant.team] as Ammo;
-        if (!(pool[c.weapon] > 0)) return;
-        pool[c.weapon] -= 1;
-        this.shot = fire(this.world, c.ant, c.weapon, c.angleDeci, c.powerMille);
-        return;
-      }
-      case 'walk':
-        this.walking[c.ant] = c.dir;
-        return;
-      case 'hop':
-        hop(ant);
-        return;
-      case 'flip':
-        backflip(ant);
-        return;
-    }
+    this.turns.step(this);
   }
 
   /** Hash of everything that is sim state, for replay checks (DR-011). */
@@ -162,18 +157,83 @@ export class Match {
       mix(u[0] as number);
       mix(u[1] as number);
     };
+    const mixS = (s: string) => {
+      mix(s.length);
+      for (let i = 0; i < s.length; i++) mix(s.charCodeAt(i));
+    };
+    const mixB = (b: boolean) => mix(b ? 1 : 0);
+
     for (const name of SIM_STREAMS) for (const s of this.streams[name].getState()) mix(s);
+
     for (const a of this.world.ants) {
-      for (const v of [a.x, a.y, a.vx, a.vy, a.hp, a.budget, a.apexY]) mixF(v);
-      mix(a.state === 'ground' ? 1 : a.state === 'air' ? 2 : 3);
+      for (const v of [a.x, a.y, a.vx, a.vy, a.hp, a.budget, a.apexY, a.facing, a.waterTicks]) {
+        mixF(v);
+      }
+      mixS(a.state);
+      mixS(a.koBy ?? '');
+      mixB(a.bounced);
+      mixB(a.skipNextTurn);
     }
-    for (const b of this.shot?.bodies ?? [])
-      for (const v of [b.p.x, b.p.y, b.p.vx, b.p.vy]) mixF(v);
+
+    mixB(this.shot !== null);
+    if (this.shot) {
+      mixS(this.shot.weapon);
+      mix(this.shot.shooter);
+      for (const d of this.shot.dealt) mixF(d);
+      for (const b of this.shot.bodies) hashBody(b, mixF, mixS, mixB);
+    }
+
     for (const p of this.world.pickups) {
+      mixS(p.kind);
       mixF(p.x);
       mixF(p.y);
     }
-    for (const pool of this.ammo) for (const v of Object.values(pool)) mixF(v);
+    for (const pool of this.ammo) for (const id of WEAPON_IDS) mixF(pool[id]);
+
+    const g = this.world.wind.gauge(this.tick);
+    mixF(g.level);
+    mixF(g.vertical);
+    mixF(g.next ?? Number.NaN);
+
+    const t = this.turns;
+    mix(PHASE_CODE[t.phase]);
+    for (const v of t.stateNumbers()) mixF(v);
+    for (const c of t.ring.pending) {
+      mixS(c.kind);
+      mix(c.tick);
+    }
+    mixB(t.result !== null);
+    if (t.result) {
+      mixF(t.result.winner ?? -1);
+      mixS(t.result.reason);
+    }
     return h >>> 0;
+  }
+}
+
+function hashBody(
+  b: Body,
+  mixF: (v: number) => void,
+  mixS: (s: string) => void,
+  mixB: (b: boolean) => void,
+): void {
+  mixS(b.kind);
+  for (const v of [b.p.x, b.p.y, b.p.vx, b.p.vy, b.p.ringR, b.ignore, b.age]) mixF(v);
+  switch (b.kind) {
+    case 'dewdrop':
+      mixF(b.bounces);
+      mixB(b.resting);
+      break;
+    case 'grub':
+      mixB(b.digging);
+      for (const v of [b.hx, b.hy, b.digTicks]) mixF(v);
+      break;
+    case 'roller':
+      mixS(b.mode);
+      for (const v of [b.u, b.fuse, b.dir]) mixF(v);
+      mixB(b.wallBounced);
+      break;
+    default:
+      break;
   }
 }

@@ -1,12 +1,58 @@
 # Progress
 
-**Current stage:** Build **stage 2 done** (weapons, damage, movement, pickups). Next: stage 3, turn flow, match, replay and saves (HARD).
+**Current stage:** Build **stage 3 done** (turn flow, match, replay, saves). Next: stage 4, render, assets and UI foundation (HARD).
 
 > ⚠ **ANT ART: the reference is in `art/source/`, but final art is not drawn or approved yet.** The build uses placeholders only (DR-195, DR-007a). Stage 0 draws no ants at all. Draw the final ant art only when the user asks.
 
 **Branches:** one per stage, `build/stage-NN-name`, merged to `main` when CI is green (DR-194).
 
 ## Build log
+
+### Stage 3 · Turn flow, match, replay, saves — done 2026-11-17
+Branch `build/stage-03-turn-flow`. A full match now runs headless from seed to win.
+
+**Built**
+- **`src/sim/commands.ts`:** the command types, a 4-slot ring and the DR-015 buffers (FIRE 12 ticks, jump 9 ticks, counted in sim ticks). Commands are `fire`, `walk` (held), `face`, `hop`, `flip`, `ready` (the one "tap") and `cancel`. They always address the ant whose turn it is. Angles are whole tenths of a degree from −20° to 90°, power is whole per-mille (J9).
+- **`src/sim/turn.ts`:** the turn state machine. TurnStart (900 ms, or 600 ms and skippable through L10) → Move/Aim (30 s timer, 60 s relaxed, or none) → Fire (18-tick input lock, then the shot spawns) → Resolve (3 s retreat window, settle rule, 12 s cap) → TurnEnd (700–1800 ms) → next TurnStart or MatchEnd. Also here: team alternation and ant rotation, the two-player tap gate, sudden death, pickup drops, the win, draw and round-cap rules, and the wind roll at each turn change.
+- **`src/sim/match.ts`:** now owns the turn machine. `push()` logs a command and `step()` runs one tick. `stateHash()` covers everything that is sim state, the turn machine included.
+- **`src/sim/replay.ts`:** `runLog()` re-simulates a match from its input log, in slices if wanted.
+- **`src/save/`:** `schema.ts` (`ants.save.v1` with the J48 goal bits, `losses`, `settings.twoPlayer` and `wardrobe`, plus `normalise`, acorn and unlock helpers), `store.ts` (try/catch storage, in-memory fallback, `migrate()` chain, corrupt blob moved to `ants.save.bak`), `matchSlot.ts` (`ants.match.v1`, resume by replay).
+
+**Tests:** `npm test` runs 13 files and 186 tests (was 10 and 125).
+- `turn.test.ts` (38): phase order on exact ticks, team and ant rotation, the timer (skip at 0, 60 s, none), buffers, the fire lock, the retreat window, the settle rule, the 12 s cap, sudden death, win, draw and round cap, the gate, lost turns and drops.
+- `replay.test.ts` (7): three seeded matches of 9,000 ticks with random inputs, on an arena with every material, water, three wind fields and drops. The replay matches the live match's state hash at every 25-tick checkpoint, and its events and log. Also resume mid-match, and proof that one changed command changes the hash.
+- `save.test.ts` (14): round trip, 7 kinds of corrupt blob moved to `.bak`, bad values falling back to defaults, blocked storage, the migrate chain, goal bits and acorns, and the match slot (resume, build mismatch, tampered log).
+- **CI:** see the last line of this section.
+
+**Measured** (facts, no overrides)
+- A plain Seed turn: FIRE taken on tick 55, shot out on tick 72, TurnEnd on tick 252, next ant's Move/Aim on tick 348. That is 4.9 s from FIRE to the rival's turn, of which 3 s is the retreat window.
+- A timed-out turn with everything at rest goes straight to TurnEnd: 42 ticks later the next TurnStart begins.
+- With the default rules and nobody shooting, the dew takes both teams at the end of round 25 on a flat map (ants at y 400): a draw.
+- Replay speed in node: 9,000 ticks (2.5 minutes of play) re-simulate in about 0.3 s. Not measured on a phone yet; DR-047's target is 3 s for a whole match.
+
+**Implementation choices inside the DRs** (no new numbers)
+- **TurnEnd length.** PLAN §3 gives a 700–1800 ms range and the parts (knock-out 1200, dew 800, drop 700). The build uses: the knock-out beat runs alongside the others, dew then drop run one after the other, and the total is kept within 700–1800 ms.
+- **Timeout while something moves.** At 0 the turn is skipped (DR-043). If an ant is still in the air, the machine waits for the settle rule first, with no retreat window.
+- **Fire.** Ammo is spent when FIRE is taken. The shot spawns after the 18-tick lock. The ant cannot walk during the lock.
+- **Lost turn.** An ant that swam back "loses its next turn" (DR-026). The build plays its TurnStart and then goes to TurnEnd, so the team gives up that turn. It still counts toward par.
+- **Dew.** It rises 24 px at the TurnEnd that closes a round, when the next round is 21 or later (30 on bosses). It rises from the world bottom, or from the water line on water levels (J20). An ant whose feet are under the line is knocked out, at TurnEnd and during play. Pickups under it are lost. It does not change terrain or stop projectiles.
+- **Dew warning.** The event fires at the TurnEnd before round 18.
+- **Round cap.** Judged at the TurnEnd that closes round 40: more total HP wins, equal HP is a draw.
+- **Coin flip.** Two-player's first team is the first draw on the `wind` stream ("the match seed", DR-182).
+- **Gate.** A tap counts once the 500 ms pan and the 400 ms lockout have passed (DR-183).
+- **Drops.** A drop is `{round, kind, x}`. It lands at the TurnEnd that closes that round, on the first solid cell from the top of the world, and rests at hurtbox height (22 px up) so a walking ant touches it. Over a void, water or the dew it is lost.
+- **Force settle.** At the 12 s cap, live projectiles fizzle, ants stop, and an ant in the air is put on the ground straight below with no fall damage. With nothing below, the void or water rule applies.
+- **`cancel` command.** Pause must clear input buffers on resume (DR-171). That has to be a logged command, or a replay would keep inputs the live match dropped.
+- **Saves.** Goal bits add up across clears and are never taken away. Only the Music and SFX defaults are documented (70 and 80); the other settings start as off, Auto, Normal, tips on. A blob from a *newer* save version is treated like a corrupt one (kept in `.bak`).
+
+**Review of stages 1 and 2** (asked for by the user; the whole of `src/sim` was read again)
+- **Fixed: the Dewdrop bounced straight back at the thrower.** The surface normal was read from a 9x9 window centred on the projectile. The Dewdrop's ring is 8 px out, so the window never reached the ground and the code fell back to "reverse the velocity". Every bounce went back along the flight path. The normal is now read at the ring point that touched (`contactNormal`). On flat ground it is exactly (0, −1) for both ring sizes, and the Dewdrop bounces forward with ×0.85 along the ground and ×0.55 up, as DR-034 says. Two new tests cover it. The old tests missed it because they only counted bounces.
+- **Fixed: the random generator was sfc32 with its counter off by one.** It added the counter after incrementing it. It now adds first, as published. Same quality, but now an outside sfc32 gives the same numbers, which the stage 6 bot refit needs. The known-answer test vector changed. No save or replay existed yet.
+- **Checked and left alone:** terrain erase, fill and fragment cleanup; the RLE mask; projectile stepping and despawn; the wind fields; damage, knockback and fall damage; walking, hops, slides, water and void; all six weapons in a 30-shot sanity matrix (each weapon at five angle and power pairs). Nothing else was wrong.
+
+**Overrides logged:** OVR-004 (Tier T: the match save also stores its tick, a state hash, and one slot per mode). No Tier G.
+
+**Not done here on purpose:** wiring saves to `localStorage` and the build id (stages 4 and 7), the HUD and input layer (stage 5), bot turns (stage 6), Level 0's special rules (stage 8), the boss telegraph card in TurnEnd (stage 9).
 
 ### Stage 2 · Weapons, damage, movement — done 2026-11-17
 Branch `build/stage-02-weapons`. All of it is plain TS in `src/sim`. No Phaser, and ban-scan is clean.
@@ -254,8 +300,12 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
   2. **Mound Plop on water fizzles** (PLAN §4: everything but Dewdrop fizzles in water). DR-009 says the Plop exists to "bridge WATER". Today it can only do that by hitting the bank, with the fill reaching over the water.
   3. **Dewdrop on BOUNCY:** DR-022 says material restitution applies to Dewdrop bounces, but DR-034 and PLAN §5 fix it at 0.55. The build uses 0.55 everywhere, so a tent or jelly gives no extra bounce.
   4. **Swim-back with no dry ground within 200 px:** DR-026 does not say what happens. The build knocks the ant out.
+- **Stage 3 questions for the user (Tier G; nothing applied beyond the reading named here):**
+  5. **What falls in two-player, and where?** DR-048 says "one drops every 3rd round" with both pickups behind one toggle. It does not say which pickup, or at which x. The sim takes a list of `{round, kind, x}`, so nothing is invented yet. This must be answered before the Pickups toggle is built (stage 7). The same goes for the boss levels' "Seed Bundle every 3rd round" (stage 9).
+  6. **A lost turn costs the team its turn.** That is how the build reads "loses its next turn" (DR-026). The other reading is that the team's next ant plays instead.
+  7. **Dew warning on boss levels.** The warning is at round 18 and the dew starts at round 30 on bosses, 12 rounds later. If the warning should stay 3 rounds ahead (round 27), say so.
 - **Gap found in stage 1 (for stage 2/3):** DR-026 gives no lower despawn line for projectiles. Over a `void` bottom a shot that falls off the map keeps flying until the 8 s cap (DR-038). If that wait feels bad, a Tier G OVR is needed to add one; the builder has not picked a value.
 - **GitHub Pages:** done by the user (Settings → Pages → Source: "GitHub Actions").
 
 ## Next step
-Stage 3, turn flow, match, replay and saves (HARD), per HANDOFF §3, with the `turn` and `replay` tests. The builder stops after each stage, and for playtests at M1 and M2.
+Stage 4, render, assets and UI foundation (HARD): `src/render/` (terrain chunks, mask outline, sprites, camera, juice), `src/assets/manifest.ts`, `tools/build-ui.ts`, `tools/bake-fonts.ts`, the rest of `tools/gen-theme.ts`, `src/ui/` (Layout, Focus, Nav, fitText, Button, IconButton, Panel, ConfirmModal) and `/art/ui/*.svg`. The builder stops after each stage, and for playtests at M1 and M2.

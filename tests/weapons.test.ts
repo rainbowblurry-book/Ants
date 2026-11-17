@@ -498,12 +498,15 @@ describe('physics replays are stable', () => {
         { seed: 9, dewdrop: 9, pollen: 9, grub: 9, roller: 9, plop: 9 },
       ],
     });
-    m.push({ kind: 'walk', ant: 0, dir: 1 });
+    const starting = () => m.phase === 'turnStart';
+    while (starting()) m.step();
+    m.push({ kind: 'walk', dir: 1 });
     for (let i = 0; i < 30; i++) m.step();
-    m.push({ kind: 'walk', ant: 0, dir: 0 });
-    m.push({ kind: 'fire', ant: 0, weapon, angleDeci: 520, powerMille: 760 });
-    for (let i = 0; i < 600; i++) m.step();
-    m.push({ kind: 'hop', ant: 1 });
+    m.push({ kind: 'walk', dir: 0 });
+    m.push({ kind: 'fire', weapon, angleDeci: 520, powerMille: 760 });
+    // Resolve, TurnEnd and the rival's TurnStart, then the rival hops.
+    while (m.turns.turn === 0 || starting()) m.step();
+    m.push({ kind: 'hop' });
     for (let i = 0; i < 120; i++) m.step();
     return {
       hash: m.stateHash(),

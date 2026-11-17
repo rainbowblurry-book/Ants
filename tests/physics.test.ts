@@ -394,9 +394,11 @@ describe('match skeleton (DR-010, DR-011)', () => {
       levelId: 'L01',
       terrain,
       wind: new LevelWind({ maxAbs: 2, maxStep: 1, everyNTurns: 1 }),
-      ants: [createAnt(0, 0, 100, 400, 1)],
+      ants: [createAnt(0, 0, 100, 400, 1), createAnt(1, 1, 800, 400, -1)],
     });
-    m.push({ kind: 'fire', ant: 0, weapon: 'seed', angleDeci: 600, powerMille: 700 });
+    // The turn machine (stage 3) takes commands once TurnStart is over.
+    while (m.phase === 'turnStart') m.step();
+    m.push({ kind: 'fire', weapon: 'seed', angleDeci: 600, powerMille: 700 });
     for (let i = 0; i < 300; i++) m.step();
     return m;
   };
@@ -409,6 +411,6 @@ describe('match skeleton (DR-010, DR-011)', () => {
     expect(a.shots).toHaveLength(1);
     expect(a.shots[0]?.events).toEqual(b.shots[0]?.events);
     expect(a.shots[0]?.events[0]?.kind).toBe('blast');
-    expect(a.log[0]?.tick).toBe(1);
+    expect(a.log[0]?.tick).toBe(55);
   });
 });
