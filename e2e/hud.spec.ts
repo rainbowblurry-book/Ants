@@ -93,16 +93,23 @@ async function waitPhase(page: Page, phases: string[], timeout = 30_000): Promis
   });
 }
 
-/** Waits for the next team's TurnStart after the current turn. */
+/**
+ * Fast-forwards the sim (through the test hook, so the match itself is
+ * unchanged) to the next team's TurnStart. Slow CI phones run the sim several
+ * times slower than real time, so waiting on the clock is not used here.
+ */
 async function waitHandover(page: Page, fromTeam: number): Promise<void> {
-  await page.waitForFunction(
-    (t) => {
-      const s = (window.__hud as HudHook).state();
-      return s.phase === 'turnStart' && s.team !== t;
-    },
-    fromTeam,
-    { timeout: 40_000 },
-  );
+  const ok = await page.evaluate((t) => {
+    const b = window.__battle as BattleHook;
+    const h = window.__hud as HudHook;
+    for (let i = 0; i < 400; i++) {
+      const s = h.state();
+      if (s.phase === 'turnStart' && s.team !== t) return true;
+      b.stepTicks(5);
+    }
+    return false;
+  }, fromTeam);
+  expect(ok, 'the turn passes to the other team within 2000 ticks').toBe(true);
 }
 
 function lastFire(log: { kind: string }[]) {
