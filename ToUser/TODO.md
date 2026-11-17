@@ -38,6 +38,7 @@ Each item has an ID, a status and the stage it must be answered before. The buil
   - **B:** Show no badge on the Seed slot.
   - **C:** Show a word, for example "Lots".
 - **Your answer:**
+A, Draw "∞" as one extra glyph in the number font:
 
 ### Q-05 · Two-player drops: which pickup, and where? (Tier G)
 - **Status:** open. **Needed before:** stage 7 (the Pickups toggle).
@@ -49,11 +50,13 @@ Each item has an ID, a status and the stage it must be answered before. The buil
   - **C:** Your own rule.
 - **Also:** Boss levels say "Seed Bundle every 3rd round" (stage 9). Tell the builder the x rule for them too.
 - **Your answer:**
+A. and as the decision says take the best way to fight a boss battle and use that. 
 
 ### Q-10 · "Made by" credit name (DR-174)
 - **Status:** open. **Needed before:** stage 7 (credits screen).
 - **Problem:** The credits need the name to show for "Made by".
 - **Your answer:**
+Made by BlurryRainbow
 
 ### Q-11 · Terrain colours per biome (gap, Tier G)
 - **Status:** open. **Needed before:** stage 8 (Jungle Home kit).
@@ -63,6 +66,7 @@ Each item has an ID, a status and the stage it must be answered before. The buil
   - **A:** The builder proposes one palette per biome in stage 8, with a contrast check against the HUD and ants. You approve it from a screenshot.
   - **B:** You give the colours.
 - **Your answer:**
+A
 
 ### Q-01 · Back-flip fall damage (Tier G)
 - **Status:** open. **Needed before:** stage 8.
@@ -122,6 +126,7 @@ Each item has an ID, a status and the stage it must be answered before. The buil
   - **A:** Remove a shot below a line (the builder proposes y = 740, the line DR-038 already gives).
   - **B:** Keep the 8 s wait.
 - **Your answer:**
+A
 
 ### Q-12 · Modal open timing: two docs differ (confirm)
 - **Status:** open. **Needed before:** any time.
@@ -131,6 +136,7 @@ Each item has an ID, a status and the stage it must be answered before. The buil
   - **A:** Keep DR-172 for dialogs.
   - **B:** Use the UI.md values.
 - **Your answer:**
+A
 
 ### Q-13 · Shrinking button text (confirm)
 - **Status:** open. **Needed before:** stage 7 (the long-text check).
@@ -140,7 +146,7 @@ Each item has an ID, a status and the stage it must be answered before. The buil
   - **A:** Keep it (shrink to 22).
   - **B:** Never shrink a baked label below 0.9 (25 px). Wrap or use a wider button instead.
 - **Your answer:**
-
+A
 ---
 
 ## Reviews and checks
@@ -152,6 +158,7 @@ Each item has an ID, a status and the stage it must be answered before. The buil
   - `uilab-*.png`: every button, icon, panel, badge and font. `uilab-modal-*.png`: the confirm dialog.
 - **Tell the builder:** "R-01 OK", or what looks wrong.
 - **Your answer:**
+i have pasted a pic in one of the screenshot and i dont undesratnd those things why are they there and what purpose and what with all those colored lines no clue. either exxplain or tell ime if its  atest or what it is. lokoks so absurd and weeird fo a jungle.
 
 ### R-02 · Phone speed check (optional, 1 minute)
 - **Status:** open. **Needed before:** stage 13.
@@ -161,7 +168,7 @@ Each item has an ID, a status and the stage it must be answered before. The buil
   3. Read the line in the bottom-left corner. It shows "S=2 · 16.7 ms · …".
 - **What it means:** About 16.7 ms means 60 frames per second. A number that stays over 20 ms means this phone needs "smooth mode" (stage 13 offers it).
 - **Your answer:** (the ms number and the phone model)
-
+TEXTURES 13,5mb* atlas pages 1 on my laptop browser. phone ill check later and tell you
 ### R-03 · Final ant art
 - **Status:** waiting for you. **Needed before:** stage 12.
 - **Fact:** The game shows placeholder ants cut from the concept image. The builder does not draw ants until you say so (DR-007a).
