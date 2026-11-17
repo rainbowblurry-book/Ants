@@ -10,6 +10,9 @@
 
 ## Build log
 
+### Owner answers after stage 4 — 2026-11-17
+Read from `ToUser/TODO.md` and moved to `ToUser/archive/ANSWERED.md`. Approved: OVR-005 (draw "∞", stage 5), OVR-007 (shots below y 740 are removed, stage 5), OVR-008 (drop rules: two-player alternates Honey Drop and Seed Bundle every 3rd round with x from the match seed, stage 7; boss drop spots per fight, stage 9). Confirmed as built: DR-172 dialog timing (Q-12), labels may shrink to 22 px (Q-13). Credit: "Made by BlurryRainbow" (Q-10, stage 7). Biome palettes: the builder proposes, the owner approves from a screenshot (Q-11). Still open: Q-01 to Q-04, Q-06, Q-07 (before stage 8/9), R-02 phone ms, R-03 ant art. The owner asked for **a full code review of everything before the boss fights (before stage 9)**.
+
 ### Stage 4 · Render, assets, UI foundation — done 2026-11-17
 Branch `build/stage-04-render`. The Battle scene draws a live match with placeholder art, and the token and asset pipelines exist.
 
@@ -329,7 +332,9 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 - **Questions and checks for the owner:** all in `ToUser/TODO.md` (Q-01 to Q-13, R-01 to R-03). Answered items move to `ToUser/archive/ANSWERED.md`.
 - **Real-device checks** (UI.md §7, PLAN §12), for later stages: safe-area `env()` values in landscape, Hop-row thumb reach, device memory and blast ms, refitting the bot-cap constants against the real sim (stage 6).
 - **Placeholders still in the manifest:** every ant key, the weapon and pickup art, and the terrain palette. `trinketAnchor` is `null` on the ant frames until final art (DR-162, stage 12).
-- **For stage 5:** the r8 nine-slice has a 4 px outline; AntTag (DR-128) asks for 3. Bake a thinner set or draw tags another way when stage 5 builds them.
+- **For stage 5:** apply OVR-005 ("∞" glyph) and OVR-007 (y 740 despawn) with tests.
+- **Before stage 9:** a full code review of the whole repo (owner's request).
+- **For stage 5 too:** the r8 nine-slice has a 4 px outline; AntTag (DR-128) asks for 3. Bake a thinner set or draw tags another way when stage 5 builds them.
 - **GitHub Pages:** done by the user (Settings → Pages → Source: "GitHub Actions").
 
 ## Next step

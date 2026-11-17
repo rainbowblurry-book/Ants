@@ -2747,7 +2747,7 @@ Logged by the builder. Tier T is applied at once. Tier G waits for the user's ap
 - **Change (proposed, not applied):** draw "∞" as one extra glyph in the F64 bake: a figure-eight stroke with round caps at Lilita's stem weight, white fill plus the same stroke layer, so it tints like the digits. Until approved, the bake skips "∞" and lists it as known-missing (`tools/bake-fonts.ts` `KNOWN_MISSING`). Any other missing glyph fails the bake.
 - **Impact:** `tools/bake-fonts.ts`, `tests/manifest.test.ts`. Nothing on screen needs "∞" before stage 5 (weapon tray).
 - **Tier:** G
-- **Status:** proposed (stage 4). Waits for the user.
+- **Status:** **approved by the user 2026-11-17 (choice A, `ToUser` Q-08).** To apply in stage 5 with the weapon tray: draw the glyph, remove it from `KNOWN_MISSING`.
 - **Revert plan:** none needed. Other options for the user: show the word "Lots" or no badge for Seed, or bake "∞" from a third font with an OFL licence.
 
 ## OVR-006 · Pins and sources for the UI atlas and the font bake
@@ -2762,3 +2762,23 @@ Logged by the builder. Tier T is applied at once. Tier G waits for the user's ap
 - **Tier:** T
 - **Status:** applied (stage 4)
 - **Revert plan:** swap in a woff2 decompressor (then `art/fonts/` can go) or bump either pin in one commit and re-run `npm test` (the manifest test rasterises both).
+
+## OVR-007 · Shots below y 740 are removed
+- **Overrides:** DR-026 (projectile despawn bounds: x −150 / 1110, y −2000; no lower line) and DR-038 (8 s flight cap as the only end for a shot that falls off the map).
+- **Reason:** over a `void` bottom a shot that falls off the map flies until the 8 s cap, and the player waits for nothing (gap found in stage 1). The user chose option A (`ToUser` Q-09, 2026-11-17).
+- **Change:** a projectile whose centre passes **y > 740** is removed (a fizzle with `why: 'out'`). 740 is the line DR-038 already names for the void. It applies to every bottom type.
+- **Impact:** `src/sim/weapons/fly.ts` (despawn test), `tests/physics.test.ts` or `tests/weapons.test.ts` (a void-fall test). Replays recorded before the change can differ, so it ships before any saved match exists (none yet).
+- **Tier:** G
+- **Status:** approved by the user 2026-11-17. To apply in stage 5 (or the first stage that touches the sim).
+- **Revert plan:** delete the y check; the 8 s cap still ends the shot.
+
+## OVR-008 · What drops in two-player and on boss levels, and where
+- **Overrides:** fills a gap in DR-048 (two-player: "one drops every 3rd round", no kind, no x) and the boss "Seed Bundle every 3rd round" line (no x).
+- **Reason:** the sim takes a list of `{round, kind, x}` and nothing may be invented. The user chose option A (`ToUser` Q-05, 2026-11-17).
+- **Change:**
+  - **Two-player:** every 3rd round a pickup drops. The kinds alternate: Honey Drop first, then Seed Bundle, and so on. x is drawn from the match seed between the two teams. The exact range and stream are set and logged in stage 7 (before the Pickups toggle), with a test.
+  - **Boss levels:** the builder places the Seed Bundle per boss in stage 9, to suit each fight. Each position is logged and the user approves it from that boss's screenshot.
+- **Impact:** stage 7 (`TwoPlayerSetup`, drop list), stage 9 (boss level data).
+- **Tier:** G
+- **Status:** approved by the user 2026-11-17 (rule). The exact x range (stage 7) and the boss positions (stage 9) are shown to the user when built.
+- **Revert plan:** change the drop list builder; the sim format stays.
