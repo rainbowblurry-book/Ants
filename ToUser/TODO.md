@@ -34,7 +34,7 @@ Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `READ
   - **A:** Title "Restart?", body "Start this match again from the first turn?"
   - **B:** Keep it as it is.
   - **C:** Write your own text.
-- **Your answer:**
+- **Your answer:**A
 
 ### Q-15 · Two-player Pause caption
 - **Status:** open. **Needed before:** stage 7.
@@ -43,7 +43,7 @@ Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `READ
 - **Choices:**
   - **A:** Keep "Round R".
   - **B:** Use the arena name: "Jungle Home · Round R".
-- **Your answer:**
+- **Your answer:** B
 
 ### Q-16 · Stand-in arena until stage 9 (Tier G, OVR-009)
 - **Status:** open. **Needed before:** stage 6.
@@ -51,7 +51,7 @@ Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `READ
 - **Choices:**
   - **A:** Keep the stand-in until stage 9.
   - **B:** Change it now (say what).
-- **Your answer:**
+- **Your answer:**A
 
 ### Q-17 · Double-tap to find your ant
 - **Status:** open. **Needed before:** stage 11.
@@ -93,7 +93,7 @@ Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `READ
 - **Choices:**
   - **A:** Keep the knock-out.
   - **B:** Search further (give a distance).
-- **Your answer:**
+- **Your answer:** auto place to nearest ground if it cant swim back. if thats eaasy else we knock it out. and tehn see. 
 
 ### Q-06 · Meaning of "loses its next turn" (Tier G)
 - **Status:** open. **Needed before:** stage 8.
@@ -102,7 +102,7 @@ Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `READ
 - **Choices:**
   - **A:** Keep it: the team loses the turn.
   - **B:** The team's next ant plays instead.
-- **Your answer:**
+- **Your answer:** A, though i have not seen any swimming back so not a clue what it menas.
 
 ### Q-07 · Dew warning on boss levels (Tier G)
 - **Status:** open. **Needed before:** stage 9.
@@ -110,7 +110,7 @@ Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `READ
 - **Choices:**
   - **A:** Keep the warning at round 18.
   - **B:** Warn 3 rounds before the dew (round 27 on bosses).
-- **Your answer:**
+- **Your answer:** B
 
 ---
 
@@ -123,10 +123,10 @@ Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `READ
   2. Open `https://rainbowblurry-book.github.io/Ants/` on your phone and turn it to landscape.
   3. Play one full match with a second person: pass the phone at each "Tap to start".
   4. Try each control once: the angle dial and its ▲▼, the power slider and its ▲▼, a drag back from your ant (slingshot), the weapon tray, ◀ ▶, Hop, Flip, FIRE, Pause and Resume.
-  5. Optional: open `…/Ants/?hand=left` to try the left-handed layout.
+  5. Optional: open `…/Ants/?hand=left` to try the left-handed layout. ill try later
 - **Tell the builder:**
   - Can both thumbs reach every control? Is the Hop row easy to reach?
-  - Is any text too small to read?
+  - Is any text too small to read? screen is not optimized so yeah all is small to read. and then layout is way off. the screen is too busy and i dont see evrything clearly. the healt bar obstructs who is selected and clear indication of if its 2 player it just keeps rotating so why statrt eery time and then friendly fire off or on should be an option. and then if ants go out of bounds its hard to hit them and see them and cortrol them so each ant should be kept in bounds so nothing falss out. flip no clue what it does. and also there is a green bar that comes what is that and then when i select a new weapon default values come and id like it toa stay at previous values and i just select a weapon and shoot and then wind data is constant or is it dynamic`? arrows work and dial work . dew is rising but what does it do_? and then the whole screen is more text rather than me seeing empty space. so yeah try to make the layout a bit more aesthetic and harmonise and see some standard rules and some game screenshots of how people have used ui and layout to set things. i can do  more testing if there is  aproper html style checklist where i go through one by one and enter a comment instead of this md page and commit and so on. and also the play check is enormous so i need a proper test plan. so well add that to a stage as well so we dont build all and then revisit things. some things i idnt mention or forgot or not tested so yeah expect more o this.
   - Did a tap ever do nothing, or do the wrong thing?
   - Your phone model, and the ms number from R-02 if you have it.
 - **Your answer:**
@@ -139,10 +139,10 @@ Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `READ
   3. Read the line in the bottom-left corner. It shows "S=2 · 16.7 ms · …".
 - **What it means:** About 16.7 ms means 60 frames per second. A number that stays over 20 ms means this phone needs "smooth mode" (stage 13 offers it).
 - **Your answer so far:** laptop browser: textures 13.5 MB, atlas pages 1 (good: the limits are 96 MB and 3 pages). Still to do: the **ms** number on the phone, and the phone model.
-- **Your answer:**
+- **Your answer:** textures 14 MB, atlas pages 1, samsung s26 ultra. screen of game showing is too small to see things at a comfortable distance.
 
 ### R-03 · Final ant art
 - **Status:** waiting for you. **Needed before:** stage 12.
 - **Fact:** The game shows placeholder ants cut from the concept image. The builder does not draw ants until you say so (DR-007a).
 - **Do this when you are ready:** Write "Draw the ants" here or in the chat.
-- **Your answer:**
+- **Your answer:**Draw the ants before stage 7 start where i say draw ant in the message.
