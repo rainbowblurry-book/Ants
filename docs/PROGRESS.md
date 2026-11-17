@@ -28,7 +28,7 @@ Branch `build/stage-04-render`. The Battle scene draws a live match with placeho
 **Tests**
 - `npm test`: 18 files, 256 tests. New: `contrast` (UI.md §6 check 1), `no-literals` (check 2, also scans the SVG art), `manifest` (key test, ≤ 3 resident pages, UI area, page bounds, a real rasterise, the font bake), `ui-foundation` (Layout, Focus, Nav, fitText, motion), `render` (band, outline width, crater rim, no edge ink, chunks, camera rules, fixed step).
 - `npm run e2e`: 33 checks at 844x390, 667x375 and 1280x720 (11 tests × 3). Battle: boot, the static screenshot, 12 chunks, **resident atlas pages 1 (limit 3)**, texture memory under 96 MB, a Seed shot through `match.push` leaves a clear crater with an ink rim and redraws at most 4 chunks, no seams at S=1 and S=2 over 5 camera poses, the `?mem` line. UI: taps act on release, a drag 16 px out cancels, disabled never acts, keyboard ring and Tab/arrows/Enter, the modal's safe default, focus trap, Esc and B, the destructive scrim rule.
-- **CI:** see the result line below.
+- **CI:** green on the stage branch (run 22, commit 96b3777: `test` and `e2e` passed; `build`/`deploy` skipped off `main` by design). The `main` run after the merge builds and deploys.
 
 **Screenshots:** `docs/stage4/battle-*.png` (static battle at the 3 viewports), `uilab-*.png`, `uilab-modal-*.png`.
 
