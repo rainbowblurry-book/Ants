@@ -17,6 +17,7 @@
       "!src/ui/theme.ts",
       "!src/ui/theme.css",
       "!src/ui/theme.json",
+      "!src/sim/trig.ts",
       "!package-lock.json",
       "!skills-lock.json",
       "!.mcp.json",
