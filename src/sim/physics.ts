@@ -143,6 +143,46 @@ export function surfaceNormal(
 }
 
 /**
+ * Surface normal for a ring contact (DR-023). The 9x9 window is centred on
+ * each sample point (centre, right, left, down, up) that is inside solid, and
+ * the gradients are summed. A window centred on the projectile itself would
+ * miss the ground under a Dewdrop: its ring is 8 px out and the window only
+ * reaches 4, so every bounce would go straight back along the flight path.
+ */
+export function contactNormal(
+  grid: TerrainGrid,
+  x: number,
+  y: number,
+  r: number,
+  vx: number,
+  vy: number,
+): Vec2 {
+  let sx = 0;
+  let sy = 0;
+  const add = (px: number, py: number) => {
+    if (!grid.solidAt(px, py)) return;
+    const cx = Math.floor(px);
+    const cy = Math.floor(py);
+    for (let dy = -NORMAL_HALF; dy <= NORMAL_HALF; dy++) {
+      for (let dx = -NORMAL_HALF; dx <= NORMAL_HALF; dx++) {
+        if (grid.solidAt(cx + dx + 0.5, cy + dy + 0.5)) {
+          sx += dx;
+          sy += dy;
+        }
+      }
+    }
+  };
+  add(x, y);
+  add(x + r, y);
+  add(x - r, y);
+  add(x, y + r);
+  add(x, y - r);
+  const len = Math.sqrt(sx * sx + sy * sy);
+  if (len === 0) return surfaceNormal(grid, x, y, vx, vy);
+  return { x: -sx / len, y: -sy / len };
+}
+
+/**
  * Bounce (DR-023): v' = v − (1+e)(v·n)n, then the tangential part is
  * multiplied by (1 − 0.2·mu). A body already moving away from the surface
  * keeps its velocity.
@@ -215,7 +255,7 @@ export function stepProjectile(
       }
     }
     if (ringSolid(grid, nx, ny, p.ringR)) {
-      const normal = surfaceNormal(grid, nx, ny, p.vx, p.vy);
+      const normal = contactNormal(grid, nx, ny, p.ringR, p.vx, p.vy);
       const material = contactMaterial(grid, nx, ny, p.ringR);
       return { kind: 'terrain', normal, material, cx: nx, cy: ny };
     }

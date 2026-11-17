@@ -318,6 +318,39 @@ describe('Seed, Dewdrop and Pollen behaviour (DR-034)', () => {
     expect(blasts(shot)[0]?.blast.base).toBe(45);
   });
 
+  it('Dewdrop bounces forward off flat ground: tangential ×0.85, normal ×0.55', () => {
+    const g = flat();
+    const w = world(g);
+    const body: Body = {
+      kind: 'dewdrop',
+      p: { x: 200, y: 300, vx: 150, vy: 0, ringR: 8 },
+      ignore: -1,
+      age: 0,
+      bounces: 0,
+      resting: false,
+    };
+    const shot = shotOf('dewdrop', body);
+    let vyIn = 0;
+    while (shot.events.length === 0) {
+      vyIn = body.p.vy;
+      w.tick++;
+      stepShot(w, shot);
+    }
+    expect(shot.events[0]?.kind).toBe('bounce');
+    // It keeps going the way it was thrown, and comes back up.
+    expect(body.p.vx).toBeCloseTo(150 * 0.85, 9);
+    expect(body.p.vy).toBeLessThan(0);
+    // The tick of contact adds one step of gravity before the bounce.
+    expect(body.p.vy).toBeCloseTo(-0.55 * (vyIn + 600 / 60), 9);
+    // And it lands further along, not back toward the thrower.
+    const x1 = body.p.x;
+    while (shot.events.length === 1 && shot.bodies.length > 0) {
+      w.tick++;
+      stepShot(w, shot);
+    }
+    expect(body.p.x).toBeGreaterThan(x1 + 20);
+  });
+
   it('Dewdrop pops at once on an ant', () => {
     const g = flat();
     const ant = createAnt(0, 1, 300, 400, -1);

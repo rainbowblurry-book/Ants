@@ -5,6 +5,7 @@ import {
   bounce,
   bounceOnMaterial,
   circleHitsCapsule,
+  contactNormal,
   GRAVITY,
   launchSpeed,
   launchVelocity,
@@ -231,6 +232,36 @@ describe('surface normal and bounce (DR-023)', () => {
     const d = surfaceNormal(s, 50.5, 50.5, 0, 0);
     expect(d.x).toBeCloseTo(Math.SQRT1_2, 9);
     expect(d.y).toBeCloseTo(-Math.SQRT1_2, 9);
+  });
+
+  it('finds the ground under a wide ring, whatever the flight direction', () => {
+    // The Dewdrop ring is 8 px out, beyond a 9x9 window centred on the drop.
+    // The window must sit on the ring point that touched (stage 3 review fix).
+    const g = new TerrainGrid(960, 540);
+    g.fillRect(0, 400, 960, 140, M.SOIL);
+    for (const ringR of [RING_R_SMALL, RING_R_DEW]) {
+      for (const vx of [-300, 0, 200, 600]) {
+        const p: Projectile = { x: 480, y: 300, vx, vy: 0, ringR };
+        const r = simulateFlight(p, g);
+        expect(r.result.kind).toBe('terrain');
+        if (r.result.kind !== 'terrain') continue;
+        expect(r.result.normal.x, `ring ${ringR}, vx ${vx}`).toBeCloseTo(0, 12);
+        expect(r.result.normal.y, `ring ${ringR}, vx ${vx}`).toBeCloseTo(-1, 12);
+      }
+    }
+    // A 45° slope, hit by a drop falling straight down.
+    const s = new TerrainGrid(400, 400);
+    for (let y = 0; y < 400; y++) for (let x = 0; x < 400; x++) if (y > x) s.set(x, y, M.SOIL);
+    const d: Projectile = { x: 200.5, y: 100, vx: 0, vy: 0, ringR: RING_R_DEW };
+    const hit = simulateFlight(d, s);
+    expect(hit.result.kind).toBe('terrain');
+    if (hit.result.kind === 'terrain') {
+      expect(contactNormal(s, hit.result.cx, hit.result.cy, RING_R_DEW, 0, 100)).toEqual(
+        hit.result.normal,
+      );
+      expect(hit.result.normal.x).toBeCloseTo(Math.SQRT1_2, 1);
+      expect(hit.result.normal.y).toBeCloseTo(-Math.SQRT1_2, 1);
+    }
   });
 
   it('falls back to the reversed velocity when embedded', () => {

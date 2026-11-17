@@ -57,14 +57,16 @@ export class Rng {
     return new Rng(cyrb128(seed));
   }
 
-  /** Next raw 32-bit unsigned integer (sfc32). */
+  /**
+   * Next raw 32-bit unsigned integer. This is sfc32 exactly as published
+   * (PractRand): the output adds the counter *before* it is incremented.
+   */
   nextU32(): number {
-    const t0 = (this.a + this.b) | 0;
+    const t = (((this.a + this.b) | 0) + this.d) | 0;
+    this.d = (this.d + 1) | 0;
     this.a = this.b ^ (this.b >>> 9);
     this.b = (this.c + (this.c << 3)) | 0;
     this.c = (this.c << 21) | (this.c >>> 11);
-    this.d = (this.d + 1) | 0;
-    const t = (t0 + this.d) | 0;
     this.c = (this.c + t) | 0;
     return t >>> 0;
   }

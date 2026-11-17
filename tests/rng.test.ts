@@ -1,19 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { createStreams, cyrb128, Rng, STREAM_NAMES, streamSeed } from '../src/sim/rng.ts';
 
-/** Independent reference sfc32, written from the published algorithm. */
+/**
+ * Independent reference sfc32, in the widely published JavaScript form of
+ * PractRand's `tmp = a + b + counter++`: the counter is added, then incremented.
+ */
 function refSfc32(a: number, b: number, c: number, d: number) {
   return () => {
-    a >>>= 0;
-    b >>>= 0;
-    c >>>= 0;
-    d >>>= 0;
-    let t = (a + b) | 0;
+    a |= 0;
+    b |= 0;
+    c |= 0;
+    d |= 0;
+    const t = (((a + b) | 0) + d) | 0;
+    d = (d + 1) | 0;
     a = b ^ (b >>> 9);
     b = (c + (c << 3)) | 0;
     c = (c << 21) | (c >>> 11);
-    d = (d + 1) | 0;
-    t = (t + d) | 0;
     c = (c + t) | 0;
     return t >>> 0;
   };
@@ -32,7 +34,7 @@ describe('rng (DR-011)', () => {
   it('locks the known-answer vector (changing it breaks every saved replay)', () => {
     expect(cyrb128('')).toEqual([41608494, 3485963809, 1435736333, 1262568316]);
     const r = Rng.fromString('42:L00:terrain');
-    expect(take(r, 4)).toEqual([1807241875, 3879322211, 3824054667, 1274145944]);
+    expect(take(r, 4)).toEqual([1807241874, 3879322210, 3824054657, 1255271543]);
   });
 
   it('gives the same sequence for the same seed', () => {
