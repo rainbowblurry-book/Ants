@@ -22,13 +22,13 @@ Branch `build/stage-03-turn-flow`. A full match now runs headless from seed to w
 - `turn.test.ts` (38): phase order on exact ticks, team and ant rotation, the timer (skip at 0, 60 s, none), buffers, the fire lock, the retreat window, the settle rule, the 12 s cap, sudden death, win, draw and round cap, the gate, lost turns and drops.
 - `replay.test.ts` (7): three seeded matches of 9,000 ticks with random inputs, on an arena with every material, water, three wind fields and drops. The replay matches the live match's state hash at every 25-tick checkpoint, and its events and log. Also resume mid-match, and proof that one changed command changes the hash.
 - `save.test.ts` (14): round trip, 7 kinds of corrupt blob moved to `.bak`, bad values falling back to defaults, blocked storage, the migrate chain, goal bits and acorns, and the match slot (resume, build mismatch, tampered log).
-- **CI:** see the last line of this section.
+- **CI:** green on the stage branch. Run 18 (commit 75f8447, the stage 1–2 review fixes) and run 19 (commit 8a0df19, stage 3) both passed `test` and `e2e`; `build` and `deploy` are skipped off `main` by design. `npm run e2e` still passes 26 checks with 1 skipped.
 
 **Measured** (facts, no overrides)
 - A plain Seed turn: FIRE taken on tick 55, shot out on tick 72, TurnEnd on tick 252, next ant's Move/Aim on tick 348. That is 4.9 s from FIRE to the rival's turn, of which 3 s is the retreat window.
 - A timed-out turn with everything at rest goes straight to TurnEnd: 42 ticks later the next TurnStart begins.
 - With the default rules and nobody shooting, the dew takes both teams at the end of round 25 on a flat map (ants at y 400): a draw.
-- Replay speed in node: 9,000 ticks (2.5 minutes of play) re-simulate in about 0.3 s. Not measured on a phone yet; DR-047's target is 3 s for a whole match.
+- Replay speed in node: a 9,000-tick match (2.5 minutes of play, 27 shots) re-simulated in 36 ms. Not measured on a phone yet; DR-047's target is 3 s for a whole match.
 
 **Implementation choices inside the DRs** (no new numbers)
 - **TurnEnd length.** PLAN §3 gives a 700–1800 ms range and the parts (knock-out 1200, dew 800, drop 700). The build uses: the knock-out beat runs alongside the others, dew then drop run one after the other, and the total is kept within 700–1800 ms.
