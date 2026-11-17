@@ -1,0 +1,2 @@
+<!-- ANTS! UI art (icon, 32 viewbox). Original, drawn for this game. UI.md §5. currentColor and #fff become tintable white; var(--token) comes from theme.json (DR-088). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32"><path d="M11 7 L25 16 L11 25 Z" fill="currentColor" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg>

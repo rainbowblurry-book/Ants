@@ -1,0 +1,2 @@
+<!-- ANTS! UI art (nine-slice r8 fill layer, tinted). Original, drawn for this game. DR-083, DR-088. currentColor and #fff become tintable white; var(--token) comes from theme.json (DR-088). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><rect x="4" y="4" width="16" height="16" rx="4" fill="#fff"/></svg>

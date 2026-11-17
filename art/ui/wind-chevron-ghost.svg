@@ -1,0 +1,2 @@
+<!-- ANTS! UI art (ghost chevron: dashed and hollow). Original, drawn for this game. DR-125, DR-126. currentColor and #fff become tintable white; var(--token) comes from theme.json (DR-088). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 40" width="28" height="40"><path d="M6 6 L20 20 L6 34 L11 34 L25 20 L11 6 Z" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 3" stroke-linejoin="round"/></svg>

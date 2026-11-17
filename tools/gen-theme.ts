@@ -5,16 +5,24 @@
  * generated semantic tokens. Run with `node tools/gen-theme.ts` to rewrite the
  * generated files, or with `--check` to fail when they are stale.
  *
- * Stage 0 generates the colour, font and logical-size tokens. Stage 4 extends
- * this file with the component tokens.
+ * Stage 0 generated the colour, font and logical-size tokens. Stage 4 adds the
+ * rest: type, touch, layout, shape, motion and focus (semantic), the spacing
+ * scales (primitive) and every component token, with `{ref}`s resolved.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export interface ThemeJson {
-  meta: { logical: { width: number; height: number } };
+  meta: {
+    logical: { width: number; height: number };
+    contrastRule: { text: number; nonText: number };
+  };
   primitive: {
     color: Record<string, string>;
+    space: Record<string, number>;
+    radius: Record<string, number>;
+    outline: Record<string, number>;
+    shadowY: Record<string, number>;
     font: {
       display: { family: string };
       body: { family: string };
@@ -24,8 +32,15 @@ export interface ThemeJson {
   semantic: {
     color: Record<string, string | { color: string; alpha: number }>;
     onColor: Record<string, string | { text: string; ratio: number }>;
+    [group: string]: unknown;
   };
+  component: Record<string, unknown>;
 }
+
+/** Semantic groups that are not colours; they go to `tokens` in theme.ts. */
+export const SEMANTIC_GROUPS = ['type', 'touch', 'layout', 'shape', 'motion', 'focus'] as const;
+/** Primitive scales that component tokens may reference by field name. */
+const SCALE_FIELDS = ['radius', 'outline', 'shadowY'] as const;
 
 export interface ResolvedColor {
   /** Upper-case #RRGGBB. */
@@ -71,6 +86,65 @@ export function resolveOnColors(theme: ThemeJson): Record<string, string> {
     out[name] = resolveRef(theme, value.text, `semantic.onColor.${name}`);
   }
   return out;
+}
+
+/** The semantic colour name whose value is primitive colour `name`. */
+function semanticNameOf(theme: ThemeJson, primitive: string, where: string): string {
+  const want = `{${primitive}}`;
+  for (const [name, value] of Object.entries(theme.semantic.color)) {
+    if (name.startsWith('_')) continue;
+    if (value === want) return name;
+  }
+  throw new Error(`${where}: primitive colour "${primitive}" has no semantic name`);
+}
+
+/**
+ * Resolves the `{ref}` strings inside a token tree:
+ *   - under a `radius`, `outline` or `shadowY` key, `{x}` is that primitive scale's x
+ *   - `{colour}` becomes the semantic colour name for that primitive colour
+ * Keys starting with `_` are notes and are dropped.
+ */
+export function resolveTokens(theme: ThemeJson, value: unknown, where: string, key = ''): unknown {
+  if (typeof value === 'string') {
+    const m = /^\{([a-z0-9-]+)\}$/.exec(value);
+    if (!m?.[1]) return value;
+    const ref = m[1];
+    const scaleKey = SCALE_FIELDS.find((k) => k === key);
+    if (scaleKey) {
+      const v = theme.primitive[scaleKey][ref];
+      if (v === undefined) throw new Error(`${where}: unknown ${scaleKey} "${ref}"`);
+      return v;
+    }
+    if (ref in theme.primitive.color) return semanticNameOf(theme, ref, where);
+    throw new Error(`${where}: cannot resolve "${value}"`);
+  }
+  if (Array.isArray(value)) return value.map((v, i) => resolveTokens(theme, v, `${where}[${i}]`));
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) {
+      if (k.startsWith('_')) continue;
+      out[k] = resolveTokens(theme, v, `${where}.${k}`, k);
+    }
+    return out;
+  }
+  return value;
+}
+
+/** Everything that is not a colour or a font, resolved, for `tokens` in theme.ts. */
+export function buildTokens(theme: ThemeJson): Record<string, unknown> {
+  const semantic: Record<string, unknown> = {};
+  for (const g of SEMANTIC_GROUPS) {
+    if (!(g in theme.semantic)) throw new Error(`theme.json: semantic.${g} is missing`);
+    semantic[g] = resolveTokens(theme, theme.semantic[g], `semantic.${g}`);
+  }
+  return {
+    space: theme.primitive.space,
+    radius: theme.primitive.radius,
+    outline: theme.primitive.outline,
+    shadowY: theme.primitive.shadowY,
+    ...semantic,
+    component: resolveTokens(theme, theme.component, 'component'),
+  };
 }
 
 function fontStack(family: string, fallback: string): string {
@@ -153,6 +227,9 @@ export const font = {
   body: '${font.body.family}',
   fallback: '${font.fallback}',
 } as const;
+
+/** Sizes, motion, focus and component tokens (DR-081 to DR-086, UI.md §2), refs resolved. */
+export const tokens = ${JSON.stringify(buildTokens(theme), null, 2)} as const;
 
 export type ColorToken = keyof typeof color;
 `;

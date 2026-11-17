@@ -1,0 +1,2 @@
+<!-- ANTS! UI art (nine-slice r16 shade band layer (6 px), tinted). Original, drawn for this game. DR-083, DR-088. currentColor and #fff become tintable white; var(--token) comes from theme.json (DR-088). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40"><clipPath id="c"><rect x="4" y="4" width="32" height="32" rx="12"/></clipPath><rect x="0" y="30" width="40" height="6" fill="#fff" clip-path="url(#c)"/></svg>

@@ -1,0 +1,2 @@
+<!-- ANTS! UI art (wind chevron, tinted lit or unlit). Original, drawn for this game. DR-125. currentColor and #fff become tintable white; var(--token) comes from theme.json (DR-088). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 40" width="28" height="40"><path d="M8 8 L20 20 L8 32" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>

@@ -101,4 +101,486 @@ export const font = {
   fallback: 'ui-rounded, system-ui, sans-serif',
 } as const;
 
+/** Sizes, motion, focus and component tokens (DR-081 to DR-086, UI.md §2), refs resolved. */
+export const tokens = {
+  "space": {
+    "1": 4,
+    "2": 8,
+    "3": 12,
+    "4": 16,
+    "6": 24,
+    "8": 32,
+    "12": 48
+  },
+  "radius": {
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "pill": 9999
+  },
+  "outline": {
+    "thin": 2,
+    "base": 4,
+    "frame": 6
+  },
+  "shadowY": {
+    "sm": 4,
+    "md": 6,
+    "lg": 8
+  },
+  "type": {
+    "display": {
+      "font": "display",
+      "size": 64,
+      "lineHeight": 1,
+      "letterSpacing": 1,
+      "bake": "F128"
+    },
+    "title": {
+      "font": "display",
+      "size": 40,
+      "lineHeight": 1.05,
+      "letterSpacing": 0.5,
+      "bake": "F80"
+    },
+    "label": {
+      "font": "display",
+      "size": 28,
+      "lineHeight": 1.1,
+      "letterSpacing": 0.5,
+      "bake": "F56"
+    },
+    "numeral": {
+      "font": "display",
+      "size": 32,
+      "lineHeight": 1,
+      "letterSpacing": 1,
+      "bake": "F64"
+    },
+    "body": {
+      "font": "body",
+      "weight": 700,
+      "size": 22,
+      "lineHeight": 1.3,
+      "letterSpacing": 0
+    },
+    "caption": {
+      "font": "body",
+      "weight": 800,
+      "size": 18,
+      "lineHeight": 1.25,
+      "letterSpacing": 0.2,
+      "floor": true
+    },
+    "shrinkFloor": {
+      "display": 48,
+      "title": 32,
+      "label": 22,
+      "body": 20,
+      "caption": 18
+    },
+    "textSizeSetting": {
+      "normal": 1,
+      "large": 1.2,
+      "appliesTo": [
+        "body",
+        "caption",
+        "html"
+      ]
+    },
+    "bakes": {
+      "F56": {
+        "px": 56,
+        "charset": "ASCII + Latin-Ext used by locale files",
+        "layers": [
+          "fill"
+        ]
+      },
+      "F64": {
+        "px": 64,
+        "charset": "0-9 % ° / : x + - − . ∞",
+        "layers": [
+          "fill",
+          "stroke"
+        ]
+      },
+      "F80": {
+        "px": 80,
+        "charset": "ASCII + Latin-Ext used by locale files",
+        "layers": [
+          "fill"
+        ]
+      },
+      "F128": {
+        "px": 128,
+        "charset": "A-Z 0-9 ! ? . '",
+        "layers": [
+          "fill",
+          "stroke"
+        ]
+      }
+    }
+  },
+  "touch": {
+    "hitMin": 64,
+    "hitPreferred": 72,
+    "fireHit": 120,
+    "fireVisual": 104,
+    "visualInMin": 48,
+    "visualInPreferred": 56,
+    "gapMin": 8,
+    "cancelSlop": 16,
+    "tapSlop": 12
+  },
+  "layout": {
+    "marginMin": 16,
+    "insetExtra": 8,
+    "formula": "margin(side) = max(16, max(0, inset_css - letterbox_css) / fitScale + 8)",
+    "snap": {
+      "S1": 1,
+      "S2": 0.5
+    }
+  },
+  "shape": {
+    "shadeBand": {
+      "base": 8,
+      "small": 6
+    },
+    "textStroke": {
+      "display": 6,
+      "numeral": 4
+    },
+    "pressed": {
+      "dy": 4,
+      "dySmall": 2,
+      "shadowY": 2,
+      "scaleX": 1.03,
+      "scaleY": 0.95
+    }
+  },
+  "motion": {
+    "press": {
+      "ms": 60,
+      "ease": "Quad.easeOut"
+    },
+    "release": {
+      "ms": 140,
+      "ease": "Back.easeOut"
+    },
+    "hover": {
+      "ms": 100,
+      "ease": "Sine.easeOut",
+      "scale": 1.04
+    },
+    "panelOpen": {
+      "ms": 220,
+      "ease": "Back.easeOut",
+      "alphaMs": 120,
+      "fromScale": 0.9
+    },
+    "panelClose": {
+      "ms": 140,
+      "ease": "Quad.easeIn"
+    },
+    "scrim": {
+      "ms": 160
+    },
+    "screenOut": {
+      "ms": 220,
+      "ease": "Sine.easeInOut"
+    },
+    "screenIn": {
+      "ms": 260,
+      "ease": "Sine.easeInOut"
+    },
+    "toastIn": {
+      "ms": 180,
+      "ease": "Back.easeOut",
+      "fromY": -24
+    },
+    "toastHold": {
+      "ms": 2000,
+      "perCharOver40": 40
+    },
+    "toastOut": {
+      "ms": 160,
+      "ease": "Quad.easeIn"
+    },
+    "rewardPop": {
+      "ms": 360,
+      "ease": "Back.easeOut",
+      "overshoot": 2.2,
+      "stagger": 120
+    },
+    "countUp": {
+      "ms": 600,
+      "ease": "Cubic.easeOut"
+    },
+    "deny": {
+      "ms": 160,
+      "ease": "Sine.easeInOut",
+      "px": 4
+    },
+    "reduced": {
+      "maxMs": 120,
+      "ease": "Sine.easeOut",
+      "maxTranslate": 8,
+      "noScale": true,
+      "noShake": true,
+      "transitionMs": 120,
+      "rewardMs": 160
+    }
+  },
+  "focus": {
+    "gap": 2,
+    "inner": {
+      "color": "meaning-white",
+      "width": 4
+    },
+    "outer": {
+      "color": "ink",
+      "width": 2
+    },
+    "followsRadius": true,
+    "pulse": false
+  },
+  "component": {
+    "button": {
+      "radius": 24,
+      "outline": 4,
+      "shadowY": 6,
+      "shadeBand": 8,
+      "sizes": {
+        "md": {
+          "h": 64,
+          "minW": 160
+        },
+        "lg": {
+          "h": 72,
+          "minW": 216
+        },
+        "xl": {
+          "h": 96,
+          "minW": 240
+        }
+      },
+      "variants": {
+        "primary": {
+          "fill": "action",
+          "shade": "action-shade",
+          "text": "ink"
+        },
+        "secondary": {
+          "fill": "secondary",
+          "shade": "secondary-shade",
+          "text": "ink"
+        },
+        "info": {
+          "fill": "info",
+          "shade": "info-shade",
+          "text": "ink"
+        },
+        "destructive": {
+          "fill": "danger",
+          "shade": "ink-soft",
+          "text": "meaning-white",
+          "icon": "bin"
+        },
+        "disabled": {
+          "fill": "disabled",
+          "shade": "disabled-shade",
+          "text": "ink-soft"
+        }
+      },
+      "states": [
+        "default",
+        "hover",
+        "pressed",
+        "focus",
+        "disabled",
+        "selected",
+        "queued",
+        "hidden"
+      ]
+    },
+    "iconButton": {
+      "visual": 56,
+      "hit": 64,
+      "fill": "secondary",
+      "icon": 32
+    },
+    "panel": {
+      "fill": "panel",
+      "radius": 24,
+      "outline": 4,
+      "shadowY": 6,
+      "padding": 16
+    },
+    "modal": {
+      "x": 220,
+      "w": 520,
+      "padding": 32,
+      "shadowY": 8,
+      "button": {
+        "w": 216,
+        "h": 72,
+        "gap": 24
+      }
+    },
+    "chip": {
+      "h": 40,
+      "radius": 16,
+      "text": "body"
+    },
+    "pillNew": {
+      "w": 44,
+      "h": 24,
+      "fill": "action",
+      "text": "ink",
+      "type": "caption"
+    },
+    "fire": {
+      "fill": "action",
+      "shade": "action-shade",
+      "text": "ink",
+      "ring": "secondary",
+      "hit": 120,
+      "visual": 104
+    },
+    "levelNode": {
+      "size": 64,
+      "hit": 72,
+      "bossSize": 88,
+      "bossHit": 96,
+      "number": "label",
+      "status": {
+        "locked": {
+          "fill": "disabled",
+          "text": "ink-soft",
+          "icon": "lock"
+        },
+        "next": {
+          "fill": "action",
+          "text": "ink",
+          "ring": "panel"
+        },
+        "cleared": {
+          "fill": "success",
+          "text": "meaning-white"
+        },
+        "skipped": {
+          "fill": "secondary",
+          "text": "ink",
+          "icon": "sticky-note"
+        }
+      },
+      "type": {
+        "rest": "hammock-badge",
+        "boss": "crown"
+      }
+    },
+    "acorn": {
+      "sizes": [
+        28,
+        32,
+        40,
+        64
+      ],
+      "filled": "acorn",
+      "empty": "disabled",
+      "gold": "gold",
+      "goldTwinkle": "secondary"
+    },
+    "weaponSlot": {
+      "size": 64,
+      "gap": 8,
+      "icon": 40,
+      "badge": 28,
+      "selected": "secondary",
+      "lift": 6
+    },
+    "windGauge": {
+      "rect": [
+        300,
+        80,
+        360,
+        48
+      ],
+      "fill": "info",
+      "chevronOn": "meaning-white",
+      "chevronOff": "info-shade",
+      "slots": 5,
+      "slotW": 28,
+      "hubW": 64
+    },
+    "antTag": {
+      "w": 76,
+      "h": 32,
+      "activeW": 96,
+      "activeH": 40,
+      "fill": "panel",
+      "outline": 3,
+      "badge": 24,
+      "number": 22,
+      "lowHp": "danger",
+      "activeOutline": "action"
+    },
+    "teamFrame": {
+      "width": 8,
+      "radius": 24
+    },
+    "dotBubble": {
+      "w": 392,
+      "h": 112,
+      "avatar": 64,
+      "fill": "panel"
+    },
+    "notice": {
+      "rect": [
+        240,
+        184,
+        480,
+        72
+      ],
+      "toastMs": 1600,
+      "queue": 3
+    },
+    "aimPreview": {
+      "dots": 8,
+      "dotR": 6,
+      "stepS": 0.06,
+      "ringR": 16,
+      "ringStroke": 5,
+      "assistS": 1,
+      "fill": "meaning-white",
+      "outline": "ink"
+    },
+    "trinket": {
+      "inGame": 24,
+      "source": 48,
+      "heroMin": 24,
+      "heroMax": 64
+    },
+    "comicFrame": {
+      "rect": [
+        40,
+        28,
+        880,
+        420
+      ],
+      "outline": 6,
+      "radius": 24,
+      "shadowY": 8,
+      "bg": "ink-soft"
+    },
+    "settingsHtml": {
+      "maxWidthCss": 600,
+      "headingCss": 28,
+      "bodyCss": 18,
+      "minCss": 16,
+      "controlCss": 44
+    }
+  }
+} as const;
+
 export type ColorToken = keyof typeof color;

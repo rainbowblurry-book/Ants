@@ -1,0 +1,2 @@
+<!-- ANTS! UI art (aim preview ring r16, stroke 5, ink keyline). Original, drawn for this game. DR-033, UI.md §2. currentColor and #fff become tintable white; var(--token) comes from theme.json (DR-088). -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44" width="44" height="44"><circle cx="22" cy="22" r="16" fill="none" stroke="var(--ink)" stroke-width="9"/><circle cx="22" cy="22" r="16" fill="none" stroke="#fff" stroke-width="5"/></svg>

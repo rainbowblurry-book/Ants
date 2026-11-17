@@ -1,0 +1,2 @@
+<!-- PLACEHOLDER (weapon plop). Flat token shape, DR-195. Replace in stage 12; the release build fails while it remains. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40"><path d="M7 30 Q5 18 14 14 Q20 6 27 13 Q36 16 33 30 Z" fill="var(--acorn-shade)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/></svg>
