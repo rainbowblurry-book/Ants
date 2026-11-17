@@ -5,7 +5,7 @@
  * steps of at most 2 px so nothing tunnels through a 6 px feature. Only
  * + - * / and Math.sqrt are used on floats (DR-011).
  */
-import { FRICTION, RESTITUTION, type TerrainGrid } from './terrain.ts';
+import { FRICTION, Material, RESTITUTION, type TerrainGrid } from './terrain.ts';
 import { cosDeci, sinDeci } from './trig.ts';
 
 export const SIM_HZ = 60;
@@ -168,6 +168,7 @@ export type StepResult =
   | { kind: 'flying' }
   | { kind: 'terrain'; normal: Vec2; material: number; cx: number; cy: number }
   | { kind: 'ant'; ant: number }
+  | { kind: 'water' }
   | { kind: 'out' };
 
 /**
@@ -176,7 +177,8 @@ export type StepResult =
  * - `ax`, `ay`: extra acceleration in px/s² (wind already × weapon factor).
  *   Gravity is added here.
  * - The move is split into ceil(|v|·dt / 2) steps. Each step tests the ants'
- *   capsules, then the ring against the grid. On terrain contact the
+ *   capsules (a `null` entry is skipped: knocked out, or the shooter the shot
+ *   has not left yet), then the ring against the grid, then WATER. On terrain contact the
  *   projectile is backed up to the last free step and the contact point and
  *   normal are returned. The caller decides what the weapon does.
  */
@@ -185,7 +187,7 @@ export function stepProjectile(
   grid: TerrainGrid,
   ax: number,
   ay: number,
-  ants: readonly AntBody[] = [],
+  ants: readonly (AntBody | null)[] = [],
 ): StepResult {
   p.vx += ax * SIM_DT;
   p.vy += (GRAVITY + ay) * SIM_DT;
@@ -205,7 +207,8 @@ export function stepProjectile(
     const nx = p.x + sx;
     const ny = p.y + sy;
     for (let a = 0; a < ants.length; a++) {
-      if (circleHitsCapsule(nx, ny, p.ringR, ants[a] as AntBody)) {
+      const ant = ants[a];
+      if (ant && circleHitsCapsule(nx, ny, p.ringR, ant)) {
         p.x = nx;
         p.y = ny;
         return { kind: 'ant', ant: a };
@@ -216,6 +219,9 @@ export function stepProjectile(
       const material = contactMaterial(grid, nx, ny, p.ringR);
       return { kind: 'terrain', normal, material, cx: nx, cy: ny };
     }
+    // The centre entering WATER is a water hit (DR-026); the projectile stays
+    // at the last free step above it.
+    if (grid.materialAt(nx, ny) === Material.WATER) return { kind: 'water' };
     p.x = nx;
     p.y = ny;
   }
@@ -249,7 +255,12 @@ export function simulateFlight(
   p: Projectile,
   grid: TerrainGrid,
   accel: (x: number, y: number, tick: number) => Vec2 = () => ({ x: 0, y: 0 }),
-  opts: { ants?: readonly AntBody[]; startTick?: number; maxTicks?: number; record?: boolean } = {},
+  opts: {
+    ants?: readonly (AntBody | null)[];
+    startTick?: number;
+    maxTicks?: number;
+    record?: boolean;
+  } = {},
 ): FlightResult {
   const maxTicks = opts.maxTicks ?? MAX_FLIGHT_TICKS;
   const start = opts.startTick ?? 0;

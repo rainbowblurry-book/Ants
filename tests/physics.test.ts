@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Match } from '../src/sim/match.ts';
+import { createAnt } from '../src/sim/movement.ts';
 import {
   bounce,
   bounceOnMaterial,
@@ -362,9 +363,9 @@ describe('match skeleton (DR-010, DR-011)', () => {
       levelId: 'L01',
       terrain,
       wind: new LevelWind({ maxAbs: 2, maxStep: 1, everyNTurns: 1 }),
+      ants: [createAnt(0, 0, 100, 400, 1)],
     });
-    const v = launchVelocity(600, 700, SEED_WMUL, 1);
-    m.push({ kind: 'launch', x: 100, y: 380, vx: v.x, vy: v.y, ringR: 4, windFactor: SEED_WIND });
+    m.push({ kind: 'fire', ant: 0, weapon: 'seed', angleDeci: 600, powerMille: 700 });
     for (let i = 0; i < 300; i++) m.step();
     return m;
   };
@@ -374,9 +375,9 @@ describe('match skeleton (DR-010, DR-011)', () => {
     const b = play();
     expect(a.stateHash()).toBe(b.stateHash());
     expect(a.log).toEqual(b.log);
-    expect(a.events).toHaveLength(1);
-    expect(a.events).toEqual(b.events);
-    expect(a.events[0]?.result.kind).toBe('terrain');
+    expect(a.shots).toHaveLength(1);
+    expect(a.shots[0]?.events).toEqual(b.shots[0]?.events);
+    expect(a.shots[0]?.events[0]?.kind).toBe('blast');
     expect(a.log[0]?.tick).toBe(1);
   });
 });
