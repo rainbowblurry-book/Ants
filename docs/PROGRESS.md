@@ -1,12 +1,49 @@
 # Progress
 
-**Current stage:** Build **stage 1 done** (sim core). Next: stage 2, weapons, damage and movement (HARD).
+**Current stage:** Build **stage 2 done** (weapons, damage, movement, pickups). Next: stage 3, turn flow, match, replay and saves (HARD).
 
 > ⚠ **ANT ART: the reference is in `art/source/`, but final art is not drawn or approved yet.** The build uses placeholders only (DR-195, DR-007a). Stage 0 draws no ants at all. Draw the final ant art only when the user asks.
 
 **Branches:** one per stage, `build/stage-NN-name`, merged to `main` when CI is green (DR-194).
 
 ## Build log
+
+### Stage 2 · Weapons, damage, movement — done 2026-11-17
+Branch `build/stage-02-weapons`. All of it is plain TS in `src/sim`. No Phaser, and ban-scan is clean.
+- **`weapons/`:** one file per weapon (`seed`, `dewdrop`, `pollen` with its puffs, `grub`, `roller`, `plop`), plus `fly.ts` (the shared ballistic tick, despawn and 480-tick cap) and `index.ts`. `index.ts` holds the `WEAPONS` table, `fire()`, `stepShot()`, the per-ant 60-cap ledger, and how blasts are applied (crater or fill, damage, knockback, pickups popped). The weapon numbers are the PLAN §5 table.
+- **`damage.ts`:**
+  - Falloff `max(0, dist(blast, capsule segment) − 16)` per J1, linear down to 25 %.
+  - A direct hit is ×1.2. The cap is 60 per ant per shot. Self-damage is ×0.5 and never lethal, and friendly fire is on.
+  - Knockback is `min(600, 8·dmg)` at 25° or more upward. Fall damage follows DR-026.
+- **`movement.ts`:**
+  - Walking: 80 px/s, a 160 px budget, step-up 8, the 45° limit and the 30°→45° slow-down.
+  - Hop and back-flip use their budget costs. Flight has 2 px steps and terminal speed 700, and lands on 3 foot probes.
+  - Also here: the one BOUNCY rebound at e 0.6, slides over 60° (over 10° on SLICK), SLICK deceleration 90, the embed push-up of at most 24 px, the side walls at 24/936, void KO below y 580, and the water swim-back after 6 ticks with `skipNextTurn`.
+- **`pickups.ts`:** Honey Drop (+25 HP, capped at 100) and Seed Bundle (+2 Dewdrop, +1 Pollen). Both are collected by an ant on the ground touching them, and a blast pops them.
+- **`angle.ts`:** asin by searching the trig table, plus slope and vector rotation. This replaces `atan2`, which the sim may not use.
+- **`physics.ts`:** a `water` step result. **`match.ts`:** now holds ants, team ammo (two-player defaults) and `fire`/`walk`/`hop`/`flip` commands. The turn FSM is still stage 3.
+
+**Tests:** `npm test` runs 10 files and 125 tests. The new files are `damage` (falloff, ×1.2, cap, self, knockback, fall), `weapons` (table, DR-009 sanity numbers, behaviour, pickups, replay stability for all 6 weapons) and `movement`. `npm run e2e` still passes 26 checks with 1 skipped. **CI:** see below.
+
+**Measured against DR-009** (facts, no overrides):
+- Full-power 45° ranges: Grub, Roller and Plop land within 1.2 % of 864 / 624 / 700 px, and Seed and Dewdrop within 1.2 % of 1143 / 780. They come out about one tick short, as in stage 1.
+- The Grub tunnel is 150 px (±4) after 60 ticks. ROCK pops it on the surface. On a 40 px wall it pops as its r 11 dig circle opens the far face.
+- The Roller from 158 px/s on SOIL rolls 130 px (±4) and pops at tick 151 (the fuse). On SLICK it slides **≈ 376 px** before the fuse, not DR-009's "about 490". 490 px matches a 200 px/s start, so DR-009's figure looks like a hand-calculation slip. The code follows the formula.
+- Roller: a 20° downhill speeds the ball up. It bounces once off a 20 px wall at half speed, and it climbs an 8 px step.
+- Mound Plop: water inside the 34 px fill becomes SOIL, nothing within 18 px of an ant's hurtbox is filled, and nothing is erased.
+
+**Implementation choices inside the DRs** (no new numbers):
+- A shot spawns at the shooter's hurtbox centre and ignores the shooter until it has left the capsule. No DR gives a muzzle point.
+- The DRs give ring radii only for Seed, Pollen and Dewdrop, so Grub, Roller and Plop use the small ring (4 px).
+- Dewdrop uses its own restitution 0.55 and keeps 0.85 of its tangential speed (DR-034, PLAN §5), not the material e. A water skip (e 0.5) does not count toward its 3 bounces.
+- Roller: a rise of more than 8 px is a wall and a drop of more than 8 px is a ledge. After a fall it lands again with the same `min(200, 0.35 × speed)` rule. Its slope comes from 7 integer height samples 1 px apart.
+- The Grub's hit is direct only in flight (DR-009 says "in flight"). Pollen bursting on an ant uses the capsule normal.
+- Knockback: each blast sets the ant's velocity, so the latest blast wins.
+- Halving fall damage on SOFT rounds like DR-035 (`Math.round`).
+- Walk slow-down applies uphill only. Foot contacts are searched 44 px up and down (the head-probe height).
+- Swim-back scans x, x+1, x−1, … out to 200 px. If no dry ground is found, the ant is knocked out (see the open questions).
+
+**Overrides logged:** none. Four Tier G questions are under "Open items" and nothing was changed for them.
 
 ### Stage 1 · Sim core — done 2026-11-17
 Branch `build/stage-01-sim-core`. Everything is plain TypeScript under `src/sim`. It imports nothing from Phaser and runs in node.
@@ -212,8 +249,13 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
   - refitting the bot-cap constants against the real sim
 - **Save and level-data schema additions from J48:** goal bits, `losses`, `settings.twoPlayer`, `wardrobe`, and `name`/`tagline`/`windHint`/`hint`. These must be in the D build plan.
 - The "Made by" credit name is to be supplied by the owner.
+- **Stage 2 questions for the user (Tier G; nothing applied, the build follows the docs as written):**
+  1. **The back-flip costs fall damage.** DR-026 counts the drop from the apex as free fall. A back-flip on flat ground (apex about 147 px) therefore costs about 6 HP every time. The flip feels like a free verb, so this may not be intended. Options: exempt the ant's own hops and flips, or raise the free height.
+  2. **Mound Plop on water fizzles** (PLAN §4: everything but Dewdrop fizzles in water). DR-009 says the Plop exists to "bridge WATER". Today it can only do that by hitting the bank, with the fill reaching over the water.
+  3. **Dewdrop on BOUNCY:** DR-022 says material restitution applies to Dewdrop bounces, but DR-034 and PLAN §5 fix it at 0.55. The build uses 0.55 everywhere, so a tent or jelly gives no extra bounce.
+  4. **Swim-back with no dry ground within 200 px:** DR-026 does not say what happens. The build knocks the ant out.
 - **Gap found in stage 1 (for stage 2/3):** DR-026 gives no lower despawn line for projectiles. Over a `void` bottom a shot that falls off the map keeps flying until the 8 s cap (DR-038). If that wait feels bad, a Tier G OVR is needed to add one; the builder has not picked a value.
 - **GitHub Pages:** done by the user (Settings → Pages → Source: "GitHub Actions").
 
 ## Next step
-Stage 2, weapons, damage and movement (HARD), per HANDOFF §3, with the `damage` test. The builder stops after each stage, and for playtests at M1 and M2.
+Stage 3, turn flow, match, replay and saves (HARD), per HANDOFF §3, with the `turn` and `replay` tests. The builder stops after each stage, and for playtests at M1 and M2.
