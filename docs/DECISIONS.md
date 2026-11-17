@@ -2800,3 +2800,22 @@ Logged by the builder. Tier T is applied at once. Tier G waits for the user's ap
 - **Tier:** T
 - **Status:** applied (stage 5).
 - **Revert plan:** remove the character; direct hits then lose the "!".
+
+## OVR-011 · An ant that cannot swim back goes to the nearest dry ground
+- **Overrides:** fills a gap in DR-026 (swim back to dry ground within 200 px; nothing said when there is none).
+- **Reason:** the owner chose it (`ToUser` Q-04, 2026-11-17): "put the ant on the nearest ground if it cannot swim back; else knock it out".
+- **Change:** when no dry standing point is within 200 px, the ant goes to the nearest dry standing point anywhere on the map. Only with none at all is it knocked out. It still loses its next turn (Q-06 A).
+- **Impact:** `src/sim/movement.ts` (`dryStandingPoint` search), `tests/movement.test.ts`. Replays from before differ in this case only.
+- **Tier:** G
+- **Status:** approved by the owner 2026-11-17. To apply in stage 5b.
+- **Revert plan:** keep the 200 px search only.
+
+## OVR-012 · The dew warning comes 3 rounds before the dew
+- **Overrides:** the fixed warning round 18 (DR-044, `SD_WARN_ROUND`), which is 12 rounds early on boss levels (dew from round 30).
+- **Reason:** the owner chose it (`ToUser` Q-07, 2026-11-17).
+- **Change:** the warning round is `dewFromRound − 3` (18 normally, 27 on bosses). The value for normal levels does not change.
+- **Impact:** `src/sim/turn.ts` (`defaultRules`, the boss rules in stage 9), `tests/turn.test.ts`.
+- **Tier:** G
+- **Status:** approved by the owner 2026-11-17. To apply in stage 5b.
+- **Revert plan:** set the warning round back to 18.
+

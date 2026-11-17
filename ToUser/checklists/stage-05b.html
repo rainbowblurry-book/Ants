@@ -1,0 +1,319 @@
+<title>ANTS! Stage 5b Checklist</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap">
+<style>
+/* Layout: one narrow column of item cards, a sticky progress bar, two sections (Decide, Test). Game tokens. */
+:root {
+  --ink: #2E1A47; --ink-soft: #4A2F6B; --paper: #FFF7E3; --card: #FFFFFF; --butter: #FFD978;
+  --rasp: #EE6083; --teal: #1FA38A; --line: #E6D9F2; --muted: #6E5C86; --ok: #22662C; --warn: #B52A4C;
+  --chip: #F3ECFA; --chip-on: #2E1A47; --chip-on-text: #FFF1D0;
+  --display: "Lilita One", "Arial Rounded MT Bold", ui-rounded, system-ui, sans-serif;
+  --body: "Nunito", ui-rounded, system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ink: #FFF1D0; --ink-soft: #E9DDF6; --paper: #1E1230; --card: #2A1B40; --butter: #F7B932;
+  --rasp: #F27E9B; --teal: #3CC2A6; --line: #45305F; --muted: #B9A8CF; --ok: #7CCB3E; --warn: #F27E9B;
+  --chip: #3A2754; --chip-on: #FFD978; --chip-on-text: #2E1A47; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --ink: #FFF1D0; --ink-soft: #E9DDF6; --paper: #1E1230; --card: #2A1B40; --butter: #F7B932;
+  --rasp: #F27E9B; --teal: #3CC2A6; --line: #45305F; --muted: #B9A8CF; --ok: #7CCB3E; --warn: #F27E9B;
+  --chip: #3A2754; --chip-on: #FFD978; --chip-on-text: #2E1A47; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--paper); color: var(--ink); font: 600 16px/1.5 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 48px }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper) }
+main { max-width: 720px; margin: 0 auto }
+header.top { padding-block: 28px 8px }
+h1 { font: 400 clamp(30px, 6vw, 42px)/1.05 var(--display); margin: 0; letter-spacing: .5px; text-wrap: balance }
+.lede { margin: 10px 0 0; color: var(--ink-soft); max-width: 60ch }
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper);
+  padding-block: 10px; display: flex; gap: 12px; align-items: center; border-bottom: 2px solid var(--line) }
+.track { flex: 1; height: 12px; border-radius: 999px; background: var(--chip); overflow: hidden }
+.fill { height: 100%; width: 0; background: var(--teal); transition: width .3s }
+.count { font: 800 14px var(--body); font-variant-numeric: tabular-nums; white-space: nowrap }
+.status { font-size: 13px; color: var(--muted); min-height: 1.5em; margin-top: 6px }
+h2 { font: 400 26px/1.1 var(--display); margin: 32px 0 4px; letter-spacing: .4px }
+.sec-note { margin: 0 0 14px; color: var(--muted) }
+.list { display: flex; flex-direction: column; gap: 14px }
+.item { background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 16px; display: grid; gap: 10px; min-width: 0 }
+.item.done { border-color: var(--teal) }
+.head { display: flex; gap: 10px; align-items: baseline }
+.id { font: 800 13px var(--body); color: var(--chip-on-text); background: var(--chip-on); border-radius: 8px; padding: 2px 8px; flex: none }
+.title { font: 400 21px/1.15 var(--display); letter-spacing: .3px; margin: 0 }
+.tag { font: 800 12px var(--body); color: var(--warn); border: 2px solid currentColor; border-radius: 8px; padding: 0 6px; margin-left: auto; flex: none }
+.why { margin: 0; color: var(--ink-soft) }
+.why b { color: var(--ink) }
+.choices { display: grid; gap: 8px }
+.choice { display: flex; gap: 10px; align-items: flex-start; background: var(--chip); border: 2px solid transparent; border-radius: 12px; padding: 10px 12px; cursor: pointer }
+.choice input { margin-top: 4px; accent-color: var(--rasp); width: 18px; height: 18px; flex: none }
+.choice:has(input:checked) { border-color: var(--rasp) }
+.choice:focus-within { outline: 3px solid var(--teal); outline-offset: 2px }
+.letter { font: 800 15px var(--body); flex: none; width: 1.3em }
+.rec { font: 800 12px var(--body); color: var(--teal); margin-left: 6px; white-space: nowrap }
+.pills { display: flex; flex-wrap: wrap; gap: 8px }
+.pill { font: 800 15px var(--body); border-radius: 999px; padding: 8px 16px; border: 2px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer }
+.pill[aria-pressed="true"].pass { background: var(--ok); border-color: var(--ok); color: var(--card) }
+.pill[aria-pressed="true"].problem { background: var(--warn); border-color: var(--warn); color: var(--card) }
+.pill[aria-pressed="true"].skip { background: var(--chip-on); border-color: var(--chip-on); color: var(--chip-on-text) }
+.pill:focus-visible, textarea:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px }
+.steps { margin: 0; padding-left: 1.2em; color: var(--ink-soft) }
+label.c { font: 800 13px var(--body); color: var(--muted) }
+textarea { width: 100%; min-height: 64px; resize: vertical; font: 600 16px/1.4 var(--body); color: var(--ink);
+  background: var(--paper); border: 2px solid var(--line); border-radius: 12px; padding: 10px }
+.saved { font-size: 12px; color: var(--muted); min-height: 1.2em }
+footer { margin-top: 32px; color: var(--muted); font-size: 14px }
+@media (prefers-reduced-motion: reduce) { .fill { transition: none } }
+</style>
+
+<main>
+  <header class="top">
+    <h1>Stage 5b: your playtest fixes</h1>
+    <p class="lede">Part 1: pick a choice for each fix and add a comment if you like. Part 2 is the test plan for the next phone playtest: mark each step after you try it. Your choices save by themselves, and the builder reads them here.</p>
+  </header>
+  <div class="bar" role="status" aria-live="polite">
+    <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
+    <span class="count" id="count">0 / 0</span>
+  </div>
+  <p class="status" id="status">Loading your saved answers…</p>
+
+  <h2>Part 1 · Decide</h2>
+  <p class="sec-note">"Needs your OK" means it changes a rule in the design docs. The builder changes nothing until you choose.</p>
+  <div class="list" id="decide"></div>
+
+  <h2>Part 2 · Test after stage 5b is built</h2>
+  <p class="sec-note">Do these on your phone, in landscape, once the builder says stage 5b is live. Mark each one Pass, Problem or Not tried, and write what happened.</p>
+  <div class="list" id="test"></div>
+
+  <footer>Stage 5 stays open until this checklist passes. Questions that stay open are also listed in ToUser/TODO.md.</footer>
+</main>
+
+<script>
+const DECIDE = [
+  { id: "D01", title: "Make the game bigger on your phone", ok: true,
+    why: "<b>Problem:</b> your phone is longer than the game (19.5:9 against 16:9), so the game sits in the middle with bars at the sides, and the browser bars take height too. Everything looks small.",
+    choices: [
+      ["A", "Go full screen on your first tap, and use the side space: the world view gets wider on long phones, the controls move to the edges.", true],
+      ["B", "Only go full screen on the first tap."],
+      ["C", "Keep it as it is."] ] },
+  { id: "D02", title: "A calmer, cleaner screen", ok: true,
+    why: "<b>Problem:</b> too many buttons and words, not enough open space to see the ants. The builder will study common rules for phone game screens (thumb zones, few buttons, show a control only when you can use it) and screens of other artillery games, without copying any.",
+    choices: [
+      ["A", "Show me 2 layout pictures first; I pick one, then you build it.", true],
+      ["B", "Build your best layout directly; I test it on the phone."] ] },
+  { id: "D03", title: "Health tags hide who is up", ok: false,
+    why: "<b>Problem:</b> the tags over every ant cover the marker for the active ant.",
+    choices: [
+      ["A", "Small tags (only the number) on the other ants. The active ant gets a coloured ring under its feet and a bigger arrow.", true],
+      ["B", "Hide all tags but the active ant's. Tap an ant to see its health."],
+      ["C", "Keep it as it is."] ] },
+  { id: "D04", title: "“Tap to start” before every turn", ok: true,
+    why: "<b>Problem:</b> with the phone on a table, tapping to start every turn is tiring. The tap exists so the next player is ready before the timer runs.",
+    choices: [
+      ["A", "Off by default. A two-player setting “Pass the phone” turns it on.", true],
+      ["B", "On by default, with a setting to turn it off."],
+      ["C", "Keep it always on."] ] },
+  { id: "D05", title: "Friendly fire on or off", ok: true,
+    why: "<b>Now:</b> a shot hurts every ant, your own team too. You asked for an option.",
+    choices: [
+      ["A", "A two-player setting “Hit own team”, on by default.", true],
+      ["B", "The same setting, off by default."] ] },
+  { id: "D06", title: "Keep ants inside the map", ok: true,
+    why: "<b>Problem:</b> a blast can throw an ant off the side or the top, where you cannot see, hit or move it.",
+    choices: [
+      ["A", "Invisible walls on the left, right and top. Falling into the hole at the bottom still knocks an ant out.", true],
+      ["B", "Walls everywhere: the bottom becomes ground too, so no ant ever leaves the map."],
+      ["C", "Keep it as it is."] ] },
+  { id: "D07", title: "What does Flip do?", ok: false,
+    why: "<b>Fact:</b> Flip is a back-flip: a high jump backwards (costs 80 of your 160 walk). Hop is a short jump forwards (costs 50).",
+    choices: [
+      ["A", "Use icons for Hop and Flip, and show a one-line hint the first time you press each one.", true],
+      ["B", "Remove the Flip button. Keep the X key for keyboards."],
+      ["C", "Keep it as it is."] ] },
+  { id: "D08", title: "What is the green bar?", ok: false,
+    why: "<b>Fact:</b> it is your walk budget for this turn (160). Walking uses it; Hop and Flip use a piece of it. The lines mark the Hop and Flip costs.",
+    choices: [
+      ["A", "Show it next to the ant only while you walk, with a foot icon.", true],
+      ["B", "Remove it. The ant simply stops when the budget is gone."],
+      ["C", "Keep it where it is, and add a foot icon and the word “Walk”."] ] },
+  { id: "D09", title: "Keep angle and power when you change weapon", ok: true,
+    why: "<b>Now:</b> each weapon remembers its own angle and power, and a new one starts at 45° and 60%.",
+    choices: [
+      ["A", "One angle and power per ant: changing weapon keeps them.", true],
+      ["B", "Keep one memory per weapon."] ] },
+  { id: "D10", title: "Is the wind fixed or changing?", ok: false,
+    why: "<b>Fact:</b> it changes at the start of every turn. On this map it moves by at most 1 step and stays between −2 and +2.",
+    choices: [
+      ["A", "When the wind changes, the gauge pops and a short “Wind +2” notice shows for a moment.", true],
+      ["B", "Keep it as it is."] ] },
+  { id: "D11", title: "What does the dew do?", ok: false,
+    why: "<b>Fact:</b> after round 20 the water (dew) rises from the bottom 24 px every round. An ant under the water is knocked out. It makes long matches end.",
+    choices: [
+      ["A", "The first time it rises, a banner says: “The dew is rising! Ants under it are out.”", true],
+      ["B", "Write your own text in the comment."],
+      ["C", "Keep only the small “Dew rising” chip."] ] },
+  { id: "D12", title: "A test plan in every stage", ok: false,
+    why: "<b>You asked:</b> no more giant check at the end. Every stage gets its own short checklist page like this one.",
+    choices: [
+      ["A", "Yes: each stage ends with a checklist page; the next stage waits for it.", true],
+      ["B", "Only at the big milestones (M1, M2, release)."] ] },
+];
+
+const TEST = [
+  { id: "T01", title: "Open the game", steps: ["Open the live link on your phone in landscape.", "Tap once. The game goes full screen (if D01 A or B)."] },
+  { id: "T02", title: "Read the screen", steps: ["Without touching anything: can you see whose turn it is, the wind and the aim?", "Is any text too small at your normal holding distance?"] },
+  { id: "T03", title: "Find the active ant", steps: ["Is it clear at once which ant is yours this turn?", "Do the health tags still cover anything?"] },
+  { id: "T04", title: "Aim with the dial", steps: ["Drag the dial. Drag it across to the other side: the ant turns round.", "Tap the small ▲ ▼: one degree each."] },
+  { id: "T05", title: "Aim with the slingshot", steps: ["Put your finger on your ant and drag back, like a slingshot. Let go: nothing fires.", "Do the dots show where the shot goes?"] },
+  { id: "T06", title: "Set the power", steps: ["Drag the power slider, then tap its ▲ ▼.", "Change weapon: angle and power stay (if D09 A)."] },
+  { id: "T07", title: "Fire and run", steps: ["Press FIRE. After the shot you have 3 seconds to walk away.", "Did FIRE ever do nothing when you expected a shot?"] },
+  { id: "T08", title: "Walk, Hop and Flip", steps: ["Walk left and right. Hop. Flip.", "Is it clear what each one does, and how much walk is left?"] },
+  { id: "T09", title: "Pass the phone", steps: ["Play 4 turns with a second person.", "Is the turn change clear? Is the “Pass the phone” setting right for you (D04)?"] },
+  { id: "T10", title: "Edges of the map", steps: ["Blast an ant near the side of the map.", "It stays on the map (D06)."] },
+  { id: "T11", title: "Friendly fire", steps: ["Hit your own ant with “Hit own team” on, then off (D05)."] },
+  { id: "T12", title: "Pause and resume", steps: ["Tap pause, then Resume. Play waits a moment before it starts again.", "Switch to another app and back: the game is paused."] },
+  { id: "T13", title: "Left-handed layout", steps: ["Open the link with ?hand=left at the end.", "FIRE is on the left, the dial on the right."] },
+  { id: "T14", title: "Phone speed", steps: ["Open the link with ?mem at the end.", "Write the ms number from the bottom-left corner here."] },
+];
+
+const state = {};  // id -> {choice, status, comment}
+let db = null;
+const total = DECIDE.length + TEST.length;
+const $ = (s, el = document) => el.querySelector(s);
+
+function el(tag, attrs = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "html") e.innerHTML = v; else if (k === "text") e.textContent = v; else e.setAttribute(k, v);
+  }
+  for (const k of kids) if (k) e.append(k);
+  return e;
+}
+
+function progress() {
+  let n = 0;
+  for (const it of DECIDE) if (state[it.id]?.choice) n++;
+  for (const it of TEST) if (state[it.id]?.status) n++;
+  $("#count").textContent = `${n} / ${total} answered`;
+  $("#fill").style.width = `${(100 * n) / total}%`;
+  for (const card of document.querySelectorAll(".item")) {
+    const s = state[card.dataset.id] || {};
+    card.classList.toggle("done", !!(s.choice || s.status));
+  }
+}
+
+const pending = new Map();
+async function save(id, patch, note) {
+  state[id] = { ...(state[id] || {}), ...patch };
+  progress();
+  if (!db) { note.textContent = "Not saved: this view cannot save. Open the page signed in."; return; }
+  const run = async () => {
+    note.textContent = "Saving…";
+    try {
+      await db.collection("answers").doc(id).set({ ...state[id], at: new Date().toISOString() });
+      note.textContent = "Saved";
+    } catch (e) {
+      note.textContent = e && e.code === "permission_denied" ? "Not saved: you can only read this page." : "Not saved. Check your connection and change the answer again.";
+    }
+  };
+  // One write at a time per item; the latest state wins.
+  const prev = pending.get(id) || Promise.resolve();
+  const next = prev.then(run);
+  pending.set(id, next);
+}
+
+function commentBox(it, note) {
+  const id = `c-${it.id}`;
+  const t = el("textarea", { id, placeholder: "Your comment (optional)" });
+  let timer = 0;
+  t.addEventListener("input", () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => save(it.id, { comment: t.value }, note), 700);
+  });
+  return [el("label", { class: "c", for: id, text: "Comment" }), t];
+}
+
+function renderDecide() {
+  const root = $("#decide");
+  for (const it of DECIDE) {
+    const note = el("div", { class: "saved" });
+    const choices = el("div", { class: "choices", role: "radiogroup", "aria-label": it.title });
+    for (const [letter, text, rec] of it.choices) {
+      const inputId = `r-${it.id}-${letter}`;
+      const input = el("input", { type: "radio", name: `r-${it.id}`, id: inputId, value: letter });
+      input.addEventListener("change", () => save(it.id, { choice: letter }, note));
+      const lab = el("label", { class: "choice", for: inputId }, input, el("span", { class: "letter", text: letter }),
+        el("span", {}, document.createTextNode(text), rec ? el("span", { class: "rec", text: "Builder’s pick" }) : null));
+      choices.append(lab);
+    }
+    const head = el("div", { class: "head" }, el("span", { class: "id", text: it.id }), el("h3", { class: "title", text: it.title }),
+      it.ok ? el("span", { class: "tag", text: "Needs your OK" }) : null);
+    const [lab, ta] = commentBox(it, note);
+    root.append(el("section", { class: "item", "data-id": it.id }, head, el("p", { class: "why", html: it.why }), choices, lab, ta, note));
+  }
+}
+
+function renderTest() {
+  const root = $("#test");
+  for (const it of TEST) {
+    const note = el("div", { class: "saved" });
+    const pills = el("div", { class: "pills", role: "group", "aria-label": `${it.title} result` });
+    for (const [key, label] of [["pass", "Pass"], ["problem", "Problem"], ["skip", "Not tried"]]) {
+      const b = el("button", { type: "button", class: `pill ${key}`, "aria-pressed": "false", "data-k": key, text: label });
+      b.addEventListener("click", () => {
+        for (const o of pills.children) o.setAttribute("aria-pressed", String(o === b));
+        save(it.id, { status: key }, note);
+      });
+      pills.append(b);
+    }
+    const steps = el("ol", { class: "steps" });
+    for (const s of it.steps) steps.append(el("li", { text: s }));
+    const head = el("div", { class: "head" }, el("span", { class: "id", text: it.id }), el("h3", { class: "title", text: it.title }));
+    const [lab, ta] = commentBox(it, note);
+    root.append(el("section", { class: "item", "data-id": it.id }, head, steps, pills, lab, ta, note));
+  }
+}
+
+function applyState() {
+  for (const [id, s] of Object.entries(state)) {
+    if (s.choice) { const r = document.getElementById(`r-${id}-${s.choice}`); if (r) r.checked = true; }
+    if (s.status) {
+      const card = document.querySelector(`.item[data-id="${id}"]`);
+      for (const b of card ? card.querySelectorAll(".pill") : []) b.setAttribute("aria-pressed", String(b.dataset.k === s.status));
+    }
+    const t = document.getElementById(`c-${id}`);
+    if (t && typeof s.comment === "string" && document.activeElement !== t) t.value = s.comment;
+  }
+  progress();
+}
+
+renderDecide();
+renderTest();
+progress();
+
+(async () => {
+  const status = $("#status");
+  const giveUp = setTimeout(() => { status.textContent = "Saved answers did not load. You can still fill in the page; it saves once the connection is back."; }, 10000);
+  try {
+    db = window.claude ? await window.claude.use("db") : null;
+  } catch { db = null; }
+  if (!db) {
+    clearTimeout(giveUp);
+    status.textContent = "This view cannot save answers. Open the page from Claude while signed in.";
+    return;
+  }
+  let first = true;
+  db.collection("answers").onSnapshot((snap) => {
+    clearTimeout(giveUp);
+    for (const d of snap.docs) {
+      const v = d.data() || {};
+      state[d.id] = { choice: v.choice, status: v.status, comment: v.comment };
+    }
+    applyState();
+    if (first) { status.textContent = snap.empty ? "No answers yet. Start with D01." : "Your saved answers are loaded."; first = false; }
+  }, () => {
+    clearTimeout(giveUp);
+    status.textContent = "Saved answers could not load. Reload the page to try again.";
+  });
+})();
+</script>

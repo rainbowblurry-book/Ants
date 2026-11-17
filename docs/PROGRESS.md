@@ -1,6 +1,6 @@
 # Progress
 
-**Current stage:** Build **stage 5 done → M1 hot-seat slice** (tag `m1-hotseat`). **Stopped for the owner's phone playtest** (`ToUser/TODO.md` R-04). Next after that: stage 6, Bot AI (HARD).
+**Current stage:** Build **stage 5b** (fixes from the M1 phone playtest), branch `build/stage-05b-playtest`. Stage 5 stays open until 5b passes the owner's next playtest; then the `m1-hotseat` tag and stage 6. **Waiting for the owner's choices on the checklist page** (`ToUser/TODO.md` R-05).
 
 **Owner's to-do list:** `ToUser/TODO.md` is the one place for questions, reviews and checks for the owner. This file does not copy them.
 
@@ -10,7 +10,10 @@
 
 ## Build log
 
-### Stage 5 · Battle HUD and input → M1 hot-seat slice — done 2026-11-17
+### Owner answers after the M1 playtest — 2026-11-17
+Moved to `ToUser/archive/ANSWERED.md`. Approved: Q-14 A (Restart dialog text), Q-15 B ("Jungle Home · Round R"), Q-16 A (OVR-009 stand-in arena until stage 9), Q-04 (OVR-011: nearest dry ground, else knock-out), Q-06 A (no change), Q-07 B (OVR-012: warning 3 rounds before the dew), R-03 (draw the ants before stage 7, when the owner writes "draw ant"). R-04 playtest: the screen is too small and busy, tags hide the active ant, the gate every turn is tiring, a friendly-fire option, ants leaving the map, Flip and the move bar unclear, a weapon change should keep the aim, wind and dew unexplained, and a request for an HTML checklist and a test plan per stage. These became the stage 5b list D01–D12 and the test plan T01–T14 on the checklist page (source `ToUser/checklists/stage-05b.html`, published as an artifact with a `db` store the builder reads). The owner said stage 5 is not done until this passes, so `m1-hotseat` is not pushed and stage 6 waits.
+
+### Stage 5 · Battle HUD and input → M1 hot-seat slice — built 2026-11-17 (reopened for 5b)
 Branch `build/stage-05-hud`. Two people can play a full match on one phone: gate, aim, fire, retreat, handover, Pause, and a match end with Rematch.
 
 **Built**

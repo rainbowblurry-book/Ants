@@ -1,57 +1,23 @@
 # To do for you (owner)
 
-Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `README.md` in this folder. Answered items are in `archive/ANSWERED.md`.
+Updated: 2026-11-17, stage 5b (fixes from your M1 playtest). How to use this file: see `README.md` in this folder. Answered items are in `archive/ANSWERED.md`.
 
-**Do R-04 first: the M1 phone playtest.** The build stops until you do it. Nothing else here blocks stage 6. Until you answer, the build follows the docs as written.
+**Do R-05 first: the stage 5b checklist page.** The builder changes nothing in stage 5b until you choose there. Until you answer the other items, the build follows the docs as written.
 
 **Summary**
 
 | ID | Short name | Type | Needed before |
 |---|---|---|---|
-| R-04 | M1 phone playtest | check | stage 6 |
-| Q-14 | Restart dialog text | answer | stage 7 |
-| Q-15 | Two-player Pause caption | answer | stage 7 |
-| Q-16 | Stand-in arena until stage 9 | answer | stage 6 |
+| R-05 | Stage 5b checklist page | decide + test | stage 5b work |
 | Q-17 | Double-tap to find your ant | answer | stage 11 |
 | Q-01 | Back-flip fall damage | answer | stage 8 |
 | Q-02 | Mound Plop on water | answer | stage 8 |
 | Q-03 | Dewdrop on bouncy ground | answer | stage 8 |
-| Q-04 | Swim-back with no dry ground | answer | stage 8 |
-| Q-06 | Meaning of "loses its next turn" | answer | stage 8 |
-| Q-07 | Dew warning on boss levels | answer | stage 9 |
-| R-02 | Phone speed check | check | stage 13 |
-| R-03 | Final ant art | decision | stage 12 |
+| R-02 | Phone speed check (ms) | check | stage 13 |
 
 ---
 
 ## Questions
-
-### Q-14 · Restart dialog text
-- **Status:** open. **Needed before:** stage 7.
-- **Problem:** DR-171 says Restart opens a destructive confirm. The docs give no text for it.
-- **What happens now:** title "Restart", body "Start new", buttons Cancel / Restart. These are words the docs already use.
-- **Choices:**
-  - **A:** Title "Restart?", body "Start this match again from the first turn?"
-  - **B:** Keep it as it is.
-  - **C:** Write your own text.
-- **Your answer:**A
-
-### Q-15 · Two-player Pause caption
-- **Status:** open. **Needed before:** stage 7.
-- **Problem:** The Pause caption is "Level N · Round R" (DR-171). A two-player match has no level number.
-- **What happens now:** the caption reads "Round R".
-- **Choices:**
-  - **A:** Keep "Round R".
-  - **B:** Use the arena name: "Jungle Home · Round R".
-- **Your answer:** B
-
-### Q-16 · Stand-in arena until stage 9 (Tier G, OVR-009)
-- **Status:** open. **Needed before:** stage 6.
-- **Fact:** The real two-player arenas come from the level pipeline (stages 8 and 9). Stage 5 needed one now, so the builder made a stand-in: the test arena's left half, raised and mirrored. The wind is the real Jungle Home wind (level 0 to 2). The colours are still placeholders.
-- **Choices:**
-  - **A:** Keep the stand-in until stage 9.
-  - **B:** Change it now (say what).
-- **Your answer:**A
 
 ### Q-17 · Double-tap to find your ant
 - **Status:** open. **Needed before:** stage 11.
@@ -86,50 +52,17 @@ Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `READ
   - **B:** Keep 0.55 everywhere.
 - **Your answer:**
 
-### Q-04 · Swim-back with no dry ground (Tier G)
-- **Status:** open. **Needed before:** stage 8.
-- **Problem:** An ant in water swims back to dry ground (DR-026). The docs do not say what happens when there is no dry ground within 200 px.
-- **What happens now:** The ant is knocked out.
-- **Choices:**
-  - **A:** Keep the knock-out.
-  - **B:** Search further (give a distance).
-- **Your answer:** auto place to nearest ground if it cant swim back. if thats eaasy else we knock it out. and tehn see. 
-
-### Q-06 · Meaning of "loses its next turn" (Tier G)
-- **Status:** open. **Needed before:** stage 8.
-- **Problem:** DR-026: an ant that swam back "loses its next turn".
-- **What happens now:** The whole team gives up that turn.
-- **Choices:**
-  - **A:** Keep it: the team loses the turn.
-  - **B:** The team's next ant plays instead.
-- **Your answer:** A, though i have not seen any swimming back so not a clue what it menas.
-
-### Q-07 · Dew warning on boss levels (Tier G)
-- **Status:** open. **Needed before:** stage 9.
-- **Problem:** The dew warning comes at round 18. On boss levels the dew starts at round 30, which is 12 rounds later.
-- **Choices:**
-  - **A:** Keep the warning at round 18.
-  - **B:** Warn 3 rounds before the dew (round 27 on bosses).
-- **Your answer:** B
-
 ---
 
 ## Reviews and checks
 
-### R-04 · M1 phone playtest (about 10 minutes)
-- **Status:** open. **Needed before:** stage 6. **The build stops until you do this.**
-- **Do this:**
-  1. Wait for the CI run on `main` to finish (Actions tab, green tick).
-  2. Open `https://rainbowblurry-book.github.io/Ants/` on your phone and turn it to landscape.
-  3. Play one full match with a second person: pass the phone at each "Tap to start".
-  4. Try each control once: the angle dial and its ▲▼, the power slider and its ▲▼, a drag back from your ant (slingshot), the weapon tray, ◀ ▶, Hop, Flip, FIRE, Pause and Resume.
-  5. Optional: open `…/Ants/?hand=left` to try the left-handed layout. ill try later
-- **Tell the builder:**
-  - Can both thumbs reach every control? Is the Hop row easy to reach?
-  - Is any text too small to read? screen is not optimized so yeah all is small to read. and then layout is way off. the screen is too busy and i dont see evrything clearly. the healt bar obstructs who is selected and clear indication of if its 2 player it just keeps rotating so why statrt eery time and then friendly fire off or on should be an option. and then if ants go out of bounds its hard to hit them and see them and cortrol them so each ant should be kept in bounds so nothing falss out. flip no clue what it does. and also there is a green bar that comes what is that and then when i select a new weapon default values come and id like it toa stay at previous values and i just select a weapon and shoot and then wind data is constant or is it dynamic`? arrows work and dial work . dew is rising but what does it do_? and then the whole screen is more text rather than me seeing empty space. so yeah try to make the layout a bit more aesthetic and harmonise and see some standard rules and some game screenshots of how people have used ui and layout to set things. i can do  more testing if there is  aproper html style checklist where i go through one by one and enter a comment instead of this md page and commit and so on. and also the play check is enormous so i need a proper test plan. so well add that to a stage as well so we dont build all and then revisit things. some things i idnt mention or forgot or not tested so yeah expect more o this.
-  - Did a tap ever do nothing, or do the wrong thing?
-  - Your phone model, and the ms number from R-02 if you have it.
-- **Your answer:**
+### R-05 · Stage 5b checklist page
+- **Status:** open. **Needed before:** any stage 5b work.
+- **Do this:** open https://claude.ai/artifact/KRCZS6YAh4o8CeXAQwRD62 (only you can open it).
+  1. Part 1: pick A, B or C for each fix D01 to D12, and add a comment if you like. Your choices save by themselves.
+  2. Part 2 is the test plan for your next phone playtest. Do it after the builder says stage 5b is live.
+  3. Write "checklist done" in the chat. The builder reads your answers from the page.
+- **Your answer:** (on the page)
 
 ### R-02 · Phone speed check (optional, 1 minute)
 - **Status:** open. **Needed before:** stage 13.
@@ -138,11 +71,6 @@ Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `READ
   2. Turn the phone to landscape.
   3. Read the line in the bottom-left corner. It shows "S=2 · 16.7 ms · …".
 - **What it means:** About 16.7 ms means 60 frames per second. A number that stays over 20 ms means this phone needs "smooth mode" (stage 13 offers it).
-- **Your answer so far:** laptop browser: textures 13.5 MB, atlas pages 1 (good: the limits are 96 MB and 3 pages). Still to do: the **ms** number on the phone, and the phone model.
-- **Your answer:** textures 14 MB, atlas pages 1, samsung s26 ultra. screen of game showing is too small to see things at a comfortable distance.
+- **Your answer so far:** laptop 13.5 MB, 1 atlas page; Samsung S26 Ultra 14 MB, 1 atlas page (limits 96 MB, 3 pages). Still to do: the **ms** number (it is also T14 on the checklist page).
+- **Your answer:**
 
-### R-03 · Final ant art
-- **Status:** waiting for you. **Needed before:** stage 12.
-- **Fact:** The game shows placeholder ants cut from the concept image. The builder does not draw ants until you say so (DR-007a).
-- **Do this when you are ready:** Write "Draw the ants" here or in the chat.
-- **Your answer:**Draw the ants before stage 7 start where i say draw ant in the message.

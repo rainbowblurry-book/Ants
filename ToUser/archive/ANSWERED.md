@@ -2,6 +2,40 @@
 
 The builder moves an item here from `../TODO.md` when it is done. Each entry keeps the item ID, your answer, the date, and what the builder does with it.
 
+## 2026-11-17 (after stage 5, the M1 playtest)
+
+### R-04 · M1 phone playtest
+- **Your answer (short):** the game is too small on the phone and the screen is too busy; health tags hide who is selected; the gate every turn is tiring; you want a friendly-fire option; ants fall out of the map; Flip and the green bar are unclear; a new weapon should keep the last angle and power; is the wind fixed or changing; what does the dew do; make the layout calmer, based on common rules and real game screens; give me an HTML checklist to comment on instead of this file, and a test plan in every stage. The dial and the arrows work.
+- **Builder:** every point became an item in the stage 5b list (`ToUser/TODO.md` R-05 and the checklist page). Stage 5 stays open until stage 5b passes your next playtest.
+
+### Q-14 · Restart dialog text
+- **Your answer:** A.
+- **Builder:** stage 5b: title "Restart?", body "Start this match again from the first turn?".
+
+### Q-15 · Two-player Pause caption
+- **Your answer:** B.
+- **Builder:** stage 5b: "Jungle Home · Round R" (the arena name, DR-181).
+
+### Q-16 · Stand-in arena until stage 9
+- **Your answer:** A.
+- **Builder:** OVR-009 is approved. The stand-in stays until stage 9.
+
+### Q-04 · Swim-back with no dry ground near
+- **Your answer:** put the ant on the nearest ground if it cannot swim back, if that is easy; else knock it out.
+- **Builder:** OVR-011. If no dry ground is within 200 px, the ant goes to the nearest dry standing point anywhere on the map; only with none at all is it knocked out. Stage 5b, with a test.
+
+### Q-06 · "Loses its next turn"
+- **Your answer:** A (and "I have not seen any swimming back").
+- **Builder:** no change: the team loses the turn. Swimming happens when an ant lands in water; the stand-in arena has a small underground pool that a crater can open. Stage 5b adds a short notice so you can see it happen.
+
+### Q-07 · Dew warning on boss levels
+- **Your answer:** B.
+- **Builder:** OVR-012. The warning comes 3 rounds before the dew starts (round 18 normally, round 27 on bosses). Stage 5b, with a test.
+
+### R-03 · Final ant art
+- **Your answer:** draw the ants before stage 7 starts, when you write "draw ant" in the message.
+- **Builder:** the builder waits for that message before stage 7. Until then, placeholders only (DR-007a).
+
 ## 2026-11-17 (after stage 4)
 
 ### Q-08 · "∞" glyph for Seed ammo
