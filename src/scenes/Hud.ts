@@ -163,6 +163,10 @@ export class Hud extends Phaser.Scene {
   private coinUntil = 0;
   private plateText = '';
   private ended = false;
+  /** Real time the 2P gate first showed this TurnStart, or −1 (DR-183 lockout). */
+  private gateShownAt = -1;
+  /** A resize while paused rebuilds on resume, so the Hud stays frozen (DR-171). */
+  private rebuildOnResume = false;
   private unsubs: (() => void)[] = [];
 
   constructor() {
@@ -183,6 +187,15 @@ export class Hud extends Phaser.Scene {
     this.pending = new Map();
     this.notices = new NoticeQueue();
     this.shotSeen = new WeakMap();
+    // Phaser reuses this instance across restarts: reset every per-run field.
+    this.walkHeld = { left: false, right: false, last: 0 };
+    this.walkSent = { dir: 0, tick: -1 };
+    this.shiftPending = false;
+    this.coinUntil = 0;
+    this.plateText = '';
+    this.ended = false;
+    this.gateShownAt = -1;
+    this.rebuildOnResume = false;
   }
 
   create(): void {
@@ -210,7 +223,17 @@ export class Hud extends Phaser.Scene {
     this.bindKeys();
     this.bindWorld();
     if (layoutService) {
-      this.unsubs.push(layoutService.onResize(() => this.scene.restart(this.link)));
+      this.unsubs.push(
+        layoutService.onResize(() => {
+          if (this.link.paused) this.rebuildOnResume = true;
+          else this.scene.restart(this.link);
+        }),
+      );
+      const onResume = () => {
+        if (this.rebuildOnResume) this.scene.restart(this.link);
+      };
+      this.events.on(Phaser.Scenes.Events.RESUME, onResume);
+      this.unsubs.push(() => this.events.off(Phaser.Scenes.Events.RESUME, onResume));
     }
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       for (const u of this.unsubs) u();
@@ -429,9 +452,18 @@ export class Hud extends Phaser.Scene {
       this.coinUntil = 0;
       return;
     }
-    const m = this.link.match;
-    if (!this.gateUp() || m.turns.phaseTick < GATE_PAN_TICKS + GATE_LOCKOUT_TICKS) return;
+    if (!this.gateUp() || this.gateLocked()) return;
     this.push({ kind: 'ready' });
+  }
+
+  /**
+   * DR-183: the gate is locked for its first 400 ms on screen. The sim's own
+   * lockout (pan + 400 ms) still applies; the coin pop can hide the gate past it.
+   */
+  private gateLocked(): boolean {
+    const m = this.link.match;
+    if (m.turns.phaseTick < GATE_PAN_TICKS + GATE_LOCKOUT_TICKS) return true;
+    return this.gateShownAt < 0 || performance.now() - this.gateShownAt < 400;
   }
 
   /**
@@ -572,7 +604,11 @@ export class Hud extends Phaser.Scene {
   releaseAll(): void {
     for (const r of Object.values(this.reps)) r.up();
     this.walkHeld = { left: false, right: false, last: 0 };
-    for (const b of Object.values(this.ctl)) b.lift();
+    for (const b of Object.values(this.ctl)) b.cancel();
+    this.dial?.cancel();
+    this.slider?.cancel();
+    // A touch held across Pause must be lifted before it aims again (DR-171).
+    this.drag = null;
   }
 
   private act(a: BattleAction, on: boolean): void {
@@ -833,7 +869,9 @@ export class Hud extends Phaser.Scene {
     // The gate (DR-183, J46): after the 500 ms pan, locked for 400 ms; never during the coin pop.
     const coin = now < this.coinUntil;
     const gateShow = gate && !coin && turns.phaseTick >= GATE_PAN_TICKS;
-    this.gate.show(gateShow, team, turns.phaseTick < GATE_PAN_TICKS + GATE_LOCKOUT_TICKS);
+    if (gateShow && this.gateShownAt < 0) this.gateShownAt = performance.now();
+    if (!gateShow) this.gateShownAt = -1;
+    this.gate.show(gateShow, team, this.gateLocked());
 
     // Notices: the coin flip first, then the queue (held during the gate and Pause).
     if (coin) {

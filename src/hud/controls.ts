@@ -188,6 +188,12 @@ export class HoldButton extends Phaser.GameObjects.Container implements Ctl {
     this.o.onDown();
   }
 
+  /** Forgets the pointer and lifts (Pause, blur, rebuild). */
+  cancel(): void {
+    this.track.release();
+    this.lift();
+  }
+
   lift(): void {
     if (!this.held) return;
     this.held = false;
@@ -396,6 +402,7 @@ export class FireButton extends Phaser.GameObjects.Container implements Ctl {
 export class Dial extends Phaser.GameObjects.Container implements Ctl {
   readonly id = 'dial';
   readonly hit: Rect;
+  private track: PointerTrack;
   private g: Phaser.GameObjects.Graphics;
   private num: BitmapLabel;
   private facingIcon: Phaser.GameObjects.Image;
@@ -445,7 +452,7 @@ export class Dial extends Phaser.GameObjects.Container implements Ctl {
     zone.on('wheel', (_p: unknown, _dx: number, dy: number) => {
       if (this.isLive()) onWheel(dy < 0 ? 1 : -1);
     });
-    new PointerTrack(
+    this.track = new PointerTrack(
       scene,
       zone,
       (p) => {
@@ -463,6 +470,10 @@ export class Dial extends Phaser.GameObjects.Container implements Ctl {
     scene.add.existing(this);
     scene.add.existing(zone);
     this.once(Phaser.GameObjects.Events.DESTROY, () => zone.destroy());
+  }
+
+  cancel(): void {
+    this.track.release();
   }
 
   show(angleDeci: number, facing: 1 | -1): void {
@@ -498,6 +509,7 @@ export class Dial extends Phaser.GameObjects.Container implements Ctl {
 export class PowerSlider extends Phaser.GameObjects.Container implements Ctl {
   readonly id = 'power';
   readonly hit: Rect;
+  private pointer: PointerTrack;
   readonly track: Rect;
   private fill: Phaser.GameObjects.Graphics;
   private knob: Phaser.GameObjects.Container;
@@ -542,7 +554,7 @@ export class PowerSlider extends Phaser.GameObjects.Container implements Ctl {
     zone.on('wheel', (_p: unknown, _dx: number, dy: number) => {
       if (this.isLive()) onWheel(dy < 0 ? 1 : -1);
     });
-    new PointerTrack(
+    this.pointer = new PointerTrack(
       scene,
       zone,
       (p) => {
@@ -557,6 +569,10 @@ export class PowerSlider extends Phaser.GameObjects.Container implements Ctl {
     scene.add.existing(this);
     scene.add.existing(zone);
     this.once(Phaser.GameObjects.Events.DESTROY, () => zone.destroy());
+  }
+
+  cancel(): void {
+    if (this.pointer.release()) this.knob.setScale(1);
   }
 
   show(powerMille: number): void {

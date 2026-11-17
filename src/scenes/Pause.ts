@@ -179,6 +179,11 @@ export class Pause extends Phaser.Scene {
     });
   }
 
+  /** True during the ready delay after Resume. */
+  isResuming(): boolean {
+    return this.resumingNow;
+  }
+
   /** DR-171 resume: scrim out, then the ready delay; input is ignored meanwhile. */
   resume(): void {
     if (this.resumingNow || modalOpen()) return;

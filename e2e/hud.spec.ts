@@ -334,3 +334,43 @@ test('Pause freezes the match; Resume waits the ready delay and clears buffers',
   expect(log.some((c) => c.kind === 'cancel')).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('DR-183: the gate is locked for its first 400 ms on screen, even after the coin pop', async ({
+  page,
+}) => {
+  const errors = await openHud(page, '?seed=42');
+  const first = await page.evaluate(
+    () =>
+      new Promise<boolean>((resolve) => {
+        const loop = () => {
+          const s = (window.__hud as HudHook).state();
+          if (s.gate) resolve(s.gateLocked);
+          else requestAnimationFrame(loop);
+        };
+        loop();
+      }),
+  );
+  expect(first).toBe(true);
+  await waitGateOpen(page);
+  expect(errors).toEqual([]);
+});
+
+test('a resize mid-turn rebuilds the HUD with the same turn, plate and aim', async ({ page }) => {
+  const errors = await openHud(page, '?seed=42');
+  await waitGateOpen(page);
+  await page.keyboard.press('Space');
+  await waitPhase(page, ['aim']);
+  await page.keyboard.press('w');
+  const before = await state(page);
+  const vp = page.viewportSize() ?? { width: 844, height: 390 };
+  await page.setViewportSize({ width: vp.width - 40, height: vp.height });
+  await page.waitForFunction((p) => {
+    const s = (window.__hud as HudHook | undefined)?.state();
+    return !!s && s.plate === p;
+  }, before.plate);
+  const after = await state(page);
+  expect(after.team).toBe(before.team);
+  expect(after.aim).toEqual(before.aim);
+  expect(after.plate.length).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});

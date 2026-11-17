@@ -212,6 +212,13 @@ export abstract class Pressable extends Phaser.GameObjects.Container implements 
     return this.isEnabled && (this.opts.enabled?.() ?? true) && this.visible;
   }
 
+  /** A hidden control takes no pointer: its scene-level zone follows the visibility. */
+  override setVisible(value: boolean): this {
+    super.setVisible(value);
+    if (this.zone?.input) this.zone.input.enabled = value;
+    return this;
+  }
+
   setEnabled(on: boolean): this {
     this.isEnabled = on;
     this.applyEnabled(on);

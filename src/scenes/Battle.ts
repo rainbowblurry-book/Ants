@@ -47,7 +47,7 @@ import { Nav } from '../ui/nav';
 import { color, tokens } from '../ui/theme';
 import { devArenaAnts, devArenaGrid } from './devArena';
 import { HUD_KEY, type Hud } from './Hud';
-import { PAUSE_KEY } from './Pause';
+import { PAUSE_KEY, type Pause } from './Pause';
 
 export const BATTLE_KEY = 'battle';
 
@@ -139,6 +139,8 @@ export class Battle extends Phaser.Scene {
   private setup: TwoPlayerSetup = defaultTwoPlayer();
   private store: SaveStore | null = null;
   private nav: Nav | null = null;
+  /** Focus was lost during Resume's ready delay: land on Pause again (DR-171). */
+  private interrupted = false;
 
   constructor() {
     super(BATTLE_KEY);
@@ -155,6 +157,7 @@ export class Battle extends Phaser.Scene {
     this.ants = [];
     this.eventIndex = 0;
     this.prev = null;
+    this.interrupted = false;
     this.dots = [];
 
     const cam = this.cameras.main;
@@ -265,7 +268,13 @@ export class Battle extends Phaser.Scene {
 
   openPause(): void {
     const link = this.link;
-    if (!link || link.paused || this.match.over) return;
+    if (!link || this.match.over) return;
+    if (link.paused) {
+      const p = this.scene.get(PAUSE_KEY) as Pause | null;
+      if (p?.isResuming()) this.interrupted = true;
+      return;
+    }
+    this.interrupted = false;
     link.paused = true;
     (this.scene.get(HUD_KEY) as Hud | null)?.releaseAll();
     this.scene.pause(HUD_KEY);
@@ -281,8 +290,15 @@ export class Battle extends Phaser.Scene {
   private resumePlay(): void {
     const link = this.link;
     if (!link) return;
-    this.nav?.removeLayer('pause');
     this.scene.stop(PAUSE_KEY);
+    if (this.interrupted) {
+      // Returning from blur or a hidden tab lands on Pause, never silently running.
+      this.interrupted = false;
+      this.scene.launch(PAUSE_KEY, link);
+      this.scene.bringToTop(PAUSE_KEY);
+      return;
+    }
+    this.nav?.removeLayer('pause');
     // DR-171 / DR-015: buffered input is cleared; a logged command, so replays match.
     this.match.push({ kind: 'cancel' });
     link.paused = false;
