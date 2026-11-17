@@ -23,7 +23,7 @@ Branch `build/stage-02-weapons`. All of it is plain TS in `src/sim`. No Phaser, 
 - **`angle.ts`:** asin by searching the trig table, plus slope and vector rotation. This replaces `atan2`, which the sim may not use.
 - **`physics.ts`:** a `water` step result. **`match.ts`:** now holds ants, team ammo (two-player defaults) and `fire`/`walk`/`hop`/`flip` commands. The turn FSM is still stage 3.
 
-**Tests:** `npm test` runs 10 files and 125 tests. The new files are `damage` (falloff, ×1.2, cap, self, knockback, fall), `weapons` (table, DR-009 sanity numbers, behaviour, pickups, replay stability for all 6 weapons) and `movement`. `npm run e2e` still passes 26 checks with 1 skipped. **CI:** see below.
+**Tests:** `npm test` runs 10 files and 125 tests. The new files are `damage` (falloff, ×1.2, cap, self, knockback, fall), `weapons` (table, DR-009 sanity numbers, behaviour, pickups, replay stability for all 6 weapons) and `movement`. `npm run e2e` still passes 26 checks with 1 skipped. **CI:** green on the stage branch (run 13, commit 6710558: `test` and `e2e` passed; `build`/`deploy` skipped off `main` by design).
 
 **Measured against DR-009** (facts, no overrides):
 - Full-power 45° ranges: Grub, Roller and Plop land within 1.2 % of 864 / 624 / 700 px, and Seed and Dewdrop within 1.2 % of 1143 / 780. They come out about one tick short, as in stage 1.
