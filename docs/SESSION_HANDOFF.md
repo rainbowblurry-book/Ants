@@ -1,64 +1,65 @@
-# Handoff: Project Ants planning, checkpoint C done → await approval, then D
-Seq: 3 | Date: 2026-11-16 | Branch@commit: main (same as claude/eager-mccarthy-jpc952) | Status: planning done (A–D); the build starts at HANDOFF stage 0
-Saved to: rainbowblurry-book/Ants, docs/SESSION_HANDOFF.md (not docs/HANDOFF.md: that name is the checkpoint D deliverable)
+# Handoff: ANTS! build, stage 0 done → start stage 1 (sim core)
+Seq: 4 | Date: 2026-11-17 | Branch@commit: main@a99cab3 (same as build/stage-00-scaffold) | Status: in progress, stage 0 done, stage 1 not started
+Saved to: rainbowblurry-book/Ants, docs/SESSION_HANDOFF.md (not docs/HANDOFF.md: that file is the build plan)
 
 ## Goal
-Plan (not build) a Phaser 3 ant artillery game. You act as the **planner**: write docs only, no game code. The next deliverable is checkpoint D (`docs/HANDOFF.md`). The rules are in `docs/BRIEF.md`.
+Build the Phaser 3 ant artillery game ANTS! exactly as planned in `docs/HANDOFF.md`, one stage at a time. You are the **builder**. The plan is finished; do not redesign it.
 
 ## State
-- Done: A (approved except ant art), B (`PLAN.md`), and **C**, committed in fd987a9:
-  - `docs/UI.md`
-  - `src/ui/theme.json`
-  - DR-080 to DR-183 plus the judging table J27–J56 in `DECISIONS.md`
-  - sync edits to `CREATIVE.md` §3 and `PLAN.md` §3
-  - `PROGRESS.md` updated
-- Waiting on: the user's answer to "Do you approve continuing to the next stage?" for C → D.
-- Uncommitted work: none. The scratchpad copies of the debate records (`scratchpad/c/*.md`) are temporary, and everything in them is now in `DECISIONS.md`.
+- Done: **stage 0** (scaffold, CI, Pages, S=2 spike). Merged to `main`, CI green on `main` (run 6, commit a99cab3), Pages deploy succeeded. Details, spike numbers and render rules are in `docs/PROGRESS.md` "Build log".
+- In progress: nothing.
+- Blocked / waiting on: nothing. The user asked for this handoff and a prompt for a new chat, to start stage 1.
+- Uncommitted or unsaved work: none.
 
 ## Decisions (with why)
-- **The user's own ask:** at the start of this session the user said "C and D only". After `/cpt` resume they said "ok go, start from fresh knowledge from B handoff". So C was re-run from scratch, with PLAN.md as context, and the stale pre-B debate drafts were discarded.
-- **Brief rule:** stop after C for approval, because BRIEF requires a stop at each checkpoint and handoff seq 1 said so. The user has not waived it.
-- **`action` colour:** now `#EE6083` with plum text, and the scrim is 70%. This came from the planner's own contrast script: `#E8456B` failed (white 3.82, plum 4.06), and a 60% scrim failed (3.79). The user has not seen this change yet.
+These are the user's standing rules for the builder (their words, from the stage 0 prompt):
+- Work from `main`. One branch per stage, `build/stage-NN-name`. Merge to `main` only when that stage's acceptance tests pass in CI.
+- HARD stages: do them yourself at high effort. ROUTINE stages: a Sonnet subagent at medium effort, then review against the acceptance list.
+- Never invent a number or a design. If something is missing or infeasible, log an OVR record (DR-193). Tier G changes wait for the user's approval.
+- Placeholder ant art only (DR-195). Do not draw ants unless asked.
+- After each stage: update `docs/PROGRESS.md`, push, give a 5-line summary and **stop**. Always stop at M1 (end of stage 5) and M2 (end of stage 8) for the user's playtest.
+- **Nothing that costs money unless you ask first and the user approves. If a usage limit is hit, stop and wait.**
+- The user approved adding `rainbowblurry-book.github.io` to the "ants" cloud environment's allowed hosts (approval card), so the deployed page can be checked.
 
 ## Do
-- Follow the BRIEF checkpoint rules:
-  - Sonnet debate subagents at medium effort (`model: sonnet`, `effort: medium`), one per screen or system.
-  - The planner judges every record with J-numbers. The next one is **J57**.
-  - Every item cites a Decision ID.
-- Ask each subagent to also save its records to a scratchpad file. That saves retyping them into `DECISIONS.md`.
-- After each checkpoint: update PROGRESS, commit, push, give a 5-line summary, ask for approval, and stop.
-- Write in plain short sentences. Say what was verified and what was assumed. The user writes with typos, so infer the meaning.
+- Read `docs/HANDOFF.md` §2 (rules) and the stage's entry in §3 before coding. Look up DRs by ID in `docs/DECISIONS.md`. Judge rulings J1–J56 win over record text.
+- Run `npx biome check --write` before every commit. Biome 2.6.4 also formats YAML, JSON and HTML, so a new workflow or config file can fail lint in CI.
+- Install packages with `npx -y npm@11 install --save-exact ...`. `npm ci` works with the local npm 10.
+- Before e2e: `npm run build`, then `npm run e2e` (it starts `vite preview` itself). CI builds with `BASE_PATH=/Ants/`.
+- Check CI with the GitHub MCP tools (`actions_list`, `actions_get`, `get_job_logs`). Wait with a background `sleep` command; it wakes the session when it ends.
+- Merge with `git merge --ff-only` and a normal push. Pushes to `build/**` and `main` both work from the cloud session.
+- Next OVR number is **OVR-004**. Next judge number is J57.
 
 ## Don't
-- **Don't run debates before reading the latest remote branch.** Run `git fetch` first. This session started 5 debates without PLAN.md because B had been pushed from another session, and they conflicted with B (hold-to-charge vs DR-033 set-then-fire, a 3-slot tray vs 6, Actions v4 vs v5–v7).
-- **Don't launch more than about 10 Sonnet subagents at once.** The account hit "You've hit your 5-hour limit" mid-run, and two agents died before saving their files.
-- Don't redraw the ant art unless the user asks (DR-007a). The reference is `art/source/`.
-- Don't name the session file `HANDOFF.md`, and don't force-push.
-- Don't change team identity or add free-text names (J44).
+- Don't use npm 10 to add packages: `npm install -D vitest@5.0.5` crashed with `Cannot read properties of null (reading 'edgesOut')` (OVR-002).
+- Don't push several commits one after another to a stage branch while CI runs: runs on one branch queue in one group, and a newer push cancelled the pending run (run 2 ended `cancelled`).
+- Don't run a Playwright script against the live Pages URL: the session's safety classifier denied it ("Unauthorized Access"). A plain `curl -o /dev/null -w "%{http_code}"` on `https://rainbowblurry-book.github.io/Ants/` was allowed and returned 200.
+- Don't let Biome reformat `src/ui/theme.json`, `.mcp.json` or the docs. They are excluded in `biome.json`; keep them excluded.
+- Don't put a `display` rule on `#splash` in `index.html`: an id rule beats `.shell[hidden]` and the splash never hides (found by the e2e boot test).
+- Don't use `camera.setOrigin(0,0)` or write `scrollX`/`scrollY`; use `applyLogicalCamera` in `src/boot/config.ts` (PROGRESS, render rules 1–2).
+- Don't open a pull request, force-push, or name any file `docs/HANDOFF.md` other than the build plan.
 
 ## Open questions / uncertainty
-- The user has not reviewed UI.md. Expect edits, especially to the action colour and the HUD layout (DR-120).
-- The D draft records P-1..P-8 from this session were made without PLAN.md and are not saved anywhere. Re-run them (assumed: they are worth reusing as prompts only).
-- Real-device checks are still open: the S=2 spike, safe-area `env()` values, and Hop-row reach (UI.md §7).
+- Real-phone frame time at S=2 is unknown (CI has no GPU). The user was asked to open the live page on a phone and read the bottom-left "ms" value. No answer yet.
+- The "Made by" credit name is still to be supplied by the user (DR-174).
+- A new cloud session may be given its own `claude/...` branch by the harness. The user's rule (stage branches, then `main`) was followed in stage 0 and that branch was left unused (assumed this is what the user wants again).
+- `src/scenes/Spike.ts` and `e2e/spike.spec.ts` are throwaway. HANDOFF says real scenes replace them from stage 4; until then they must stay green.
 
 ## Next steps
-0. **Superseded by seq 3:** the user approved C, and D is done (`docs/HANDOFF.md`, DR-190 to DR-197) and pushed to `main`. The builder follows `docs/HANDOFF.md` §2–§3, starting at stage 0. The steps below are history.
-1. Wait for the user's approval of C, and apply any edits they ask for as new DRs or J rulings.
-2. Run the D debates: build stage order, the hard/routine tag rule, the test stack, the override tiers, src layout and the placeholder-art manifest.
-   - Use Sonnet at medium effort, with PLAN §10–§12, UI.md §6 and J48–J50 as required context.
-3. Write `docs/HANDOFF.md`.
-   - Start with a one-page Decisions Summary ("we chose X over Y because Z").
-   - Then the stages, with stage 0 = the S=2 spike. Each stage gets its files, acceptance tests (PLAN §10, UI.md §6) and a hard or routine tag.
-4. Update PROGRESS, commit, push, give the summary, and stop.
+1. `git checkout main && git pull`, then `git checkout -b build/stage-01-sim-core`.
+2. Read HANDOFF §3 stage 1, PLAN §1, §4, §5 and §10, and DR-010, DR-011 (with J9), DR-020 to DR-023, DR-030 to DR-032, J25.
+3. Build `src/sim/rng.ts`, `trig.ts` (generated by `tools/gen-trig.ts`), `terrain.ts`, `physics.ts`, `wind.ts`, and the `match.ts` skeleton. No Phaser import in `src/sim`.
+4. Write and pass `rng`, `ban-scan`, `trig`, `terrain` and `physics` tests (PLAN §10). Push the branch once, wait for green CI.
+5. Update `docs/PROGRESS.md`, fast-forward `main`, give the 5-line summary, and stop.
 
 ## Key files & links
-- `docs/BRIEF.md`: the rules.
-- `docs/PROGRESS.md`: current state and open items.
-- `docs/UI.md` + `src/ui/theme.json`: checkpoint C.
-- `docs/PLAN.md`: checkpoint B.
-- `docs/DECISIONS.md`: DR-001..DR-183, J1–J56.
-- `art/source/`: the ant reference images. `art/reference/`: the approved preview.
+- `docs/HANDOFF.md` - the build plan: rules and all 14 stages with acceptance lists.
+- `docs/PROGRESS.md` - build log, stage 0 spike result, render rules, open items.
+- `docs/DECISIONS.md` - DR-001..DR-197, J1–J56, OVR-001..OVR-003 at the end.
+- `docs/PLAN.md`, `docs/UI.md`, `src/ui/theme.json`, `docs/CREATIVE.md`, `docs/STORY.md` - the spec.
+- `.github/workflows/deploy.yml` - CI and Pages. Live: https://rainbowblurry-book.github.io/Ants/
 
 ## Previous handoffs
-- seq 2 (2026-11-16): C done, await approval.
-- seq 1 (2026-11-16): B done, start C then D.
+- seq 3 (2026-11-16): planning A–D done; builder to start at stage 0.
+- seq 2 (2026-11-16): checkpoint C done, await approval.
+- seq 1 (2026-11-16): checkpoint B done, start C then D.
