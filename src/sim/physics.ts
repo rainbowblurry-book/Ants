@@ -27,6 +27,8 @@ export const MAX_FLIGHT_TICKS = 480;
 export const DESPAWN_MIN_X = -150;
 export const DESPAWN_MAX_X = 1110;
 export const DESPAWN_MIN_Y = -2000;
+/** OVR-007: a shot whose centre passes below the void line (DR-038) is removed. */
+export const DESPAWN_MAX_Y = 740;
 /** Half-size of the surface-normal window: 9x9 cells (DR-023). */
 export const NORMAL_HALF = 4;
 /** Ring radius for Seed and Pollen, and for Dewdrop (DR-023). */
@@ -265,7 +267,8 @@ export function stepProjectile(
     p.x = nx;
     p.y = ny;
   }
-  if (p.x < DESPAWN_MIN_X || p.x > DESPAWN_MAX_X || p.y < DESPAWN_MIN_Y) return { kind: 'out' };
+  if (p.x < DESPAWN_MIN_X || p.x > DESPAWN_MAX_X || p.y < DESPAWN_MIN_Y || p.y > DESPAWN_MAX_Y)
+    return { kind: 'out' };
   return { kind: 'flying' };
 }
 

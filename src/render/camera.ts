@@ -147,6 +147,15 @@ export class CameraDirector {
     this.view = { ...this.view, cx: c.x, cy: c.y };
   }
 
+  /**
+   * Find-my-ant and key C (DR-130): recentre on a point in 500 ms (a 150 ms
+   * cut in reduced motion), keeping the zoom.
+   */
+  recentre(at: Point, now: number): void {
+    this.mode = 'static';
+    this.goTo({ cx: at.x, cy: at.y, zoom: this.view.zoom }, now, CAM.turnStartMs);
+  }
+
   hitStopping(now: number): boolean {
     return now < this.hitStopUntil;
   }

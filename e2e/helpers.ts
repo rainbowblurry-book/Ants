@@ -37,11 +37,11 @@ export async function cssPoint(
   return { x: box.x + (x * box.width) / 960, y: box.y + (y * box.height) / 540 };
 }
 
-/** Saves a screenshot into test-results, and into STAGE4_OUT when set. */
+/** Saves a screenshot into test-results, and into SHOTS_OUT (or STAGE4_OUT) when set. */
 export async function saveShot(page: Page, info: TestInfo, name: string): Promise<void> {
   const file = `${name}-${info.project.name}.png`;
   const buf = await page.screenshot({ path: info.outputPath(file) });
-  const out = process.env.STAGE4_OUT;
+  const out = process.env.SHOTS_OUT ?? process.env.STAGE4_OUT;
   if (out) {
     mkdirSync(out, { recursive: true });
     writeFileSync(join(out, file), buf);

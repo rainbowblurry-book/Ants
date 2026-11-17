@@ -2747,7 +2747,7 @@ Logged by the builder. Tier T is applied at once. Tier G waits for the user's ap
 - **Change (proposed, not applied):** draw "∞" as one extra glyph in the F64 bake: a figure-eight stroke with round caps at Lilita's stem weight, white fill plus the same stroke layer, so it tints like the digits. Until approved, the bake skips "∞" and lists it as known-missing (`tools/bake-fonts.ts` `KNOWN_MISSING`). Any other missing glyph fails the bake.
 - **Impact:** `tools/bake-fonts.ts`, `tests/manifest.test.ts`. Nothing on screen needs "∞" before stage 5 (weapon tray).
 - **Tier:** G
-- **Status:** **approved by the user 2026-11-17 (choice A, `ToUser` Q-08).** To apply in stage 5 with the weapon tray: draw the glyph, remove it from `KNOWN_MISSING`.
+- **Status:** **approved by the user 2026-11-17 (choice A, `ToUser` Q-08). Applied in stage 5:** `tools/bake-fonts.ts` `SYNTH_GLYPHS` draws a lemniscate stroked at the width of Lilita's "l", as tall as its "x", centred on the minus axis, each loop as wide as an "o"; `KNOWN_MISSING` is empty. Test: `tests/manifest.test.ts`.
 - **Revert plan:** none needed. Other options for the user: show the word "Lots" or no badge for Seed, or bake "∞" from a third font with an OFL licence.
 
 ## OVR-006 · Pins and sources for the UI atlas and the font bake
@@ -2769,7 +2769,7 @@ Logged by the builder. Tier T is applied at once. Tier G waits for the user's ap
 - **Change:** a projectile whose centre passes **y > 740** is removed (a fizzle with `why: 'out'`). 740 is the line DR-038 already names for the void. It applies to every bottom type.
 - **Impact:** `src/sim/weapons/fly.ts` (despawn test), `tests/physics.test.ts` or `tests/weapons.test.ts` (a void-fall test). Replays recorded before the change can differ, so it ships before any saved match exists (none yet).
 - **Tier:** G
-- **Status:** approved by the user 2026-11-17. To apply in stage 5 (or the first stage that touches the sim).
+- **Status:** approved by the user 2026-11-17. **Applied in stage 5:** `DESPAWN_MAX_Y = 740` in `src/sim/physics.ts` (the shared despawn check, so every weapon body gets it). Tests: `tests/weapons.test.ts` "OVR-007".
 - **Revert plan:** delete the y check; the 8 s cap still ends the shot.
 
 ## OVR-008 · What drops in two-player and on boss levels, and where
@@ -2782,3 +2782,21 @@ Logged by the builder. Tier T is applied at once. Tier G waits for the user's ap
 - **Tier:** G
 - **Status:** approved by the user 2026-11-17 (rule). The exact x range (stage 7) and the boss positions (stage 9) are shown to the user when built.
 - **Revert plan:** change the drop list builder; the sim format stays.
+
+## OVR-009 · A stand-in arena for the M1 hot seat
+- **Overrides:** fills a gap in HANDOFF §3 stage 5 ("a minimal two-player setup with one arena (Jungle Home)"). The real two-player arenas are mirrored seeded layouts from the level pipeline (DR-057, DR-181, PLAN §4), which comes in stages 8 and 9. No Jungle Home arena shape exists yet.
+- **Reason:** stage 5 needs a playable two-player map now, and nothing may be invented. The dev arena (stage 4) is not mirrored, and its ground (y 380 to 400 on the left) puts the ants under the bottom HUD controls (J50).
+- **Change:** `src/game/twoPlayer.ts` `standInArena()`: the dev arena's left half, raised 80 px, mirrored onto the right half. Spawns at x 100, 330, 210, 450 for Blue (Amber mirrored), feet at y 236 to 320, all inside the clear band and outside every HUD hit rect in both hands (test). Wind is the real Jungle Home field (Level max 2, step 1, every turn, PLAN §4). The terrain palette stays the stage 4 placeholder. The level id is `arena-1`.
+- **Impact:** `src/game/twoPlayer.ts`, `src/scenes/Battle.ts`, `tests/input.test.ts`. Stage 9 replaces it with the real arena; saved versus matches from before then will not resume (a different level).
+- **Tier:** G (content shown to players), **used only until stage 9**.
+- **Status:** built for the M1 playtest; the owner sees it on the phone (`ToUser` R-04, Q-16).
+- **Revert plan:** delete `standInArena()` and build the arena from level data.
+
+## OVR-010 · The F64 bake also has "!"
+- **Overrides:** theme.json `bakes.F64` charset ("0-9 % ° / : x + - − . ∞"), a gap against DR-128 ("A direct hit is 56 with '!'"), which draws in the numeral font.
+- **Reason:** without "!" the direct-hit number cannot be drawn in the numeral bake.
+- **Change:** the F64 charset is "0-9 % ° / : x + - − . ∞ !". Lilita One has the glyph, so nothing is drawn by hand.
+- **Impact:** `src/ui/theme.json` (one character), the F64 sheet (generated).
+- **Tier:** T
+- **Status:** applied (stage 5).
+- **Revert plan:** remove the character; direct hits then lose the "!".

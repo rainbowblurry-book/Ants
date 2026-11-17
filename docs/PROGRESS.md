@@ -1,6 +1,6 @@
 # Progress
 
-**Current stage:** Build **stage 4 done** (render, assets, UI foundation). Next: stage 5, Battle HUD and input → M1 hot-seat slice (HARD).
+**Current stage:** Build **stage 5 done → M1 hot-seat slice** (tag `m1-hotseat`). **Stopped for the owner's phone playtest** (`ToUser/TODO.md` R-04). Next after that: stage 6, Bot AI (HARD).
 
 **Owner's to-do list:** `ToUser/TODO.md` is the one place for questions, reviews and checks for the owner. This file does not copy them.
 
@@ -9,6 +9,47 @@
 **Branches:** one per stage, `build/stage-NN-name`, merged to `main` when CI is green (DR-194).
 
 ## Build log
+
+### Stage 5 · Battle HUD and input → M1 hot-seat slice — done 2026-11-17
+Branch `build/stage-05-hud`. Two people can play a full match on one phone: gate, aim, fire, retreat, handover, Pause, and a match end with Rematch.
+
+**Built**
+- **OVR-005:** `tools/bake-fonts.ts` draws "∞" for the F64 bake (`SYNTH_GLYPHS`): a lemniscate stroked at Lilita's "l" width, "x" height, on the minus axis, plus the same stroke layer. `KNOWN_MISSING` is empty. F64 now has 22 glyphs (with "!", OVR-010).
+- **OVR-007:** `DESPAWN_MAX_Y = 740` in the shared despawn check (`src/sim/physics.ts`).
+- **`src/hud/layout.ts`:** one pure `hudLayout(margins, handed, mode, S)` returns every UI.md §4.5 rect (J33, J38, J46 applied): anchored sides move by M − 16, the bottom mirrors for left hands with the walk pair swapped, the tray is a 3x2 grid (4–6) or an 88-tall row (1–3), the FIRE visual sits in its 120 hit, and the clear zone moves with the margins.
+- **`src/input/`:** `keys.ts` (the DR-121 map, J53; Ctrl/Alt/Meta left to the browser), `aim.ts` (aim memory per ant and weapon with the 45° / 60% default, the stepper `Repeater`, dial, slider and slingshot maths). The DR-015 buffers stay in the sim ring (stage 3); input only makes commands.
+- **`src/hud/`:** `controls.ts` (HoldButton for steppers, walk, Hop and Flip; FIRE with ready / queued / rejected / disabled; Dial; PowerSlider; WeaponSlot), `readouts.ts` (TeamPill, TurnPlate with the timer disc and the retreat 3-2-1, WindGauge, EffectsRow, MoveBar, AntTag, DamagePop, EdgeIndicator, NoticeView, GateButton, TeamFrame, DotBubble, AntPop), `notices.ts` (DR-131 queue), `link.ts` (what Battle shares).
+- **`src/scenes/Hud.ts`:** its own camera at zoom S above Battle, so HUD rects never zoom. It reads sim state and pushes commands only. Pointers are tracked one by one. World drags: within 56 px of the active ant a slingshot, else a pan. Keys on `window`. Rebuilds on a Layout resize.
+- **`src/scenes/Pause.ts`:** DR-171 panel (n = 4), Resume (default focus), Restart (destructive confirm, a new match seed), Settings and Quit to map (disabled until stage 7), footer "Match saved" / "Saving is off". It freezes Battle and Hud (sim, timer, camera, tweens). Resume: scrim out 150 ms, then a 600 ms real-time ready delay, then a logged `cancel` (buffers clear). Auto-pause on hidden tab, blur, portrait and browser back (Nav layer).
+- **`src/game/twoPlayer.ts`:** `versusMatch(setup, seed)`: gate on, coin flip, 30/60 s timer, 2P ammo, Jungle Home wind, on the OVR-009 stand-in arena. Battle runs it by default (`?static=1` keeps the stage 4 dev arena with no HUD), draws the DR-129 aim preview in the world, and writes the versus slot at every TurnEnd.
+- **Strings:** `hud.*` (DR-122, DR-127, DR-131, DR-145, DR-183), `weapon.*` (PLAN §4), `pause.round`.
+- **Tokens:** `move-fill` (leaf-600, DR-123) and `heal` (leaf-200, DR-128) became semantic colours; no new values.
+
+**Tests**
+- `npm test`: 20 files, 315 tests. New: `hud-layout` (UI.md §6 check 3: both hands × margins 16, 24 and two mixed sets × 5 tray modes; every hit ≥ 64, gaps ≥ 8, FIRE ≥ 32, inside the safe rect, nothing in the clear zone; the §4.5 numbers; the mirror; 0.5 px snap), `input` (key map, aim memory, stepper timing, dial, slider, slingshot, notice queue, the versus match, the mirrored arena with no spawn in a hit rect (J50), the gate timing, DR-015 fire buffering in the air and the "late" drop), plus OVR-005 and OVR-007 cases.
+- `npm run e2e`: 52 checks at the 3 viewports (stage 4's 33 plus 19 new, 2 skipped by design). A full turn by touch (desktop: mouse) through gate, stepper, tray, slingshot, FIRE and handover; a full turn by keyboard (Space, W, =, Tab, E, Q, 1, Space); the 667x375 readability shot; DR-015 fire buffering through the real key path (taken on landing within 12 ticks; too early is dropped as "late"); the live HUD rects in both hands; Pause freezes the tick and the timer, and Resume waits ≥ 600 ms and logs `cancel`.
+- **CI:** see the stage 5 CI line below.
+
+**Screenshots:** `docs/stage5/stage5-readability-phone-667x375.png` (who is up, the wind and the aim, pillar 2), `stage5-left-handed-*.png`, `stage5-pause-*.png`, `stage5-touch-handover-*.png`.
+
+**Implementation choices inside the DRs** (no new numbers)
+- Ant tags are drawn with Graphics, so DR-128's 3 px outline is exact (the r8 slice has 4). This closes the stage 4 open item.
+- Shift is also the "+" modifier, so Shift hops on its release when no other key came while it was down. Z hops at once.
+- Space and Enter pass the 2P gate (DR-183); the FIRE button never does (the gate's hit area is its button).
+- Held keys W/S and the power keys use the DR-121 stepper repeat (DR-121 is the full key map, J53).
+- Stepper repeats and the Pause ready delay run on real time (`performance.now`, `setTimeout`). The scene clock slows on slow frames, which made the delay 3 s in CI.
+- A control reads the sim at press time, so a tap in the very frame a turn opens is not lost.
+- The slingshot pull is measured from where the drag started; the band is drawn from the ant.
+- DR-171's "y + 30" and "y + 66" are read as the centres of the title and caption lines.
+- The two-player Pause caption is "Round R" (no level number; Q-15).
+- Damage numbers use the F64 numeral bake scaled to 40 and 56.
+- The Dot bubble is built but shows no tip yet: the docs give no two-player tip text (Level 0 tips come in stage 8).
+- Until Results (stage 7), the match end shows DR-145's "{name} win!" / "Draw!" in the notice slot with a Rematch button at the gate rect.
+- Find-my-ant compares the camera with where it can actually centre (the view is clamped to the world).
+
+**Overrides logged:** OVR-005 and OVR-007 applied. OVR-009 (Tier G: the stand-in arena, until stage 9; `ToUser` Q-16). OVR-010 (Tier T: "!" in the F64 bake).
+
+**Not done here on purpose:** double-tap to recentre (no timing in the docs, Q-17), bot aim visuals (stage 6), Settings and Quit (stage 7), Results (stage 7), Level 0 tips and the Next button (stage 8), boss plate and telegraphs (stage 9), the Jungle Home palette (proposed with the biome kit, stage 8).
 
 ### Owner answers after stage 4 — 2026-11-17
 Read from `ToUser/TODO.md` and moved to `ToUser/archive/ANSWERED.md`. Approved: OVR-005 (draw "∞", stage 5), OVR-007 (shots below y 740 are removed, stage 5), OVR-008 (drop rules: two-player alternates Honey Drop and Seed Bundle every 3rd round with x from the match seed, stage 7; boss drop spots per fight, stage 9). Confirmed as built: DR-172 dialog timing (Q-12), labels may shrink to 22 px (Q-13). Credit: "Made by BlurryRainbow" (Q-10, stage 7). Biome palettes: the builder proposes, the owner approves from a screenshot (Q-11). Still open: Q-01 to Q-04, Q-06, Q-07 (before stage 8/9), R-02 phone ms, R-03 ant art. The owner asked for **a full code review of everything before the boss fights (before stage 9)**.
@@ -329,13 +370,12 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 **When the art is drawn:** add a Decision Record (DR-007b) that marks DR-007a's placeholders as replaced. Re-run the preview screenshots, and check the side pose reads clearly at 88x63 and at 667x375.
 
 ## Open items
-- **Questions and checks for the owner:** all in `ToUser/TODO.md` (Q-01 to Q-13, R-01 to R-03). Answered items move to `ToUser/archive/ANSWERED.md`.
+- **Questions and checks for the owner:** all in `ToUser/TODO.md` (open: Q-01 to Q-04, Q-06, Q-07, Q-14 to Q-17, R-02 to R-04). Answered items move to `ToUser/archive/ANSWERED.md`.
 - **Real-device checks** (UI.md §7, PLAN §12), for later stages: safe-area `env()` values in landscape, Hop-row thumb reach, device memory and blast ms, refitting the bot-cap constants against the real sim (stage 6).
 - **Placeholders still in the manifest:** every ant key, the weapon and pickup art, and the terrain palette. `trinketAnchor` is `null` on the ant frames until final art (DR-162, stage 12).
-- **For stage 5:** apply OVR-005 ("∞" glyph) and OVR-007 (y 740 despawn) with tests.
 - **Before stage 9:** a full code review of the whole repo (owner's request).
-- **For stage 5 too:** the r8 nine-slice has a 4 px outline; AntTag (DR-128) asks for 3. Bake a thinner set or draw tags another way when stage 5 builds them.
+- **Stage 9:** replace the OVR-009 stand-in arena with the real two-player arenas.
 - **GitHub Pages:** done by the user (Settings → Pages → Source: "GitHub Actions").
 
 ## Next step
-Stage 5, Battle HUD and input → M1 hot-seat slice (HARD): `src/scenes/Hud.ts` and the UI.md §4.5 components, `src/input/`, the Pause scene, a minimal two-player setup on one arena. Stop at M1 and ask the owner to playtest on a phone.
+**Wait for the owner's M1 phone playtest** (`ToUser/TODO.md` R-04). Then stage 6, Bot AI (HARD): `src/ai/`, the bot turn visuals (DR-129: crosshair, power bar, HUD mirror at 55%).

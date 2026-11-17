@@ -1,5 +1,5 @@
 {
-  "_note": "English strings (DR-087, DR-196). Only copy written in the docs lives here; each group names its source. The F56 and F80 bakes take their charset from this file.",
+  "_note": "English strings (DR-087, DR-196). Only copy written in the docs lives here; each group names its source. The F56 and F80 bakes take their charset from this file. hud.*: DR-122, DR-127, DR-131, DR-183, UI.md §4.5. weapon.*: PLAN §4. hud.wins, hud.draw, hud.rematch: DR-145 (the M1 match-end banner until Results, stage 7). pause.round: the two-player Pause caption (no level number; PROGRESS stage 5).",
   "pause.title": "Paused",
   "pause.caption": "Level {level} · Round {round}",
   "pause.resume": "Resume",
@@ -26,5 +26,24 @@
   "hud.tapToStart": "Tap to start",
   "hud.runForCover": "Run for cover!",
   "hud.calm": "Calm",
-  "a11y.canvas": "ANTS! game"
+  "a11y.canvas": "ANTS! game",
+  "pause.round": "Round {round}",
+  "hud.turnOf": "{name}'s turn",
+  "hud.turnOfS": "{name}' turn",
+  "hud.goesFirst": "{name} goes first!",
+  "hud.tooSlow": "Oops, too slow!",
+  "hud.dewIn": "Dew in {n} rounds",
+  "hud.dewRising": "Dew rising",
+  "hud.fire": "FIRE",
+  "hud.hop": "Hop",
+  "hud.flip": "Flip",
+  "weapon.seed": "Seed Spitter",
+  "weapon.dewdrop": "Dewdrop Bounce",
+  "weapon.pollen": "Pollen Pod",
+  "weapon.grub": "Tunnel Grub",
+  "weapon.roller": "Pill Roller",
+  "weapon.plop": "Mound Plop",
+  "hud.wins": "{name} win!",
+  "hud.draw": "Draw!",
+  "hud.rematch": "Rematch"
 }

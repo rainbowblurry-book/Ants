@@ -37,6 +37,10 @@ export default defineConfig({
   // GitHub Pages serves the game from /Ants/ (DR-017). CI sets BASE_PATH.
   base: process.env.BASE_PATH ?? '/',
   plugins: [themeHtml()],
+  // The build id stored with a match save (DR-047): the commit in CI, else "dev".
+  define: {
+    'import.meta.env.VITE_BUILD_ID': JSON.stringify(process.env.GITHUB_SHA?.slice(0, 12) ?? 'dev'),
+  },
   build: {
     target: 'es2022',
     // Phaser 3.90 is one ~1.2 MB module; it is the game engine, not bloat.

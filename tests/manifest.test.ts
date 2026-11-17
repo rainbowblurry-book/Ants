@@ -156,6 +156,24 @@ describe('font bake (DR-081)', () => {
         FONTS[r.key].stroke > 0,
       );
     }
-    expect(results.find((r) => r.key === 'F64')?.missing).toEqual(['∞']);
+    expect(results.find((r) => r.key === 'F64')?.missing).toEqual([]);
+  });
+
+  it('OVR-005: F64 has a drawn "∞" with a stroke layer, as wide as two loops', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'ants-fonts-'));
+    await bakeAll(dir);
+    const xml = readFileSync(join(dir, `${FONTS.F64.path}.xml`), 'utf8');
+    const m =
+      /<char id="8734" x="\d+" y="\d+" width="(\d+)" height="(\d+)" xoffset="-?\d+" yoffset="-?\d+" xadvance="(\d+)"/.exec(
+        xml,
+      );
+    expect(m).not.toBeNull();
+    const [w, h, adv] = [Number(m?.[1]), Number(m?.[2]), Number(m?.[3])];
+    const zero = /<char id="48" [^>]*width="(\d+)" height="(\d+)"[^>]*xadvance="(\d+)"/.exec(xml);
+    // Wider than a digit, lower than a digit (x-height), and it advances.
+    expect(w).toBeGreaterThan(Number(zero?.[1]));
+    expect(h).toBeLessThan(Number(zero?.[2]));
+    expect(adv).toBeGreaterThan(Number(zero?.[3]));
+    expect(existsSync(join(dir, `${FONTS.F64.path}-stroke.png`))).toBe(true);
   });
 });

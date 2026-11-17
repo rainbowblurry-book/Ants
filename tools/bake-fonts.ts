@@ -29,11 +29,80 @@ const SOURCES = [
 ];
 
 /**
- * Characters a bake asks for that Lilita One does not have. OVR-005 (Tier G,
- * proposed): "∞" is in the F64 charset for Seed's ammo badge, and neither
- * Lilita One nor Nunito has the glyph.
+ * Characters a bake asks for that Lilita One does not have and that no
+ * override covers yet. Empty: OVR-005 is applied (see SYNTH_GLYPHS).
  */
-export const KNOWN_MISSING: Readonly<Record<string, string>> = { '∞': 'OVR-005' };
+export const KNOWN_MISSING: Readonly<Record<string, string>> = {};
+
+/**
+ * OVR-005 (Tier G, approved 2026-11-17): Lilita One and Nunito have no "∞",
+ * which the F64 bake needs for Seed's ammo badge. The bake draws it: a
+ * figure-eight (a lemniscate) stroked at Lilita's stem weight with round
+ * joins, white, plus the same stroke layer as the digits so it tints alike.
+ * Every size comes from the font's own glyphs, in font units:
+ * stem = width of "l", height = x-height (the "x" box), centred on the
+ * minus sign's axis, each loop as wide as an "o".
+ */
+export const SYNTH_GLYPHS: Readonly<Record<string, string>> = { '∞': 'OVR-005' };
+
+/** Lemniscate centre line for "∞", in font units (y up), closed. */
+export function infinityPoints(f: OtFont): {
+  pts: [number, number][];
+  stem: number;
+  advance: number;
+} {
+  const box = (c: string) => f.charToGlyph(c).getBoundingBox();
+  const l = box('l');
+  const x = box('x');
+  const minus = box('-');
+  const o = box('o');
+  const stem = l.x2 - l.x1;
+  const outerH = x.y2 - Math.max(0, x.y1);
+  const outerW = 2 * (o.x2 - o.x1) - stem;
+  const side = o.x1;
+  const cx = side + outerW / 2;
+  const cy = (minus.y1 + minus.y2) / 2;
+  const a = (outerW - stem) / 2;
+  const halfH = (outerH - stem) / 2;
+  const yScale = halfH / (a / (2 * Math.SQRT2));
+  const pts: [number, number][] = [];
+  const n = 96;
+  for (let i = 0; i < n; i++) {
+    const t = (i / n) * 2 * Math.PI;
+    const d = 1 + Math.sin(t) * Math.sin(t);
+    pts.push([cx + (a * Math.cos(t)) / d, cy + (yScale * a * Math.sin(t) * Math.cos(t)) / d]);
+  }
+  return { pts, stem, advance: Math.round(outerW + 2 * side) };
+}
+
+/** A stand-in glyph for a SYNTH_GLYPHS character: a stroked centre line. */
+function synthGlyph(f: OtFont, ch: string): { glyph: OtGlyph; stem: number } {
+  if (ch !== '∞') throw new Error(`no synthetic glyph for ${ch}`);
+  const { pts, stem, advance } = infinityPoints(f);
+  const xs = pts.map((p) => p[0]);
+  const ys = pts.map((p) => p[1]);
+  const half = stem / 2;
+  const glyph: OtGlyph = {
+    advanceWidth: advance,
+    getBoundingBox: () => ({
+      x1: Math.min(...xs) - half,
+      y1: Math.min(...ys) - half,
+      x2: Math.max(...xs) + half,
+      y2: Math.max(...ys) + half,
+    }),
+    getPath: (x0, y0, size) => {
+      const k = size / f.unitsPerEm;
+      const d = pts
+        .map(
+          ([u, v], i) =>
+            `${i === 0 ? 'M' : 'L'}${(x0 + u * k).toFixed(2)} ${(y0 - v * k).toFixed(2)}`,
+        )
+        .join(' ');
+      return { toPathData: () => `${d} Z` };
+    },
+  };
+  return { glyph, stem };
+}
 
 /** Sheet width in px. */
 const SHEET_W = 1024;
@@ -130,6 +199,8 @@ interface Placed {
   oy: number;
   advance: number;
   blank: boolean;
+  /** Stroke width in font units for a drawn glyph (OVR-005), else 0. */
+  synthStem: number;
 }
 
 export interface BakeResult {
@@ -168,8 +239,15 @@ async function bake(
   let x = 0;
   let y = 0;
   let shelf = 0;
+  const synthFont = Object.create(main) as OtFont; // its own identity: no kerning pairs
   for (const ch of chars) {
-    const found = glyphFor(fonts, ch);
+    let found = glyphFor(fonts, ch);
+    let synthStem = 0;
+    if (!found && ch in SYNTH_GLYPHS) {
+      const g = synthGlyph(main, ch);
+      found = { font: synthFont, glyph: g.glyph };
+      synthStem = g.stem;
+    }
     if (!found) {
       missing.push(ch);
       continue;
@@ -201,6 +279,7 @@ async function bake(
       oy: pad + top,
       advance: Math.round((found.glyph.advanceWidth ?? 0) * s),
       blank,
+      synthStem,
     });
     x += w + GAP;
     shelf = Math.max(shelf, h);
@@ -213,19 +292,30 @@ async function bake(
   }
 
   const paths = placed
-    .filter((p) => !p.blank)
+    .filter((p) => !p.blank && p.synthStem === 0)
     .map((p) => p.glyph.getPath(p.x + p.ox, p.y + p.oy, px).toPathData(2))
     .join(' ');
+  // Drawn glyphs are stroked centre lines; the stroke layer widens them by
+  // the same amount as the font glyphs (OVR-005).
+  const drawn = (stroke: boolean) =>
+    placed
+      .filter((p) => !p.blank && p.synthStem > 0)
+      .map((p) => {
+        const w = p.synthStem * scale + (stroke ? strokePx * 2 : 0);
+        const d = p.glyph.getPath(p.x + p.ox, p.y + p.oy, px).toPathData(2);
+        return `<path d="${d}" fill="none" stroke="#fff" stroke-width="${w.toFixed(2)}" stroke-linejoin="round" stroke-linecap="round"/>`;
+      })
+      .join('');
   const sheet = (stroke: boolean) =>
     `<svg xmlns="http://www.w3.org/2000/svg" width="${SHEET_W}" height="${sheetH}">` +
     `<path d="${paths}" fill="#fff"${
       stroke ? ` stroke="#fff" stroke-width="${strokePx * 2}" stroke-linejoin="round"` : ''
-    }/></svg>`;
+    }/>${drawn(stroke)}</svg>`;
 
   const kern: string[] = [];
   for (const a of placed) {
     for (const b of placed) {
-      if (a.font !== b.font) continue;
+      if (a.font !== b.font || a.font === synthFont) continue;
       const k = Math.round(a.font.getKerningValue(a.glyph, b.glyph) * (px / a.font.unitsPerEm));
       if (k !== 0) kern.push(`<kerning first="${a.code}" second="${b.code}" amount="${k}"/>`);
     }

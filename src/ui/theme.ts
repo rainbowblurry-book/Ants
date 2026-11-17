@@ -27,6 +27,8 @@ export const color = {
   'acorn-cap': 0x5e3519,
   'gold': 0xf7b932,
   'meaning-white': 0xffffff,
+  'move-fill': 0x3e9a3a,
+  'heal': 0xc8f27a,
   'scrim': 0x2e1a47,
   'letterbox': 0x2e1a47,
 } as const;
@@ -55,6 +57,8 @@ export const cssColor = {
   'acorn-cap': '#5E3519',
   'gold': '#F7B932',
   'meaning-white': '#FFFFFF',
+  'move-fill': '#3E9A3A',
+  'heal': '#C8F27A',
   'scrim': '#2E1A47',
   'letterbox': '#2E1A47',
 } as const;
@@ -198,7 +202,7 @@ export const tokens = {
       },
       "F64": {
         "px": 64,
-        "charset": "0-9 % ° / : x + - − . ∞",
+        "charset": "0-9 % ° / : x + - − . ∞ !",
         "layers": [
           "fill",
           "stroke"

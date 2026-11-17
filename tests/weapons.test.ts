@@ -450,6 +450,36 @@ describe('Seed, Dewdrop and Pollen behaviour (DR-034)', () => {
   });
 });
 
+describe('OVR-007: shots below y 740 are removed', () => {
+  it('a shot falling into the void fizzles as "out" just past y 740, long before the 8 s cap', () => {
+    const g = new TerrainGrid(960, 540); // all void: nothing to hit
+    for (const kind of ['seed', 'dewdrop', 'pollen'] as const) {
+      const shot = shotOf(kind, {
+        kind,
+        p: { x: 480, y: 300, vx: 0, vy: 0, ringR: kind === 'dewdrop' ? 8 : 4 },
+        ignore: -1,
+        age: 0,
+        ...(kind === 'dewdrop' ? { bounces: 0, resting: false } : {}),
+      } as Body);
+      const ticks = run(world(g), shot);
+      const fizzles = shot.events.filter((e) => e.kind === 'fizzle');
+      expect(fizzles, kind).toHaveLength(1);
+      const f = fizzles[0] as Extract<Shot['events'][number], { kind: 'fizzle' }>;
+      expect(f.why, kind).toBe('out');
+      expect(f.y, kind).toBeGreaterThan(740);
+      expect(f.y, kind).toBeLessThan(760);
+      expect(ticks, kind).toBeLessThan(480);
+    }
+  });
+
+  it('a shot above y 740 keeps flying', () => {
+    const p: Projectile = { x: 480, y: 700, vx: 0, vy: -10, ringR: RING_R_SMALL };
+    expect(stepProjectile(p, new TerrainGrid(960, 540), 0, 0).kind).toBe('flying');
+    const q: Projectile = { x: 480, y: 739.9, vx: 0, vy: 60, ringR: RING_R_SMALL };
+    expect(stepProjectile(q, new TerrainGrid(960, 540), 0, 0).kind).toBe('out');
+  });
+});
+
 describe('pickups (DR-048, J11)', () => {
   it('Honey heals 25 up to 100; Seed Bundle adds 2 Dewdrop and 1 Pollen', () => {
     const ant = createAnt(0, 0, 100, 400, 1);

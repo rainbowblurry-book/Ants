@@ -1,13 +1,18 @@
 # To do for you (owner)
 
-Updated: 2026-11-17, after your answers on stage 4. How to use this file: see `README.md` in this folder. Answered items are in `archive/ANSWERED.md`.
+Updated: 2026-11-17, at the end of stage 5 (M1). How to use this file: see `README.md` in this folder. Answered items are in `archive/ANSWERED.md`.
 
-Nothing here blocks stage 5. Until you answer, the build follows the docs as written.
+**Do R-04 first: the M1 phone playtest.** The build stops until you do it. Nothing else here blocks stage 6. Until you answer, the build follows the docs as written.
 
 **Summary**
 
 | ID | Short name | Type | Needed before |
 |---|---|---|---|
+| R-04 | M1 phone playtest | check | stage 6 |
+| Q-14 | Restart dialog text | answer | stage 7 |
+| Q-15 | Two-player Pause caption | answer | stage 7 |
+| Q-16 | Stand-in arena until stage 9 | answer | stage 6 |
+| Q-17 | Double-tap to find your ant | answer | stage 11 |
 | Q-01 | Back-flip fall damage | answer | stage 8 |
 | Q-02 | Mound Plop on water | answer | stage 8 |
 | Q-03 | Dewdrop on bouncy ground | answer | stage 8 |
@@ -20,6 +25,41 @@ Nothing here blocks stage 5. Until you answer, the build follows the docs as wri
 ---
 
 ## Questions
+
+### Q-14 · Restart dialog text
+- **Status:** open. **Needed before:** stage 7.
+- **Problem:** DR-171 says Restart opens a destructive confirm. The docs give no text for it.
+- **What happens now:** title "Restart", body "Start new", buttons Cancel / Restart. These are words the docs already use.
+- **Choices:**
+  - **A:** Title "Restart?", body "Start this match again from the first turn?"
+  - **B:** Keep it as it is.
+  - **C:** Write your own text.
+- **Your answer:**
+
+### Q-15 · Two-player Pause caption
+- **Status:** open. **Needed before:** stage 7.
+- **Problem:** The Pause caption is "Level N · Round R" (DR-171). A two-player match has no level number.
+- **What happens now:** the caption reads "Round R".
+- **Choices:**
+  - **A:** Keep "Round R".
+  - **B:** Use the arena name: "Jungle Home · Round R".
+- **Your answer:**
+
+### Q-16 · Stand-in arena until stage 9 (Tier G, OVR-009)
+- **Status:** open. **Needed before:** stage 6.
+- **Fact:** The real two-player arenas come from the level pipeline (stages 8 and 9). Stage 5 needed one now, so the builder made a stand-in: the test arena's left half, raised and mirrored. The wind is the real Jungle Home wind (level 0 to 2). The colours are still placeholders.
+- **Choices:**
+  - **A:** Keep the stand-in until stage 9.
+  - **B:** Change it now (say what).
+- **Your answer:**
+
+### Q-17 · Double-tap to find your ant
+- **Status:** open. **Needed before:** stage 11.
+- **Problem:** DR-130 says a double-tap on the world recentres the camera on your ant. The docs give no time between the two taps. Stage 5 has the find-my-ant button and the C key, but no double-tap.
+- **Choices:**
+  - **A:** Two taps within 300 ms (a common phone setting).
+  - **B:** No double-tap. The button and the C key are enough.
+- **Your answer:**
 
 ### Q-01 · Back-flip fall damage (Tier G)
 - **Status:** open. **Needed before:** stage 8.
@@ -75,6 +115,21 @@ Nothing here blocks stage 5. Until you answer, the build follows the docs as wri
 ---
 
 ## Reviews and checks
+
+### R-04 · M1 phone playtest (about 10 minutes)
+- **Status:** open. **Needed before:** stage 6. **The build stops until you do this.**
+- **Do this:**
+  1. Wait for the CI run on `main` to finish (Actions tab, green tick).
+  2. Open `https://rainbowblurry-book.github.io/Ants/` on your phone and turn it to landscape.
+  3. Play one full match with a second person: pass the phone at each "Tap to start".
+  4. Try each control once: the angle dial and its ▲▼, the power slider and its ▲▼, a drag back from your ant (slingshot), the weapon tray, ◀ ▶, Hop, Flip, FIRE, Pause and Resume.
+  5. Optional: open `…/Ants/?hand=left` to try the left-handed layout.
+- **Tell the builder:**
+  - Can both thumbs reach every control? Is the Hop row easy to reach?
+  - Is any text too small to read?
+  - Did a tap ever do nothing, or do the wrong thing?
+  - Your phone model, and the ms number from R-02 if you have it.
+- **Your answer:**
 
 ### R-02 · Phone speed check (optional, 1 minute)
 - **Status:** open. **Needed before:** stage 13.

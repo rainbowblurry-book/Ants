@@ -3,6 +3,8 @@ import { buildGameConfig, REG_RENDER_SCALE } from './boot/config';
 import { parseScaleOverride, pickRenderScale } from './boot/renderScale';
 import { t } from './i18n';
 import { Battle } from './scenes/Battle';
+import { Hud } from './scenes/Hud';
+import { Pause } from './scenes/Pause';
 import { UiLab } from './scenes/UiLab';
 import { LayoutService, REG_LAYOUT } from './ui/layout';
 import { font } from './ui/theme';
@@ -44,13 +46,14 @@ function hideSplash(): void {
 }
 
 /**
- * Stage 4 starts the Battle scene directly. `?scene=uilab` opens the UI
+ * Stage 5 starts the Battle scene directly (a two-player match); Hud and
+ * Pause are launched by Battle. `?scene=uilab` opens the UI
  * foundation gallery instead (dev and tests). Boot, Preload and Title arrive
  * in stage 7.
  */
 function pickScenes(): Phaser.Types.Scenes.SceneType[] {
   const scene = new URLSearchParams(location.search).get('scene');
-  return scene === 'uilab' ? [UiLab] : [Battle];
+  return scene === 'uilab' ? [UiLab] : [Battle, Hud, Pause];
 }
 
 async function boot(): Promise<void> {

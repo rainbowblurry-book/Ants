@@ -72,6 +72,8 @@
       "acorn-cap": "{soil-800}",
       "gold": "{butter-500}",
       "meaning-white": "{white}",
+      "move-fill": "{leaf-600}",
+      "heal": "{leaf-200}",
       "scrim": { "color": "{plum-900}", "alpha": 0.7 },
       "letterbox": "{plum-900}"
     },
@@ -101,7 +103,7 @@
       "textSizeSetting": { "normal": 1.0, "large": 1.2, "appliesTo": ["body", "caption", "html"] },
       "bakes": {
         "F56": { "px": 56, "charset": "ASCII + Latin-Ext used by locale files", "layers": ["fill"] },
-        "F64": { "px": 64, "charset": "0-9 % ° / : x + - − . ∞", "layers": ["fill", "stroke"] },
+        "F64": { "px": 64, "charset": "0-9 % ° / : x + - − . ∞ !", "layers": ["fill", "stroke"] },
         "F80": { "px": 80, "charset": "ASCII + Latin-Ext used by locale files", "layers": ["fill"] },
         "F128": { "px": 128, "charset": "A-Z 0-9 ! ? . '", "layers": ["fill", "stroke"] }
       }
