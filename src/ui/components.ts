@@ -441,10 +441,13 @@ export class FocusRing extends Phaser.GameObjects.Graphics {
   }
 }
 
-/** Routes a scene's keyboard to a FocusManager (menus only; Battle keeps DR-121). */
+/**
+ * Routes the DOM keyboard to a FocusManager (menus only; Battle keeps DR-121).
+ * Listens on `window` directly: Phaser's key queue is read once per game step,
+ * which is too late for `preventDefault` on Tab, and it can hand one event to
+ * a listener twice when two keys land in the same frame (seen in stage 4 e2e).
+ */
 export function bindFocusKeys(scene: Phaser.Scene, focus: FocusManager): void {
-  const kb = scene.input.keyboard;
-  if (!kb) return;
   const name = (e: KeyboardEvent) => (e.key === ' ' ? 'Space' : e.key);
   const down = (e: KeyboardEvent) => {
     if (e.repeat) return;
@@ -452,11 +455,11 @@ export function bindFocusKeys(scene: Phaser.Scene, focus: FocusManager): void {
       e.preventDefault();
   };
   const up = (e: KeyboardEvent) => focus.keyUp(name(e));
-  kb.on('keydown', down);
-  kb.on('keyup', up);
+  window.addEventListener('keydown', down);
+  window.addEventListener('keyup', up);
   scene.input.on('pointerdown', () => focus.pointerDown());
   scene.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-    kb.off('keydown', down);
-    kb.off('keyup', up);
+    window.removeEventListener('keydown', down);
+    window.removeEventListener('keyup', up);
   });
 }

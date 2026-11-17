@@ -1,12 +1,53 @@
 # Progress
 
-**Current stage:** Build **stage 3 done** (turn flow, match, replay, saves). Next: stage 4, render, assets and UI foundation (HARD).
+**Current stage:** Build **stage 4 done** (render, assets, UI foundation). Next: stage 5, Battle HUD and input → M1 hot-seat slice (HARD).
 
-> ⚠ **ANT ART: the reference is in `art/source/`, but final art is not drawn or approved yet.** The build uses placeholders only (DR-195, DR-007a). Stage 0 draws no ants at all. Draw the final ant art only when the user asks.
+**Owner's to-do list:** `ToUser/TODO.md` is the one place for questions, reviews and checks for the owner. This file does not copy them.
+
+> ⚠ **ANT ART: the reference is in `art/source/`, but final art is not drawn or approved yet.** The build uses placeholders only (DR-195, DR-007a): the concept cut-outs in `art/reference/placeholder/`, behind manifest keys flagged `placeholder: true`. Draw the final ant art only when the user asks.
 
 **Branches:** one per stage, `build/stage-NN-name`, merged to `main` when CI is green (DR-194).
 
 ## Build log
+
+### Stage 4 · Render, assets, UI foundation — done 2026-11-17
+Branch `build/stage-04-render`. The Battle scene draws a live match with placeholder art, and the token and asset pipelines exist.
+
+**Built**
+- **Tokens (`tools/gen-theme.ts`):** `theme.ts` now also exports `tokens`: spacing, radius, outline, shadow, type, touch, layout, shape, motion, focus and every component token, with `{ref}`s resolved (scales by field name, colours to their semantic name).
+- **Asset manifest (`src/assets/manifest.ts`, DR-195):** the only place for frame names, atlas and font paths, origins, `trinketAnchor` and the ant hurtbox. Keys such as `ant.side.blue.idle`, `ui.icon.back`, `weapon.icon.seed`, `projectile.dewdrop`. `placeholders()` lists every placeholder for the stage 13 release gate.
+- **UI art (`art/ui/*.svg`, 57 files):** 36 icons (32 viewbox, `currentColor`), the r24 / r16 / r8 nine-slice sets (outline, fill, band), the two team badges and the boss segment, the acorns and twinkle dot, wind chevron, ghost chevron and hub, aim dot and ring. Only `#fff` and `var(--token)` appear in them.
+- **Placeholders (`art/placeholder/*.svg`):** flat token shapes for the 6 weapons (40 and 120) and the 2 pickups. The ants use the concept cut-outs.
+- **`tools/build-ui.ts`:** substitutes tokens, embeds the PNG placeholders, lays every page out as one SVG and rasterises it once with resvg at 2x into a Phaser multiatlas. Shared atlas today: **1 page (1024x1140), 79 frames, UI art 0.34 MP of the 2 MP budget**.
+- **`tools/bake-fonts.ts`:** opentype.js glyph paths → one SVG sheet → resvg. BMFont XML with GPOS kerning, plus a stroke sheet with the same layout for F64 and F128. Charsets from theme.json; F56/F80 add every character of `src/i18n/en.json`. F56 97 glyphs, F64 20, F80 97, F128 41; about 1.8 MP in all (DR-081 estimated 1.7).
+- **`src/i18n/`:** `en.json` holds only copy that the docs give (Pause, save prompts, modal Cancel and so on), and `t()` fills `{placeholders}`.
+- **`src/ui/`:** `layout.ts` (DR-085 margins, safe rect, 9 anchors, the M − 16 shift, mirror, snap, `LayoutService` with the `env()` probe), `focus.ts` (DR-086 registry, nearest-in-direction with 2 × cross distance, Tab order, press on keydown / act on keyup, trapping scopes), `nav.ts` (DR-090 layers first, then the scene rule, history depth with re-push), `fitText.ts` (DR-087 shrink → wrap → ellipsis, strict in dev), `motion.ts` (DR-084 reduced-motion caps), `text.ts` (bitmap labels with the stroke layer, Nunito at resolution S), `components.ts` (JellyBox, Panel, Button, IconButton, FocusRing, `bindFocusKeys`), `ConfirmModal.ts` (DR-172) and `assets.ts` (loader).
+- **`src/render/`:** `terrainPixels.ts` (fill bake with the 10 px band, 2-pass radius-2 box blur, ink LUT, composite), `terrainView.ts` (12 chunk canvases, only touched chunks re-upload), `camera.ts` (DR-046 with J7 and J49), `loop.ts` (fixed step), `sprites.ts` (ants, projectiles and pickups by manifest key, interpolated), `juice.ts` (landing squash).
+- **Scenes:** `Battle` (fixed-step loop on a `Match`, reads state only, `?static=1`, `?mem`) on a dev arena (`src/scenes/devArena.ts`: every material once, built with the sim trig table). `UiLab` (`?scene=uilab`) is a dev gallery of the UI foundation. The stage 0 spike is deleted.
+
+**Tests**
+- `npm test`: 18 files, 256 tests. New: `contrast` (UI.md §6 check 1), `no-literals` (check 2, also scans the SVG art), `manifest` (key test, ≤ 3 resident pages, UI area, page bounds, a real rasterise, the font bake), `ui-foundation` (Layout, Focus, Nav, fitText, motion), `render` (band, outline width, crater rim, no edge ink, chunks, camera rules, fixed step).
+- `npm run e2e`: 33 checks at 844x390, 667x375 and 1280x720 (11 tests × 3). Battle: boot, the static screenshot, 12 chunks, **resident atlas pages 1 (limit 3)**, texture memory under 96 MB, a Seed shot through `match.push` leaves a clear crater with an ink rim and redraws at most 4 chunks, no seams at S=1 and S=2 over 5 camera poses, the `?mem` line. UI: taps act on release, a drag 16 px out cancels, disabled never acts, keyboard ring and Tab/arrows/Enter, the modal's safe default, focus trap, Esc and B, the destructive scrim rule.
+- **CI:** see the result line below.
+
+**Screenshots:** `docs/stage4/battle-*.png` (static battle at the 3 viewports), `uilab-*.png`, `uilab-modal-*.png`.
+
+**Measured**
+- Terrain refresh for one Seed crater (desktop Chromium, CPU WebGL): 0.4–0.5 ms, once 9.6 ms on the first blast of a page (JIT warm-up). Phone numbers are still unknown (DR-024 budget: median 3 ms, p95 6 ms).
+- Outline: 4–6 px of solid ink across a straight edge, centred on it (DR-024: "about 4.5 px").
+
+**Implementation choices inside the DRs** (no new numbers)
+- Ink LUT: full ink for |S − 0.5| ≤ 0.30, fading to none at 0.40.
+- Water does not start a surface band: only air does. Ground under a pool keeps its plain fill. (A first version banded it; the seam test found it.)
+- Menu keys listen on `window`, not on Phaser's key queue. The queue is read once per game step (too late for `preventDefault` on Tab), and it gave one key event to a listener twice when two keys landed in one frame (2 runs in 5).
+- Generated atlas pages and font sheets are not committed. `npm run assets` makes them (part of `dev` and `build`).
+- All nine-slice sets have a 4 px outline. The r16 and r8 sets have a 6 px band, r24 an 8 px band.
+- KO ants are hidden for now. The stretcher animation is a later stage.
+- The dew is a flat `info` rectangle from `turns.dewY` down.
+
+**Overrides logged:** OVR-005 (Tier G, **proposed**: draw the missing "∞" glyph; see `ToUser/TODO.md` Q-08). OVR-006 (Tier T: resvg 2.6.2, opentype.js 2.0.0, the `.woff` bake sources).
+
+**Not done here on purpose:** the HUD, input and Pause (stage 5), Boot/Preload/Title and the HTML Settings (stage 7), the `en-XA` pseudo-locale (stage 7), level data and biome palettes (stage 8), the rest of the juice pass (stage 11), final art (stage 12).
 
 ### Stage 3 · Turn flow, match, replay, saves — done 2026-11-17
 Branch `build/stage-03-turn-flow`. A full match now runs headless from seed to win.
@@ -284,28 +325,12 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 
 **When the art is drawn:** add a Decision Record (DR-007b) that marks DR-007a's placeholders as replaced. Re-run the preview screenshots, and check the side pose reads clearly at 88x63 and at 667x375.
 
-## Open items carried forward
-- **Stage 0, for the user (optional, 1 minute):** open `https://rainbowblurry-book.github.io/Ants/` on a phone in landscape. The bottom-left line shows `S=2` and the frame time. About 16.7 ms means the phone's GPU handles S=2 at 60 fps. A number that stays over 20 ms means that phone should use smooth mode (S=1), which stage 13 offers automatically (DR-013).
-- **Ant art:** the reference images are in `art/source/`. The final SVG ant art is not drawn yet and waits for the user's go-ahead. UI.md §5 maps each sprite key to its reference file.
-- **Real-device checks** (UI.md §7, PLAN §12):
-  - the S=2 render spike
-  - safe-area `env()` values in landscape
-  - Hop-row thumb reach
-  - device memory and blast ms
-  - refitting the bot-cap constants against the real sim
-- **Save and level-data schema additions from J48:** goal bits, `losses`, `settings.twoPlayer`, `wardrobe`, and `name`/`tagline`/`windHint`/`hint`. These must be in the D build plan.
-- The "Made by" credit name is to be supplied by the owner.
-- **Stage 2 questions for the user (Tier G; nothing applied, the build follows the docs as written):**
-  1. **The back-flip costs fall damage.** DR-026 counts the drop from the apex as free fall. A back-flip on flat ground (apex about 147 px) therefore costs about 6 HP every time. The flip feels like a free verb, so this may not be intended. Options: exempt the ant's own hops and flips, or raise the free height.
-  2. **Mound Plop on water fizzles** (PLAN §4: everything but Dewdrop fizzles in water). DR-009 says the Plop exists to "bridge WATER". Today it can only do that by hitting the bank, with the fill reaching over the water.
-  3. **Dewdrop on BOUNCY:** DR-022 says material restitution applies to Dewdrop bounces, but DR-034 and PLAN §5 fix it at 0.55. The build uses 0.55 everywhere, so a tent or jelly gives no extra bounce.
-  4. **Swim-back with no dry ground within 200 px:** DR-026 does not say what happens. The build knocks the ant out.
-- **Stage 3 questions for the user (Tier G; nothing applied beyond the reading named here):**
-  5. **What falls in two-player, and where?** DR-048 says "one drops every 3rd round" with both pickups behind one toggle. It does not say which pickup, or at which x. The sim takes a list of `{round, kind, x}`, so nothing is invented yet. This must be answered before the Pickups toggle is built (stage 7). The same goes for the boss levels' "Seed Bundle every 3rd round" (stage 9).
-  6. **A lost turn costs the team its turn.** That is how the build reads "loses its next turn" (DR-026). The other reading is that the team's next ant plays instead.
-  7. **Dew warning on boss levels.** The warning is at round 18 and the dew starts at round 30 on bosses, 12 rounds later. If the warning should stay 3 rounds ahead (round 27), say so.
-- **Gap found in stage 1 (for stage 2/3):** DR-026 gives no lower despawn line for projectiles. Over a `void` bottom a shot that falls off the map keeps flying until the 8 s cap (DR-038). If that wait feels bad, a Tier G OVR is needed to add one; the builder has not picked a value.
+## Open items
+- **Questions and checks for the owner:** all in `ToUser/TODO.md` (Q-01 to Q-13, R-01 to R-03). Answered items move to `ToUser/archive/ANSWERED.md`.
+- **Real-device checks** (UI.md §7, PLAN §12), for later stages: safe-area `env()` values in landscape, Hop-row thumb reach, device memory and blast ms, refitting the bot-cap constants against the real sim (stage 6).
+- **Placeholders still in the manifest:** every ant key, the weapon and pickup art, and the terrain palette. `trinketAnchor` is `null` on the ant frames until final art (DR-162, stage 12).
+- **For stage 5:** the r8 nine-slice has a 4 px outline; AntTag (DR-128) asks for 3. Bake a thinner set or draw tags another way when stage 5 builds them.
 - **GitHub Pages:** done by the user (Settings → Pages → Source: "GitHub Actions").
 
 ## Next step
-Stage 4, render, assets and UI foundation (HARD): `src/render/` (terrain chunks, mask outline, sprites, camera, juice), `src/assets/manifest.ts`, `tools/build-ui.ts`, `tools/bake-fonts.ts`, the rest of `tools/gen-theme.ts`, `src/ui/` (Layout, Focus, Nav, fitText, Button, IconButton, Panel, ConfirmModal) and `/art/ui/*.svg`. The builder stops after each stage, and for playtests at M1 and M2.
+Stage 5, Battle HUD and input → M1 hot-seat slice (HARD): `src/scenes/Hud.ts` and the UI.md §4.5 components, `src/input/`, the Pause scene, a minimal two-player setup on one arena. Stop at M1 and ask the owner to playtest on a phone.

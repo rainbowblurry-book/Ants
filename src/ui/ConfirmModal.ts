@@ -156,7 +156,7 @@ export class ConfirmModal extends Phaser.GameObjects.Container {
     this.keyB = (e: KeyboardEvent) => {
       if (e.key === 'b' || e.key === 'B') this.cancel();
     };
-    scene.input.keyboard?.on('keydown', this.keyB);
+    window.addEventListener('keydown', this.keyB);
     o.nav?.pushLayer('confirm', () => this.cancel());
 
     // Open: scrim fade 120 ms + card pop 0.9 -> 1 in 160 ms; reduced: 80 ms fade only.
@@ -194,7 +194,7 @@ export class ConfirmModal extends Phaser.GameObjects.Container {
     if (this.closed) return;
     this.closed = true;
     openModal = null;
-    if (this.keyB) this.scene.input.keyboard?.off('keydown', this.keyB);
+    if (this.keyB) window.removeEventListener('keydown', this.keyB);
     this.o.nav?.removeLayer('confirm');
     this.o.focus.popScope();
     this.destroy();

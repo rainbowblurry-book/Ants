@@ -229,6 +229,7 @@ Each stage lists: tag · goal · files · acceptance. "Tests" refers to PLAN §1
 ---
 
 ## 4. What the user must do
+- **The live list is `ToUser/TODO.md`.** It holds every open question, review and check, with an answer line. This section is the summary from planning.
 - **Nothing to set up.** GitHub Pages is already on: Settings → Pages → Source "GitHub Actions" (PLAN §11).
 - **Playtest at M1 and M2** on a real phone, and answer the builder's stop questions.
 - **Approve the final ant art** (stage 12) when ready.

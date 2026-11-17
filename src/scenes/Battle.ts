@@ -1,0 +1,338 @@
+/**
+ * Battle scene, stage 4 (HANDOFF §3): draws the sim with placeholder art.
+ *
+ * The scene owns a Match and runs it on a fixed 60 Hz step (PLAN §1). It only
+ * reads sim state and sends commands through `match.push` (DR-010), so
+ * replays and resume stay exact. The HUD and input arrive in stage 5; the
+ * arena is the dev arena until levels exist (stage 8).
+ *
+ * Query switches (dev and tests): `?static=1` draws one frame of a match that
+ * never steps (the stage 4 screenshot); `?mem` prints texture memory (DR-014).
+ */
+import * as Phaser from 'phaser';
+import {
+  ATLASES,
+  MAX_RESIDENT_PAGES,
+  TERRAIN_PALETTE_PLACEHOLDER,
+  type TerrainPalette,
+} from '../assets/manifest';
+import { applyLogicalCamera, REG_RENDER_SCALE } from '../boot/config';
+import type { RenderScale } from '../boot/renderScale';
+import { CameraDirector } from '../render/camera';
+import { FixedStep } from '../render/loop';
+import { AntSprite, PickupSprites, ShotSprites, type Snapshot, snapshot } from '../render/sprites';
+import { TerrainView } from '../render/terrainView';
+import type { CommandBody } from '../sim/commands';
+import { Match } from '../sim/match';
+import type { MatchEvent } from '../sim/turn';
+import { CALM } from '../sim/wind';
+import { loadSharedAssets } from '../ui/assets';
+import { reducedMotion } from '../ui/motion';
+import { color } from '../ui/theme';
+import { devArenaAnts, devArenaGrid } from './devArena';
+
+export const BATTLE_KEY = 'battle';
+
+export interface BattleHook {
+  ready: boolean;
+  tick(): number;
+  phase(): string;
+  push(cmd: CommandBody): boolean;
+  /** Steps the sim n ticks at once (tests), then redraws. */
+  stepTicks(n: number): void;
+  /** RGBA of a world pixel in the terrain chunks. */
+  terrainPixel(x: number, y: number): [number, number, number, number];
+  chunkCount(): number;
+  terrainCosts(): { ms: number; chunks: number }[];
+  residentAtlasPages(): number;
+  maxResidentPages: number;
+  textureMB(): number;
+  camera(): { cx: number; cy: number; zoom: number };
+  antScreen(i: number): { x: number; y: number } | null;
+  shots(): number;
+  blasts(): number;
+  lastBlast(): { x: number; y: number; r: number } | null;
+  /** Holds the camera at a view (tests); `null` hands it back to the director. */
+  freezeCamera(view: { cx: number; cy: number; zoom: number } | null): void;
+  /**
+   * Reads the next rendered frame back and counts pixels in a world rect that
+   * are not `rgb` (the spike's seam check, now on the real terrain).
+   */
+  seamCheck(
+    world: { x: number; y: number; w: number; h: number },
+    rgb: number,
+  ): Promise<{ bad: number; checked: number; samples: number[][] }>;
+}
+
+declare global {
+  interface Window {
+    __battle?: BattleHook;
+  }
+}
+
+/** Texture bytes as w·h·4 over every texture source (DR-014). */
+export function textureBytes(textures: Phaser.Textures.TextureManager): number {
+  let bytes = 0;
+  for (const key of textures.getTextureKeys()) {
+    const t = textures.get(key);
+    for (const src of t.source) bytes += src.width * src.height * 4;
+  }
+  return bytes;
+}
+
+export class Battle extends Phaser.Scene {
+  private s: RenderScale = 1;
+  private match!: Match;
+  private terrain!: TerrainView;
+  private ants: AntSprite[] = [];
+  private shotsView!: ShotSprites;
+  private pickups!: PickupSprites;
+  private dew!: Phaser.GameObjects.Rectangle;
+  private cam!: CameraDirector;
+  private loop = new FixedStep();
+  private prev: Snapshot | null = null;
+  private alpha = 1;
+  private staticMode = false;
+  private eventIndex = 0;
+  private shotEventIndex = new WeakMap<object, number>();
+  private blastCount = 0;
+  private lastBlastAt: { x: number; y: number; r: number } | null = null;
+  private frozen: { cx: number; cy: number; zoom: number } | null = null;
+  private memText: HTMLElement | null = null;
+  private frameMs: number[] = [];
+  private palette: TerrainPalette = TERRAIN_PALETTE_PLACEHOLDER;
+
+  constructor() {
+    super(BATTLE_KEY);
+  }
+
+  preload(): void {
+    loadSharedAssets(this);
+  }
+
+  create(): void {
+    this.s = this.registry.get(REG_RENDER_SCALE) as RenderScale;
+    const params = new URLSearchParams(location.search);
+    this.staticMode = params.get('static') === '1';
+    const seed = params.get('seed') ?? 'stage4';
+
+    const cam = this.cameras.main;
+    cam.setBackgroundColor(this.palette.sky);
+    applyLogicalCamera(cam, this.s, 1);
+
+    const grid = devArenaGrid();
+    this.match = new Match({
+      seed,
+      levelId: 'dev-arena',
+      terrain: grid,
+      wind: CALM,
+      ants: devArenaAnts(grid),
+    });
+
+    this.terrain = new TerrainView(this, grid, this.palette);
+    this.dew = this.add.rectangle(0, 540, 960, 0, color.info).setOrigin(0, 0);
+    this.pickups = new PickupSprites(this);
+    this.match.ants.forEach((a, i) => {
+      this.ants.push(new AntSprite(this, i, a.team));
+    });
+    this.shotsView = new ShotSprites(this);
+    this.cam = new CameraDirector(reducedMotion() || this.staticMode);
+    this.draw();
+
+    if (params.has('mem')) {
+      // A DOM line: it stays put whatever the camera zoom is. Colours are theme vars.
+      const el = document.createElement('div');
+      el.id = 'mem';
+      el.style.cssText =
+        'position:fixed;left:8px;bottom:8px;padding:2px 8px;border-radius:8px;' +
+        'font:800 14px var(--font-body);color:var(--panel);background:var(--ink);pointer-events:none;z-index:5';
+      document.body.appendChild(el);
+      this.memText = el;
+      this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => el.remove());
+    }
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      window.__battle = undefined;
+    });
+    this.installHook();
+    this.game.events.emit('battle-ready');
+  }
+
+  private stepSim(n: number): void {
+    for (let i = 0; i < n; i++) {
+      this.prev = snapshot(this.match.ants, this.match.shot?.bodies ?? []);
+      this.match.step();
+      this.consumeEvents(this.time.now);
+    }
+  }
+
+  private consumeEvents(now: number): void {
+    const ev = this.match.events;
+    for (; this.eventIndex < ev.length; this.eventIndex++) {
+      const e = ev[this.eventIndex] as MatchEvent;
+      if (e.kind === 'phase') {
+        const a = this.match.ants[e.ant];
+        this.cam.onPhase(e.phase, a ? { x: a.x, y: a.y - 22 } : null, now);
+      }
+    }
+    const shots = this.match.shot ? [...this.match.shots, this.match.shot] : this.match.shots;
+    for (const shot of shots) {
+      const from = this.shotEventIndex.get(shot) ?? 0;
+      for (let i = from; i < shot.events.length; i++) {
+        const se = shot.events[i];
+        if (se?.kind === 'blast') {
+          this.blastCount++;
+          this.lastBlastAt = { x: se.blast.x, y: se.blast.y, r: se.blast.r };
+          this.cam.onBlast({ x: se.blast.x, y: se.blast.y }, se.blast.r, now);
+        }
+      }
+      this.shotEventIndex.set(shot, shot.events.length);
+    }
+  }
+
+  override update(time: number, delta: number): void {
+    if (!this.staticMode && !this.cam.hitStopping(time)) {
+      const { steps, alpha } = this.loop.advance(delta);
+      this.stepSim(steps);
+      this.alpha = alpha;
+    }
+    this.draw(time, delta);
+  }
+
+  private draw(time = 0, delta = 0): void {
+    const m = this.match;
+    this.terrain.sync();
+    const aimingAnt = m.phase === 'aim' ? m.turns.ant : -1;
+    m.ants.forEach((a, i) => {
+      this.ants[i]?.update(a, this.prev?.ants[i], this.alpha, i === aimingAnt);
+    });
+    this.shotsView.update(m.shot?.bodies ?? [], this.prev, this.alpha);
+    this.pickups.update(m.world.pickups);
+    const dewY = m.turns.dewY;
+    this.dew.setPosition(0, dewY).setSize(960, Math.max(0, 540 - dewY));
+
+    // Camera (render only).
+    const body = m.shot?.bodies[0];
+    let knock: { x: number; y: number } | null = null;
+    let best = 0;
+    for (const a of m.ants) {
+      if (a.state !== 'air') continue;
+      const sp = Math.hypot(a.vx, a.vy);
+      if (sp > best) {
+        best = sp;
+        knock = { x: a.x, y: a.y };
+      }
+    }
+    const out = this.cam.update(time, delta, {
+      hitStop: this.cam.hitStopping(time),
+      projectile: body ? { x: body.p.x, y: body.p.y, vx: body.p.vx, vy: body.p.vy } : null,
+      retreating: m.phase === 'resolve' && m.turns.retreatLeft > 0,
+      knockback: knock,
+    });
+    const c = this.cameras.main;
+    const view = this.frozen ?? {
+      cx: out.cx + out.shakeX,
+      cy: out.cy + out.shakeY,
+      zoom: out.zoom,
+    };
+    c.setZoom(this.s * view.zoom);
+    c.centerOn(view.cx, view.cy);
+
+    if (this.memText) {
+      // DR-014 `?mem`, plus the median frame time for the S=2 phone check (DR-013).
+      if (delta > 0) this.frameMs.push(delta);
+      if (this.frameMs.length > 120) this.frameMs.shift();
+      const sorted = [...this.frameMs].sort((a, b) => a - b);
+      const median = sorted[Math.floor(sorted.length / 2)] ?? 0;
+      const mb = (textureBytes(this.textures) / 1048576).toFixed(1);
+      this.memText.textContent = `S=${this.s} · ${median.toFixed(1)} ms · textures ${mb} MB · atlas pages ${this.residentAtlasPages()}`;
+    }
+  }
+
+  residentAtlasPages(): number {
+    let n = 0;
+    for (const id of Object.keys(ATLASES)) {
+      if (this.textures.exists(id)) n += this.textures.get(id).source.length;
+    }
+    return n;
+  }
+
+  private async seamCheck(
+    world: { x: number; y: number; w: number; h: number },
+    rgb: number,
+  ): Promise<{ bad: number; checked: number; samples: number[][] }> {
+    const img = await new Promise<HTMLImageElement>((resolve) => {
+      this.game.renderer.snapshot((snap) => resolve(snap as HTMLImageElement));
+    });
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('2D canvas is not available');
+    ctx.drawImage(img, 0, 0);
+    const px = ctx.getImageData(0, 0, w, h).data;
+    const cam = this.cameras.main;
+    const toX = (wx: number) => (wx - cam.scrollX - cam.width / 2) * cam.zoom + cam.width / 2;
+    const toY = (wy: number) => (wy - cam.scrollY - cam.height / 2) * cam.zoom + cam.height / 2;
+    const x0 = Math.max(0, Math.ceil(toX(world.x)) + 2);
+    const y0 = Math.max(0, Math.ceil(toY(world.y)) + 2);
+    const x1 = Math.min(w, Math.floor(toX(world.x + world.w)) - 2);
+    const y1 = Math.min(h, Math.floor(toY(world.y + world.h)) - 2);
+    const r = (rgb >> 16) & 255;
+    const g = (rgb >> 8) & 255;
+    const b = rgb & 255;
+    let bad = 0;
+    let checked = 0;
+    const samples: number[][] = [];
+    for (let y = y0; y < y1; y++) {
+      for (let x = x0; x < x1; x++) {
+        const i = (y * w + x) * 4;
+        checked++;
+        const off =
+          Math.abs((px[i] ?? 0) - r) > 3 ||
+          Math.abs((px[i + 1] ?? 0) - g) > 3 ||
+          Math.abs((px[i + 2] ?? 0) - b) > 3;
+        if (off) {
+          bad++;
+          if (samples.length < 5) samples.push([x, y, px[i] ?? 0, px[i + 1] ?? 0, px[i + 2] ?? 0]);
+        }
+      }
+    }
+    return { bad, checked, samples };
+  }
+
+  private installHook(): void {
+    window.__battle = {
+      ready: true,
+      tick: () => this.match.tick,
+      phase: () => this.match.phase,
+      push: (cmd) => this.match.push(cmd),
+      stepTicks: (n) => {
+        this.stepSim(n);
+        this.alpha = 1;
+        this.draw(this.time.now, 0);
+      },
+      terrainPixel: (x, y) => this.terrain.pixel(x, y),
+      chunkCount: () => this.terrain.chunkCount,
+      terrainCosts: () => [...this.terrain.costs],
+      residentAtlasPages: () => this.residentAtlasPages(),
+      maxResidentPages: MAX_RESIDENT_PAGES,
+      textureMB: () => textureBytes(this.textures) / 1048576,
+      camera: () => ({ ...this.cam.view }),
+      antScreen: (i) => {
+        const a = this.match.ants[i];
+        return a ? { x: a.x, y: a.y } : null;
+      },
+      shots: () => this.match.shots.length,
+      blasts: () => this.blastCount,
+      lastBlast: () => this.lastBlastAt,
+      freezeCamera: (view) => {
+        this.frozen = view;
+        this.draw(this.time.now, 0);
+      },
+      seamCheck: (world, rgb) => this.seamCheck(world, rgb),
+    };
+  }
+}

@@ -62,7 +62,8 @@ export function bakeFill(grid: TerrainGrid, palette: TerrainPalette): Uint32Arra
       const i = y * w + x;
       const m = cells[i] as number;
       if (!isSolidMaterial(m)) {
-        sinceEmpty = 0;
+        // Only air starts a band; ground under water is not a surface.
+        if (m === Material.EMPTY) sinceEmpty = 0;
         out[i] = fills[m] ?? 0;
         continue;
       }
@@ -179,7 +180,9 @@ export function composeRect(
     const gy = rect.y + y;
     for (let x = 0; x < rect.w; x++) {
       const gx = rect.x + x;
-      const base = fill[gy * grid.w + gx] as number;
+      // The fill was baked from the initial mask; an erased cell shows nothing.
+      const gi = gy * grid.w + gx;
+      const base = (grid.cells[gi] as number) === Material.EMPTY ? 0 : (fill[gi] as number);
       const a = INK_LUT[s[y * rect.w + x] as number] as number;
       let px = base;
       if (a > 0) {

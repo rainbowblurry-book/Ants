@@ -1,7 +1,10 @@
 import * as Phaser from 'phaser';
 import { buildGameConfig, REG_RENDER_SCALE } from './boot/config';
 import { parseScaleOverride, pickRenderScale } from './boot/renderScale';
-import { SpikeHud, SpikeWorld } from './scenes/Spike';
+import { t } from './i18n';
+import { Battle } from './scenes/Battle';
+import { UiLab } from './scenes/UiLab';
+import { LayoutService, REG_LAYOUT } from './ui/layout';
 import { font } from './ui/theme';
 
 declare global {
@@ -9,7 +12,7 @@ declare global {
     /** Set by the inline script in index.html (DR-175). */
     __antsFatal?: (detail: unknown, body?: string) => void;
     /** Test hook for Playwright. */
-    __ants?: { game: Phaser.Game; renderScale: number };
+    __ants?: { game: Phaser.Game; renderScale: number; layout: LayoutService };
   }
 }
 
@@ -40,6 +43,16 @@ function hideSplash(): void {
   }, 250);
 }
 
+/**
+ * Stage 4 starts the Battle scene directly. `?scene=uilab` opens the UI
+ * foundation gallery instead (dev and tests). Boot, Preload and Title arrive
+ * in stage 7.
+ */
+function pickScenes(): Phaser.Types.Scenes.SceneType[] {
+  const scene = new URLSearchParams(location.search).get('scene');
+  return scene === 'uilab' ? [UiLab] : [Battle];
+}
+
 async function boot(): Promise<void> {
   blockBrowserGestures();
   await loadFonts();
@@ -48,15 +61,19 @@ async function boot(): Promise<void> {
   const s = parseScaleOverride(location.search) ?? pickRenderScale(window.devicePixelRatio, false);
 
   const game = new Phaser.Game({
-    ...buildGameConfig(s, [SpikeWorld, SpikeHud]),
+    ...buildGameConfig(s, pickScenes()),
     callbacks: {
       // Before any scene starts, so every scene can read S.
       preBoot: (g) => g.registry.set(REG_RENDER_SCALE, s),
     },
   });
-  game.canvas.setAttribute('aria-label', 'ANTS! game');
-  game.events.once('spike-ready', hideSplash);
-  window.__ants = { game, renderScale: s };
+  game.canvas.setAttribute('aria-label', t('a11y.canvas'));
+  const layout = new LayoutService(s, () => game.canvas);
+  layout.start();
+  game.registry.set(REG_LAYOUT, layout);
+  game.events.once('battle-ready', hideSplash);
+  game.events.once('uilab-ready', hideSplash);
+  window.__ants = { game, renderScale: s, layout };
 }
 
 boot().catch((err: unknown) => {

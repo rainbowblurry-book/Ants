@@ -128,6 +128,9 @@ export function gap(a: Rect, b: Rect): number {
 
 // --------------------------------------------------------------- service
 
+/** Game registry key of the shared LayoutService (set in main.ts). */
+export const REG_LAYOUT = 'layout';
+
 type Listener = (l: LayoutService) => void;
 
 /**
