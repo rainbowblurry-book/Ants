@@ -1,71 +1,71 @@
-# Handoff: ANTS! build, stage 3 done → start stage 4 (render, assets, UI foundation)
-Seq: 7 | Date: 2026-11-17 | Branch@commit: main@(stage 3 merge; same as build/stage-03-turn-flow) | Status: in progress, stage 3 done, stage 4 not started
-Saved to: rainbowblurry-book/Ants, docs/SESSION_HANDOFF.md (not docs/HANDOFF.md: that file is the build plan)
+# Handoff: ANTS! build, stage 4 done → start stage 5 (Battle HUD and input → M1)
+Seq: 8 | Date: 2026-11-17 | Branch@commit: main@b2c8c23 (= build/stage-04-render) | Status: in progress, stage 4 done, stage 5 not started
+Saved to: rainbowblurry-book/Ants, docs/SESSION_HANDOFF.md (the one and only handoff file; docs/HANDOFF.md is the build plan)
 
 ## Goal
 Build the Phaser 3 ant artillery game ANTS! exactly as planned in `docs/HANDOFF.md`, one stage at a time. You are the **builder**. The plan is finished; do not redesign it.
 
 ## State
-- Done: stages 0, 1, 2 and **3**. Stage 3 added `src/sim/commands.ts`, `turn.ts`, `replay.ts`, a reworked `match.ts`, and `src/save/` (`schema.ts`, `store.ts`, `matchSlot.ts`). 13 test files, 186 unit tests. Stage branch CI run 19 (commit 8a0df19) was green.
-- Also done in this session, at the user's request: a full re-read of the stage 1–2 sim code. Two fixes: the Dewdrop bounce normal (`contactNormal` in `physics.ts`) and the sfc32 counter order (`rng.ts`). Details in `docs/PROGRESS.md` "Stage 3 · Review of stages 1 and 2".
-- In progress: nothing.
-- Blocked / waiting on: the user's answers to 7 Tier G questions in PROGRESS "Open items" (4 from stage 2, 3 from stage 3). None blocks stage 4. Question 5 (what drops in two-player, and where) must be answered before stage 7's Pickups toggle.
-- Uncommitted or unsaved work: none. The `main` run after the merge was not checked (assumed green: same commit as run 19 plus docs).
+- Done: stages 0–4. Stage 4 added `src/assets/manifest.ts`, `art/ui/*.svg` (57), `art/placeholder/*.svg`, `tools/build-ui.ts`, `tools/bake-fonts.ts`, token output in `tools/gen-theme.ts`, `src/ui/` (layout, focus, nav, fitText, motion, text, components, ConfirmModal, assets), `src/render/` (terrainPixels, terrainView, camera, loop, sprites, juice), `src/scenes/Battle.ts` + `devArena.ts` + `UiLab.ts`, `src/i18n/`. Spike deleted. 18 test files / 256 unit tests, 33 e2e checks. Stage branch CI run 22 green. Details: `docs/PROGRESS.md` "Stage 4".
+- `main` run 24 (b2c8c23: test, e2e, build, deploy) is green, and Pages serves the stage 4 build.
+- Owner's to-do list: **`ToUser/TODO.md`** (Q-01..Q-13, R-01..R-03). Nothing blocks stage 5 except Q-08 (the "∞" badge).
+- Uncommitted work: none.
 
 ## Decisions (with why)
-These are the user's standing rules (their words, repeated in every stage prompt):
+User's standing rules (their words, repeated in every stage prompt):
 - Work from `main`. One branch per stage, `build/stage-NN-name`. Merge to `main` only when that stage's acceptance tests pass in CI.
 - HARD stages: do them yourself at high effort. ROUTINE stages: a Sonnet subagent at medium effort, then review against the acceptance list.
-- Never invent a number or a design. If something is missing or infeasible, log an OVR record (DR-193). Tier G changes wait for the user's approval. Where the docs conflict or are silent, follow the most specific text and list the gap in PROGRESS "Open items".
+- Never invent a number or a design: log an OVR record (DR-193). Tier G changes wait for the user's approval. Where docs conflict or are silent, follow the most specific text and add the gap to `ToUser/TODO.md`.
 - Placeholder ant art only (DR-195). Do not draw ants unless asked.
 - After each stage: update `docs/PROGRESS.md`, merge to `main`, give a 5-line summary, then **stop**. Always stop at M1 (end of stage 5) and M2 (end of stage 8).
-- **Nothing that costs money unless you ask first and the user approves.**
-- **If a usage limit hits: wait, then continue by yourself when it lifts** (new in this session). This session did it with an hourly scheduled task bound to the session, deleted when the stage was done.
-- Run /cpt at the end of each session to update this file.
+- Nothing that costs money unless the user approves first. If a usage limit hits: wait, then continue by yourself.
+- Before committing, double-check for errors (`npm run ci` + `npm run e2e`), then confirm the build on CI.
+- End each session with a bullet list of the owner's open items in ASD-STE100 style, and run /cpt to update this file.
+- New this session: **one place per thing.** Owner items live only in `ToUser/TODO.md`; done items move to `ToUser/archive/ANSWERED.md`. The handoff lives only here. PROGRESS points to ToUser and does not copy questions. "handoff / save / new chat" = update this file.
 
 ## Do
-- Read `docs/HANDOFF.md` §2 and the stage's §3 entry first. Extract DRs with `awk -v id=DR-0NN 'index($0,"## "id" ")==1{p=1;print;next} p&&/^#/{p=0} p' docs/DECISIONS.md`. Judge rulings J1–J56 win over record text.
-- A fresh container has no `node_modules`: run `npm ci` first.
-- Run `npx biome check --write --unsafe` before every commit.
-- Put helpers shared by tests in `tools/` (`tools/match-fixture.ts` has `arena()`, `runTo()`, `runToAim()`, `eventsOf()`).
-- For stage 4 and 5, read the sim through `Match`: `phase`, `activeAnt`, `turns.timerLeft`, `turns.retreatLeft`, `turns.round`, `turns.dewY`, `world.wind.gauge()`, `events` (phase, ko, timeout, reject, dew, drop, pickup, end) and `shots[].events`. Send input with `match.push({kind: ...})`: `fire`, `walk`, `face`, `hop`, `flip`, `ready` (tap), `cancel` (after Pause).
-- Anything that changes sim state must go through `match.push`, or replays and resume break.
-- Check CI with the GitHub MCP tools (`actions_list`: `list_workflow_runs` with a branch filter, then `list_workflow_jobs`). Wait with a background `sleep`.
-- Merge with `git merge --ff-only`, then push `main` and the stage branch. Next OVR is **OVR-005**. Next judge number is J57.
+- At session start: read this file, then `ToUser/TODO.md`. Apply any answers the owner wrote, move them to the archive, note them in PROGRESS.
+- Read `docs/HANDOFF.md` §2 and the stage's §3 entry. Extract DRs with `awk -v id=DR-0NN 'index($0,"## "id" ")==1{p=1;print;next} p&&/^#/{p=0} p' docs/DECISIONS.md`. Judge rulings J1–J56 win over record text. Next OVR is **OVR-007**, next judge number J57.
+- Fresh container: `npm ci`, then `npm run assets` (atlas + fonts go to git-ignored `public/assets/gen/`; `dev` and `build` run it too).
+- `npx biome check --write --unsafe` before every commit. Test helpers go in `tools/` (`tools/match-fixture.ts`) and `e2e/helpers.ts` (`openGame`, `cssPoint`, `saveShot`; `STAGE4_OUT=dir` also writes screenshots there).
+- Code asks the manifest for keys (`asset('ui.icon.back')`, `antSideKey(team, pose)`); never a frame name or path (test enforces). Colours only via `color`/`cssColor`/`tokens` from `src/ui/theme.ts` or CSS vars.
+- Sim access goes through `Match` and `match.push` only (replays). Battle exposes `window.__battle`, UiLab `window.__uilab` for e2e.
+- For stage 5 the HUD should use `LayoutService` (registry `REG_LAYOUT`), `FocusManager` (off in Battle, DR-086), `Button`/`IconButton`/`JellyBox`, `BitmapLabel` (F64 numerals with stroke) and `CameraDirector.panBy` for world drags.
+- Check CI with GitHub MCP `actions_list` (`list_workflow_runs` with a branch filter, then `list_workflow_jobs`). Wait with a background `sleep`. Merge with `git merge --ff-only`, push `main` and the stage branch.
 
 ## Don't
-- Don't use npm 10 to add packages (`Cannot read properties of null (reading 'edgesOut')`, OVR-002). Use `npx -y npm@11 install --save-exact`.
-- Don't push a second commit while a run on that branch is still *pending*: the newer push cancels it (stage 0, run 2). Pushing while a run is *in progress* is fine.
-- Don't read a surface normal from a window centred on the projectile: the Dewdrop ring (8 px) is outside a 9x9 window, and the bounce went straight back. Use `contactNormal`.
-- Don't trust a test that only counts events: the Dewdrop bug passed "at most 3 bounces" for a whole stage. Assert directions and values.
-- Don't use `**` in sim code (ban-scan fails). Don't compare `-0` with `toBe(0)`.
-- Don't run Playwright against the live Pages URL (the safety classifier denied it). A plain `curl` status check is allowed.
+- Don't use npm 10 to add packages (`edgesOut` crash, OVR-002). Use `npx -y npm@11 install --save-exact`.
+- Don't push a second commit while a run on that branch is *pending*: it cancels the run (stage 0, run 2).
+- Don't feed menu keys through Phaser's keyboard plugin: it handed one key event to a listener twice when two keys landed in one frame (2 of 5 runs), and `preventDefault` comes too late. `bindFocusKeys` uses `window` listeners.
+- Don't click in e2e before `#splash` is hidden: it fades for 250 ms over the canvas and swallows input (all taps failed until `openGame` waited).
+- Don't use `setScrollFactor(0)` for fixed overlays in a camera zoomed by S: it zooms around the centre and lands off-screen at S=2. Use a DOM element (the `?mem` line) or a separate UI camera.
+- Don't let water reset the surface band: ground under a pool got the grass band (seam test caught it). Only EMPTY starts a band.
+- Don't read a surface normal from a centred window, don't trust tests that only count events, don't use `**` in sim code, don't compare `-0` with `toBe(0)` (earlier stages).
+- Don't run Playwright against the live Pages URL (classifier denied it); `curl` status is fine.
 - Don't let Biome reformat `src/ui/theme.json`, `.mcp.json`, `src/sim/trig.ts` or the docs. Don't open a PR, force-push, or name another file `docs/HANDOFF.md`.
 
 ## Open questions / uncertainty
-- The 7 Tier G questions in PROGRESS "Open items". Ask the user before changing any of them.
-- DR-009's Roller "about 490 px" on SLICK looks like a slip; the formula gives ≈ 376 px and the code follows the formula.
-- Replay speed is measured in node only (9,000 ticks in 36 ms). Phone speed is unknown.
-- Phone frame time at S=2 and the "Made by" credit name (DR-174) are still unanswered by the user.
-- `src/scenes/Spike.ts` and `e2e/spike.spec.ts` are throwaway. Stage 4 replaces them with the real Battle scene and its own screenshots.
+- All owner questions: `ToUser/TODO.md`. Q-08 ("∞" glyph, OVR-005 proposed) is needed for the stage 5 weapon tray; until answered, leave the Seed badge empty and say so.
+- AntTag (DR-128) wants a 3 px outline; the r8 nine-slice has 4. Decide how stage 5 draws tags (log an OVR if a thinner slice set is needed).
+- Phone frame time at S=2 is unknown (owner item R-02, `?mem` on the live page).
 
 ## Next steps
-1. `npm ci`, `git checkout main && git pull`, `git checkout -b build/stage-04-render`.
-2. Read HANDOFF §3 stage 4, PLAN §1 (loop, texture memory) and §4 (rendering), UI.md §1, §2, §5 and §6 checks 1–2, plus DR-024, DR-046, J7, J49, DR-085 to DR-088, DR-090, DR-195, and PROGRESS "Render rules the spike fixed".
-3. Build `src/render/` (terrain chunks and the mask outline, sprites, camera, juice), `src/assets/manifest.ts`, `tools/build-ui.ts`, `tools/bake-fonts.ts`, the component tokens in `tools/gen-theme.ts`, `src/ui/` (Layout, Focus, Nav, fitText, Button, IconButton, Panel, ConfirmModal) and `/art/ui/*.svg`.
-4. Pass UI.md §6 checks 1 and 2, the manifest key test, the ≤ 3 resident atlas pages check, and save a Playwright screenshot of a static battle at the 3 viewports.
-5. Update PROGRESS, fast-forward `main`, give the 5-line summary and stop.
+1. `npm ci && npm run assets`, `git checkout main && git pull`, `git checkout -b build/stage-05-hud`.
+2. Read `ToUser/TODO.md` for answers; then HANDOFF §3 stage 5, UI.md §4.5 (HUD rects), §4.6 (Pause), §6 check 3, and DR-015, DR-120 to DR-131, DR-171, DR-180 to DR-183, J33, J38, J39, J46, J49, J50.
+3. Build `src/scenes/Hud.ts` + HUD components, `src/input/` (DR-121 keys, DR-015 buffers), the Pause scene, a minimal two-player setup on one arena (Jungle Home; its palette is still a placeholder, Q-11).
+4. Pass UI.md §6 check 3 (both handedness, margins 16 and 24), a Playwright full turn by touch and by keyboard, the 667x375 readability screenshot, DR-015 fire buffering.
+5. Update PROGRESS and ToUser, merge, tag `m1-hotseat`, deploy, give the 5-line summary, and **stop: ask the owner to playtest on a phone**.
 
 ## Key files & links
-- `docs/HANDOFF.md` - build plan: rules and the 14 stages with acceptance lists.
-- `docs/PROGRESS.md` - build log (stages 0–3), measured numbers, implementation choices, open items.
-- `docs/DECISIONS.md` - DR-001..DR-197, J1–J56, OVR-001..OVR-004 at the end.
-- `src/sim/` - sim core, weapons, turn machine, replay. `src/save/` - saves. `tools/` - generators, ban-scan, test fixture.
+- `ToUser/TODO.md` - the owner's questions and checks, with answer lines. `ToUser/README.md` explains the flow.
+- `docs/HANDOFF.md` - build plan (rules, 14 stages, acceptance lists). `docs/PROGRESS.md` - build log, measured numbers, implementation choices.
+- `docs/DECISIONS.md` - DR-001..DR-197, J1–J56, OVR-001..OVR-006 at the end.
+- `docs/stage4/*.png` - stage 4 screenshots. `?static=1`, `?mem`, `?scene=uilab`, `?s=1|2` are dev switches.
 - CI: https://github.com/rainbowblurry-book/Ants/actions · Live: https://rainbowblurry-book.github.io/Ants/
 
 ## Previous handoffs
+- seq 7 (2026-11-17): stage 3 done, start stage 4 render.
 - seq 6 (2026-11-17): stage 2 done, start stage 3 turn flow.
 - seq 5 (2026-11-17): stage 1 done, start stage 2 weapons.
 - seq 4 (2026-11-17): stage 0 done, start stage 1 sim core.
 - seq 3 (2026-11-16): planning A–D done; builder to start at stage 0.
-- seq 2 (2026-11-16): checkpoint C done, await approval.
