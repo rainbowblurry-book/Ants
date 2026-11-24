@@ -174,7 +174,7 @@ test('a full turn by keyboard: Space, W, =, Tab, Space, handover', async ({ page
     angleDeci: before.angleDeci + 30,
     powerMille: before.powerMille + 20,
   });
-  // Seed keeps its aim; Tab moves to the next weapon, which starts at 45° and 60%.
+  // Tab moves to the next weapon; the ant keeps its aim (OVR-017).
   await page.keyboard.press('Tab');
   expect((await state(page)).weapon).toBe('dewdrop');
   await page.keyboard.press('e');
@@ -388,6 +388,8 @@ test('stage 5b default: no gate, the timer waits for the first touch, one tag, t
   const touch = info.project.use.hasTouch === true;
   const errors = await openHud(page, '?seed=42');
   await waitPhase(page, ['aim']);
+  // The first turn's coin pop swallows a tap; wait it out.
+  await page.waitForFunction(() => !(window.__hud as HudHook).state().coin);
   // Fast-forward 2 s of sim time: the timer has not started (OVR-014).
   await page.evaluate(() => (window.__battle as BattleHook).stepTicks(120));
   let s = await state(page);
@@ -398,15 +400,15 @@ test('stage 5b default: no gate, the timer waits for the first touch, one tag, t
   expect(s.tags.filter(Boolean)).toHaveLength(1);
   expect(s.tags[s.ant]).toBe(true);
   expect(s.moveBar).toBe(false);
-  // Tap another ant of the other team: its tag opens.
-  const other = s.team === 0 ? 3 : 0;
+  // Tap a team mate (on screen near the active ant; the far team can be off screen): its tag opens.
+  const other = s.ant + 1;
   const at = (await page.evaluate((i) => (window.__hud as HudHook).antScreen(i), other)) as {
     x: number;
     y: number;
   };
   await tap(page, at.x, at.y, touch);
+  await expect.poll(async () => (await state(page)).tags[other]).toBe(true);
   s = await state(page);
-  expect(s.tags[other]).toBe(true);
   expect(s.timerStarted).toBe(false);
   // Tap the active ant: the timer starts.
   const me = (await page.evaluate((i) => (window.__hud as HudHook).antScreen(i), s.ant)) as {
@@ -415,6 +417,6 @@ test('stage 5b default: no gate, the timer waits for the first touch, one tag, t
   };
   await tap(page, me.x, me.y, touch);
   await page.evaluate(() => (window.__battle as BattleHook).stepTicks(2));
-  expect((await state(page)).timerStarted).toBe(true);
+  await expect.poll(async () => (await state(page)).timerStarted).toBe(true);
   expect(errors).toEqual([]);
 });

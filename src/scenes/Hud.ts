@@ -872,7 +872,8 @@ export class Hud extends Phaser.Scene {
 
     // Wind and effects (DR-125, DR-127). A change pops the gauge and shows a notice (OVR-018, D10).
     const windLv = Math.round(m.world.wind.gauge(m.tick).level);
-    if (!Number.isNaN(this.lastWind) && windLv !== this.lastWind) {
+    // Only a TurnStart change is news; a wind that moves within a turn (Oscillate) is not.
+    if (!Number.isNaN(this.lastWind) && windLv !== this.lastWind && phase === 'turnStart') {
       const sign = windLv > 0 ? `+${windLv}` : windLv < 0 ? `−${-windLv}` : '0';
       this.notices.push({
         text: t('hud.wind', { v: sign }),

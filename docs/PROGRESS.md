@@ -25,7 +25,9 @@ Branch `build/stage-05b-playtest`. The owner's checklist choices (D01–D12, rea
 - **Q-14 A:** Restart dialog "Restart?" / "Start this match again from the first turn?". **Q-15 B:** the Pause caption "Jungle Home · Round R".
 - **Checklist page:** Part 1b (L01) shows two layout mockups for D01 A and D02 A; Part 2 test steps updated for the new rules (T15 added). Published to the same artifact.
 
-**Tests:** `npm test` 322 (new: OVR-011 far swim and no ground, OVR-012 boss warning, OVR-014 waiting timer, a walk starts it, replay, OVR-015 own team off and on, OVR-016 ceiling, the side walls, OVR-017). e2e: the gate tests run with `?pass=1`; a new test checks the default (no gate, the timer waits, one tag, a tap opens another ant's tag, a tap on the active ant starts the timer).
+**Tests:** `npm test` 323 (new: OVR-011 far swim and no ground, OVR-012 boss warning, OVR-014 waiting timer, a walk starts it, replay, OVR-015 own team off and on, OVR-016 ceiling, the side walls, OVR-017). e2e: the gate tests run with `?pass=1`; a new test checks the default (no gate, the timer waits, one tag, a tap opens another ant's tag, a tap on the active ant starts the timer).
+
+**Review (a subagent read the diff against OVR-011 to OVR-018):** 2 bugs, both fixed: a walk held through TurnStart walked the ant without starting the waiting timer (now the TurnStart → Move/Aim step starts it; unit test), and the new e2e test tapped an ant that can be off screen at zoom 1.15 (it now taps a team mate, waits out the coin pop and polls). Also: the wind notice now fires only for a change at TurnStart (an Oscillate wind would have spammed it).
 
 **Waiting:** the layout (OVR-013 wide canvas, D02) after the owner's pick (R-06).
 

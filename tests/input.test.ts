@@ -243,6 +243,15 @@ describe('two-player slice (DR-182, DR-183, OVR-009)', () => {
     expect(m.turns.timerLeft).toBe(30 * 60);
   });
 
+  it('a walk held through TurnStart starts the timer when Move/Aim opens (OVR-014)', () => {
+    const m = new Match(versusMatch(defaultTwoPlayer(), 7));
+    m.push({ kind: 'walk', dir: 1 });
+    while (m.phase !== 'aim') m.step();
+    for (let i = 0; i < 30; i++) m.step();
+    expect(m.turns.timerStarted).toBe(true);
+    expect(m.turns.timerLeft).toBeLessThan(30 * 60);
+  });
+
   it('a walk also starts the waiting timer, and a replay gives the same state (OVR-014)', () => {
     const m = new Match(versusMatch(defaultTwoPlayer(), 9));
     while (m.phase !== 'aim') m.step();

@@ -499,6 +499,8 @@ export class TurnMachine {
           return;
         }
         if (this.rules.gate ? !this.gateOpen : !(timeUp || this.gateOpen)) return;
+        // A walk held through TurnStart is the player's first input (OVR-014).
+        if (this.heldDir !== 0) this.timerRunning = true;
         this.enter(host, 'aim');
         return;
       }
