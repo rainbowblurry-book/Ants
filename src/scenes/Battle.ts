@@ -530,10 +530,11 @@ export class Battle extends Phaser.Scene {
       (wx - cam.scrollX - cam.width / 2) * cam.zoom + cam.width / 2 + cam.x;
     const toY = (wy: number) =>
       (wy - cam.scrollY - cam.height / 2) * cam.zoom + cam.height / 2 + cam.y;
-    const x0 = Math.max(0, Math.ceil(toX(world.x)) + 2);
-    const y0 = Math.max(0, Math.ceil(toY(world.y)) + 2);
-    const x1 = Math.min(w, Math.floor(toX(world.x + world.w)) - 2);
-    const y1 = Math.min(h, Math.floor(toY(world.y + world.h)) - 2);
+    // Only pixels inside the camera's viewport show the world.
+    const x0 = Math.max(cam.x, Math.ceil(toX(world.x)) + 2);
+    const y0 = Math.max(cam.y, Math.ceil(toY(world.y)) + 2);
+    const x1 = Math.min(w, cam.x + cam.width, Math.floor(toX(world.x + world.w)) - 2);
+    const y1 = Math.min(h, cam.y + cam.height, Math.floor(toY(world.y + world.h)) - 2);
     const r = (rgb >> 16) & 255;
     const g = (rgb >> 8) & 255;
     const b = rgb & 255;
