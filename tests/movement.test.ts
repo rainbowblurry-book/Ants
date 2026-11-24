@@ -254,6 +254,49 @@ describe('falling, landing and hazards (DR-022, DR-023, DR-026)', () => {
     expect(dryStandingPoint(g, 420)?.x).toBe(299.5);
   });
 
+  it('with no dry ground within 200 px it swims to the nearest dry ground anywhere (OVR-011)', () => {
+    const g = new TerrainGrid(960, 540, 'water');
+    g.fillRect(0, 480, 960, 60, M.WATER);
+    g.fillRect(800, 400, 100, 80, M.SOIL);
+    const a = createAnt(0, 0, 300, 470, 1);
+    launchAnt(a, 0, 0);
+    let swam = false;
+    for (let i = 0; i < 200 && !swam; i++) swam = stepAnt(a, g).swam ?? false;
+    expect(swam).toBe(true);
+    expect(a.state).toBe('ground');
+    expect(a.x).toBe(800.5);
+    expect(a.y).toBe(400);
+    expect(a.skipNextTurn).toBe(true);
+    // No dry ground at all: knocked out.
+    const none = new TerrainGrid(960, 540, 'water');
+    none.fillRect(0, 480, 960, 60, M.WATER);
+    const b = createAnt(1, 0, 300, 470, 1);
+    launchAnt(b, 0, 0);
+    for (let i = 0; i < 200 && b.state !== 'ko'; i++) stepAnt(b, none);
+    expect(b.state).toBe('ko');
+  });
+
+  it('a blast cannot throw an ant above the top of the map (OVR-016)', () => {
+    const g = flat();
+    const a = createAnt(0, 0, 480, 400, 1);
+    launchAnt(a, 0, -700);
+    const { apex } = flight(a, g);
+    expect(apex).toBeGreaterThanOrEqual(44);
+    expect(a.state).toBe('ground');
+  });
+
+  it('the side walls hold an ant thrown sideways (DR-026)', () => {
+    const g = flat();
+    const l = createAnt(0, 0, 60, 400, 1);
+    launchAnt(l, -600, -300);
+    flight(l, g);
+    expect(l.x).toBe(24);
+    const r = createAnt(1, 0, 900, 400, 1);
+    launchAnt(r, 600, -300);
+    flight(r, g);
+    expect(r.x).toBe(936);
+  });
+
   it('falls when the ground under it is blasted away', () => {
     const g = flat();
     const a = createAnt(0, 0, 300, 400, 1);

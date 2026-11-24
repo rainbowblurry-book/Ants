@@ -2,8 +2,10 @@
  * Minimal two-player setup for the M1 hot-seat slice (HANDOFF §3 stage 5).
  *
  * Builds a versus `MatchConfig` from a `TwoPlayerSetup` (DR-182 defaults with
- * J45 names): coin flip for the first team, the tap gate every TurnStart
- * (DR-045, DR-183), the 30 s or 60 s timer (DR-043), the two-player ammo row
+ * J45 names): coin flip for the first team, the tap gate every TurnStart only
+ * with "Pass the phone" (DR-045, DR-183, OVR-014; without it the timer waits
+ * for the first input), "Hit own team" (OVR-015), the 30 s or 60 s timer
+ * (DR-043), the two-player ammo row
  * (DR-034, J24) and the Jungle Home wind field (PLAN §4: Level max 2, step 1,
  * every turn). The full Setup screen is stage 7.
  *
@@ -87,8 +89,10 @@ export function versusMatch(setup: TwoPlayerSetup, seed: number | string): Match
     wind: jungleHomeWind(),
     ants: arenaAnts(terrain, setup.ants),
     ammo,
+    friendlyFire: setup.hitOwnTeam,
     rules: {
-      gate: true,
+      gate: setup.passPhone,
+      timerOnInput: !setup.passPhone,
       firstTeam: 'coin',
       turnTicks: setup.timer * 60,
     },

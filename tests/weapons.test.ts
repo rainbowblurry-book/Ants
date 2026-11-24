@@ -29,7 +29,15 @@ import { CALM, LevelWind, type WindField } from '../src/sim/wind.ts';
 const M = Material;
 
 function world(grid: TerrainGrid, ants: Ant[] = [], wind: WindField = CALM, seed = 'w'): World {
-  return { grid, ants, wind, tick: 0, spread: Rng.fromString(`${seed}:spread`), pickups: [] };
+  return {
+    grid,
+    ants,
+    wind,
+    tick: 0,
+    spread: Rng.fromString(`${seed}:spread`),
+    pickups: [],
+    friendlyFire: true,
+  };
 }
 
 function run(w: World, shot: Shot, maxTicks = 2000): number {

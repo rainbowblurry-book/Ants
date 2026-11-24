@@ -2819,3 +2819,71 @@ Logged by the builder. Tier T is applied at once. Tier G waits for the user's ap
 - **Status:** approved by the owner 2026-11-17. To apply in stage 5b.
 - **Revert plan:** set the warning round back to 18.
 
+
+## OVR-013 · Full screen on the first tap, and a wider view on long phones
+- **Overrides:** DR-013 (a fixed 960·S × 540·S canvas, FIT with letterbox bars), DR-085 (the letterbox maths), J33 (no fullscreen button; there is still no button).
+- **Reason:** the owner's M1 playtest: on a 19.5:9 phone the 16:9 game sits between bars and the browser bars take height, so everything looks small. The owner chose D01 A on the stage 5b checklist (2026-11-24).
+- **Change:**
+  - **Full screen:** the first tap after the page loads calls `requestFullscreen()` on the page, then `screen.orientation.lock('landscape')` where the browser allows it. Errors are ignored (iPhone Safari has no page full screen; the game stays as it is). If the player leaves full screen, the game does not ask again until the next load.
+  - **Wide canvas:** the logical height stays 540. The logical width is W = 540 × (viewport width / height), rounded to an even number, at least 960 and at most 1260 (21:9). A wider viewport letterboxes past 1260. The world stays 960 × 540 and is drawn in the middle; the side strips are HUD space. The HUD rects for the strips come with the D02 layout pick (the next OVR).
+- **Impact:** `src/boot/config.ts`, `src/boot/renderScale.ts`, `src/ui/layout.ts` (the Layout service and margins), `src/render/camera.ts` and `Battle` (the world offset), `src/hud/layout.ts`, `tests/render-scale.test.ts`, `tests/hud-layout.test.ts`, e2e at a 19.5:9 viewport.
+- **Tier:** G
+- **Status:** approved by the owner 2026-11-24 (D01 A). Full screen: applied in stage 5b. Wide canvas: applied with the D02 layout, after the owner picks a mockup.
+- **Revert plan:** drop the fullscreen call and fix W at 960.
+
+## OVR-014 · No tap gate by default; the timer waits for the first touch
+- **Overrides:** DR-045 (a "Tap to start" gate at every two-player TurnStart), DR-183 gate (J46), DR-043 ("the timer starts on tap", two-player only).
+- **Reason:** with the phone on a table, tapping to start every turn is tiring. The owner chose D04 A (2026-11-24) and added: "when a turn is over the time is reset and does not start automatically; it waits until the first touch, like a tap on the highlighted ant".
+- **Change:**
+  - The two-player setup gets **"Pass the phone"**, default **off**. On: the gate works as now (DR-183, J46).
+  - Off: there is no gate. TurnStart runs its 900 ms, then Move/Aim opens, but the turn timer does not run. It starts at the active player's first input in the turn: a control, a key, or a tap on the active ant. A world pan does not start it. Until then the plate shows the full time, not counting.
+  - The sim learns it from a logged command: any walk, face, hop, flip or fire, or a `ready` sent in Move/Aim (the HUD sends `ready` for an aim control, the weapon tray or a tap on the ant). Replays stay exact.
+  - The setting goes on the stage 7 Setup screen. Until then the dev switch `?pass=1` turns it on.
+  - The campaign does not change: no gate, the timer runs at once (DR-043).
+- **Impact:** `src/sim/turn.ts` (`TurnRules.timerOnInput`), `src/game/twoPlayer.ts`, `src/save/schema.ts` (`TwoPlayerSetup.passPhone`), `src/scenes/Hud.ts`, `tests/turn.test.ts`, `tests/input.test.ts`, e2e. The versus slot keeps the setup, so a resumed match uses the same rule.
+- **Tier:** G
+- **Status:** approved by the owner 2026-11-24 (D04 A with the comment). To apply in stage 5b.
+- **Revert plan:** set `passPhone` on by default.
+
+## OVR-015 · "Hit own team", off by default
+- **Overrides:** DR-035 "Friendly fire: on" and PLAN §4, for two-player only.
+- **Reason:** the owner asked for an option and chose D05 B (2026-11-24): "in settings an option can be given if it is needed or not".
+- **Change:** the two-player setup gets **"Hit own team"**, default **off**. Off: a blast does not hit any ant of the shooter's team, the shooter included: no damage and no knockback. The terrain still breaks, so those ants can still fall (fall damage and the bottom rules still apply). On: DR-035 as written (allies take full damage, self-damage ×0.5 and never lethal). The campaign does not change (on). The setting goes on the stage 7 Setup screen; until then the dev switch `?ff=1` turns it on.
+- **Builder's reading (check in T11):** "own team" includes the shooter, and "not hit" includes no knockback.
+- **Impact:** `src/sim/damage.ts` (`applyBlast`), `src/sim/weapons/types.ts` (`World.friendlyFire`), `src/sim/match.ts`, `src/game/twoPlayer.ts`, `src/save/schema.ts` (`TwoPlayerSetup.hitOwnTeam`), `tests/damage.test.ts`.
+- **Tier:** G
+- **Status:** approved by the owner 2026-11-24 (D05 B). To apply in stage 5b.
+- **Revert plan:** default the setting to on.
+
+## OVR-016 · A ceiling for ants at the top of the map
+- **Overrides:** DR-026 "Top: open" (for ants only).
+- **Reason:** a blast can throw an ant above the top of the map, where the players cannot see it. The owner chose D06 A (2026-11-24): walls on the left, right and top; the bottom stays a knock-out.
+- **Change:** an ant's head (the 44 px head probe) cannot go above y = 0. A rising ant that reaches it stops rising (vy = 0) and falls. The side walls at x 24 and 936 (DR-026) stay as they are. Projectiles still fly out of the top and come back (DR-026). The bottom does not change.
+- **Impact:** `src/sim/movement.ts` (`airTick`), `tests/movement.test.ts`. Replays from before differ only when an ant was thrown that high.
+- **Tier:** G
+- **Status:** approved by the owner 2026-11-24 (D06 A). To apply in stage 5b.
+- **Revert plan:** delete the ceiling check.
+
+## OVR-017 · One angle and power per ant
+- **Overrides:** DR-033 "Each ant remembers its last angle and power per weapon".
+- **Reason:** the owner's playtest: a weapon change reset the aim. The owner chose D09 A (2026-11-24).
+- **Change:** each ant remembers one angle and one power. Changing weapon keeps them. The first shot still starts at 45° and 60% (DR-033). Input only; the sim does not change.
+- **Impact:** `src/input/aim.ts` (`AimMemory`), `tests/input.test.ts`.
+- **Tier:** G
+- **Status:** approved by the owner 2026-11-24 (D09 A). To apply in stage 5b.
+- **Revert plan:** key the memory by ant and weapon again.
+
+## OVR-018 · A calmer world view: one tag, the walk bar at the ant, wind and dew notices
+- **Overrides:** DR-128 (a tag over every ant), DR-123 (the move bar at 240,344 in the bottom-left cluster), DR-131 (no notice for a wind change or the first dew rise), the text-only Hop and Flip buttons (DR-120, DR-123).
+- **Reason:** the owner's M1 playtest. The owner chose D03 B, D07 A, D08 A, D10 A and D11 A on the stage 5b checklist (2026-11-24).
+- **Change:**
+  - **D03 B, tags:** only the active ant shows its tag (DR-128's active tag and arrow). Other ants show no tag. A tap on an ant (not a drag) shows its tag until the turn ends; a second tap hides it. Knock-out tags and damage numbers still show (DR-128).
+  - **D07 A, Hop and Flip:** the buttons show an icon (Hop: an arc forward; Flip: a high loop backward) in place of the words. The first press of each in a match shows a one-line hint in the notice slot: "Hop: a short jump forward" and "Flip: a high jump backward". The jump still happens on that press.
+  - **D08 A, walk bar:** the move bar (DR-123: track, fill, ticks at 50 and 80, foot icon) shows next to the active ant, only while the ant walks, hops or flips, and in the retreat window. It is hidden otherwise. Its size does not change. The owner will test it and may ask for changes.
+  - **D10 A, wind:** when the wind changes at TurnStart, the wind gauge pops (the DR-020 pop) and a notice shows "Wind +2" (or "Wind −1", "Wind 0") for the normal DR-131 time.
+  - **D11 A, dew:** the first time the dew rises in a match, a notice shows "The dew is rising! Ants under it are out." The "Dew rising" chip stays.
+- **Builder's reading:** the D07 hint shows once per match; the tags tapped open close at TurnEnd.
+- **Impact:** `src/hud/readouts.ts`, `src/hud/controls.ts`, `src/scenes/Hud.ts`, `src/i18n/en.json`, `tests/input.test.ts`, e2e. Where the bar and the buttons sit on screen comes with the D02 layout pick.
+- **Tier:** G
+- **Status:** approved by the owner 2026-11-24. To apply in stage 5b.
+- **Revert plan:** show every tag again, put the move bar back in the cluster, remove the two notices.

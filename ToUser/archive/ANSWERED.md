@@ -2,6 +2,24 @@
 
 The builder moves an item here from `../TODO.md` when it is done. Each entry keeps the item ID, your answer, the date, and what the builder does with it.
 
+## 2026-11-24 (stage 5b checklist, Part 1)
+
+### R-05 · Stage 5b checklist page, Part 1 (D01–D12)
+- **Your answers** (read from the checklist page):
+  - **D01 A:** full screen on the first tap, and a wider view with the controls at the edges. → OVR-013.
+  - **D02 A:** show 2 layout pictures first; you pick one. → the builder makes the mockups (`ToUser/TODO.md` R-06).
+  - **D03 B:** hide every health tag but the active ant's; tap an ant to see its health.
+  - **D04 A:** "Pass the phone" setting, off by default. Your comment: the timer waits until the first touch of the turn. → OVR-014.
+  - **D05 B:** "Hit own team" setting, off by default. → OVR-015.
+  - **D06 A:** invisible walls left, right and top; the bottom still knocks out. → OVR-016.
+  - **D07 A:** icons for Hop and Flip, and a one-line hint the first time you press each.
+  - **D08 A:** the walk bar next to the ant only while walking, with a foot icon. Your comment: test it, then change it again if needed.
+  - **D09 A:** one angle and power per ant. → OVR-017.
+  - **D10 A:** when the wind changes, the gauge pops and a short "Wind +2" notice shows.
+  - **D11 A:** the first time the dew rises, a banner: "The dew is rising! Ants under it are out."
+  - **D12 A:** every stage ends with a checklist page; the next stage waits for it.
+- **Builder:** stage 5b builds all of them. The layout (D01 wide view, D02, and where D07 and D08 sit) waits for your mockup pick. Part 2 (the test plan T01–T14) stays open on the page until stage 5b is live.
+
 ## 2026-11-17 (after stage 5, the M1 playtest)
 
 ### R-04 · M1 phone playtest

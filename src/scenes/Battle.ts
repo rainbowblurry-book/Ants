@@ -154,6 +154,12 @@ export class Battle extends Phaser.Scene {
     this.s = this.registry.get(REG_RENDER_SCALE) as RenderScale;
     const params = new URLSearchParams(location.search);
     this.staticMode = params.get('static') === '1';
+    // Until the stage 7 Setup screen: dev switches for the two new options (OVR-014, OVR-015).
+    this.setup = {
+      ...defaultTwoPlayer(),
+      passPhone: params.get('pass') === '1',
+      hitOwnTeam: params.get('ff') === '1',
+    };
     this.ants = [];
     this.eventIndex = 0;
     this.prev = null;

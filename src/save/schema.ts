@@ -57,6 +57,10 @@ export interface TwoPlayerSetup {
   /** "Starter kit only". */
   starter: boolean;
   pickups: boolean;
+  /** "Pass the phone": a tap gate at every TurnStart (DR-045). Off by default (OVR-014). */
+  passPhone: boolean;
+  /** "Hit own team": blasts hurt the shooter's team (DR-035). Off by default (OVR-015). */
+  hitOwnTeam: boolean;
 }
 
 export interface Settings {
@@ -98,6 +102,8 @@ export function defaultTwoPlayer(): TwoPlayerSetup {
     timer: 30,
     starter: false,
     pickups: false,
+    passPhone: false,
+    hitOwnTeam: false,
   };
 }
 
@@ -169,6 +175,8 @@ function normaliseTwoPlayer(v: unknown): TwoPlayerSetup {
     timer: oneOf(v.timer, [30, 60] as const, d.timer),
     starter: bool(v.starter, d.starter),
     pickups: bool(v.pickups, d.pickups),
+    passPhone: bool(v.passPhone, d.passPhone),
+    hitOwnTeam: bool(v.hitOwnTeam, d.hitOwnTeam),
   };
 }
 

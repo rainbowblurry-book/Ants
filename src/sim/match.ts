@@ -18,6 +18,7 @@ import {
   type MatchEvent,
   type MatchResult,
   type Phase,
+  SD_WARN_BEFORE,
   TurnMachine,
   type TurnRules,
 } from './turn.ts';
@@ -37,6 +38,15 @@ export interface MatchConfig {
   ammo?: Ammo[];
   /** Turn rules; anything left out takes the DR-042 to DR-044 defaults. */
   rules?: Partial<TurnRules>;
+  /** Blasts hurt the shooter's own team (DR-035). Two-player can turn it off (OVR-015). */
+  friendlyFire?: boolean;
+}
+
+/** Fills in the turn rules; the dew warning follows the dew round unless given (OVR-012). */
+export function matchRules(terrain: TerrainGrid, rules: Partial<TurnRules> = {}): TurnRules {
+  const out = { ...defaultRules(terrain), ...rules };
+  if (rules.warnRound === undefined) out.warnRound = out.dewFromRound - SD_WARN_BEFORE;
+  return out;
 }
 
 export function defaultAmmo(): Ammo {
@@ -86,9 +96,10 @@ export class Match {
       tick: 0,
       spread: this.streams.spread,
       pickups: cfg.pickups ?? [],
+      friendlyFire: cfg.friendlyFire ?? true,
     };
     this.ammo = cfg.ammo ?? [defaultAmmo(), defaultAmmo()];
-    this.turns = new TurnMachine(this, { ...defaultRules(cfg.terrain), ...cfg.rules });
+    this.turns = new TurnMachine(this, matchRules(cfg.terrain, cfg.rules));
   }
 
   /** The `wind` stream: the coin flip and the wind rolls. */

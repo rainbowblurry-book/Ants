@@ -129,6 +129,8 @@ export interface BlastSpec {
   direct: number;
   /** Index of the ant that fired, or −1. */
   shooter: number;
+  /** False: ants of the shooter's team, the shooter included, are not hit (OVR-015). */
+  friendlyFire?: boolean;
 }
 
 export interface BlastHit {
@@ -141,14 +143,19 @@ export interface BlastHit {
 /**
  * Applies one blast to every active ant (DR-035). `dealt[i]` is the damage ant
  * i already took from this shot; it is updated, and the 60 cap is enforced.
- * Friendly fire is on. Self-damage can never knock the shooter out. Returns
- * the hits with their knockback velocities; the caller launches the ants.
+ * Friendly fire is on unless `friendlyFire` is false (OVR-015): then the
+ * shooter's team takes no damage and no knockback. Self-damage can never knock
+ * the shooter out. Returns the hits with their knockback velocities; the
+ * caller launches the ants.
  */
 export function applyBlast(blast: BlastSpec, ants: BlastAnt[], dealt: number[]): BlastHit[] {
   const hits: BlastHit[] = [];
+  const shooterTeam = blast.shooter >= 0 ? ants[blast.shooter]?.team : undefined;
   for (let i = 0; i < ants.length; i++) {
     const a = ants[i] as BlastAnt;
     if (!a.active) continue;
+    if (blast.friendlyFire === false && shooterTeam !== undefined && a.team === shooterTeam)
+      continue;
     const self = i === blast.shooter;
     let dmg = blastDamage(blast.base, blast.r, blast.x, blast.y, a, i === blast.direct, self);
     if (dmg === 0) continue;

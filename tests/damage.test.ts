@@ -68,6 +68,23 @@ describe('direct hits, cap, self-damage (DR-035)', () => {
     expect(dealt[0]).toBe(60);
   });
 
+  it('"Hit own team" off: the shooter\'s team takes no damage and no knockback (OVR-015)', () => {
+    const mk = (): BlastAnt[] => [
+      { x: 500, y: 400, hp: 100, team: 0, active: true }, // the shooter
+      { x: 520, y: 400, hp: 100, team: 0, active: true }, // an ally
+      { x: 480, y: 400, hp: 100, team: 1, active: true }, // an enemy
+    ];
+    const b = { x: 500, y: 378, r: 28, base: 30, direct: -1, shooter: 0 };
+    const off = mk();
+    const hits = applyBlast({ ...b, friendlyFire: false }, off, [0, 0, 0]);
+    expect(hits.map((h) => h.ant)).toEqual([2]);
+    expect(off.map((a) => a.hp)).toEqual([100, 100, 70]);
+    const on = mk();
+    expect(applyBlast(b, on, [0, 0, 0]).map((h) => h.ant)).toEqual([0, 1, 2]);
+    expect(on[0]?.hp).toBe(85); // self ×0.5 (DR-035)
+    expect(on[1]?.hp).toBeLessThan(100);
+  });
+
   it('five puffs on one ant stop at 60', () => {
     const ants = [ant()];
     const dealt = [0];

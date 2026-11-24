@@ -55,9 +55,10 @@ export const TURN_END_MAX_TICKS = ms(1800);
 export const TURN_END_KO_TICKS = ms(1200);
 export const TURN_END_DEW_TICKS = ms(800);
 export const TURN_END_DROP_TICKS = ms(700);
-/** Sudden death (DR-044). */
-export const SD_WARN_ROUND = 18;
+/** Sudden death (DR-044). The warning comes this many rounds before the dew (OVR-012). */
+export const SD_WARN_BEFORE = 3;
 export const SD_DEW_ROUND = 21;
+export const SD_WARN_ROUND = SD_DEW_ROUND - SD_WARN_BEFORE;
 export const SD_DEW_ROUND_BOSS = 30;
 export const SD_DEW_STEP_PX = 24;
 export const SD_ROUND_CAP = 40;
@@ -76,10 +77,13 @@ export interface TurnRules {
   skippableStart: boolean;
   /** Two-player: every TurnStart waits for a tap (DR-045). */
   gate: boolean;
+  /** Two-player with no gate: the Move/Aim timer waits for the player's first input (OVR-014). */
+  timerOnInput: boolean;
   /** Move/Aim timer in ticks, or null for no timer (Level 0 practice). */
   turnTicks: number | null;
   /** Which team moves first: the player (0) in the campaign, a coin flip in two-player (DR-041). */
   firstTeam: 0 | 1 | 'coin';
+  /** The dew warning round; when left out of a config it is `dewFromRound − 3` (OVR-012). */
   warnRound: number;
   dewFromRound: number;
   capRound: number;
@@ -93,6 +97,7 @@ export function defaultRules(grid: TerrainGrid): TurnRules {
     turnStartTicks: TURN_START_TICKS,
     skippableStart: false,
     gate: false,
+    timerOnInput: false,
     turnTicks: TURN_TICKS,
     firstTeam: 0,
     warnRound: SD_WARN_ROUND,
@@ -199,6 +204,8 @@ export class TurnMachine {
   /** This turn is forfeited: the ant swam back from water (DR-026). */
   turnLost = false;
   private gateOpen = false;
+  /** The Move/Aim timer runs (always, unless `timerOnInput` waits for the first input). */
+  private timerRunning = true;
   private hurry = false;
   turnEndLen = 0;
   /** How far the dew has risen, in px (DR-044). */
@@ -245,6 +252,11 @@ export class TurnMachine {
     return Math.max(0, this.retreatLen - this.phaseTick);
   }
 
+  /** False while the Move/Aim timer waits for the first input (OVR-014). */
+  get timerStarted(): boolean {
+    return this.timerRunning;
+  }
+
   /** True while the active ant may walk, hop and flip. */
   get canMove(): boolean {
     return this.phase === 'aim' || (this.phase === 'resolve' && this.phaseTick < this.retreatLen);
@@ -267,6 +279,7 @@ export class TurnMachine {
       this.koThisTurn,
       this.turnLost ? 1 : 0,
       this.gateOpen ? 1 : 0,
+      this.timerRunning ? 1 : 0,
       this.hurry ? 1 : 0,
       f ? f.angleDeci : -1,
       f ? f.powerMille : -1,
@@ -302,6 +315,15 @@ export class TurnMachine {
   }
 
   private apply(host: TurnHost, c: Command, _age: number): Verdict {
+    const inAim = this.phase === 'aim';
+    const v = this.applyBody(host, c);
+    // OVR-014: the player's first input of the turn starts a waiting timer.
+    const input = c.kind !== 'cancel' && !(c.kind === 'walk' && c.dir === 0);
+    if (inAim && input && v !== 'drop') this.timerRunning = true;
+    return v;
+  }
+
+  private applyBody(host: TurnHost, c: Command): Verdict {
     const ant = host.world.ants[this.ant];
     switch (c.kind) {
       case 'walk':
@@ -325,6 +347,8 @@ export class TurnMachine {
           this.hurry = true;
           return 'done';
         }
+        // In Move/Aim it only starts a waiting timer (OVR-014).
+        if (this.phase === 'aim' && !this.timerRunning) return 'done';
         return 'drop';
       case 'face':
         if (!ant || this.phase !== 'aim' || ant.state !== 'ground') return 'drop';
@@ -443,6 +467,7 @@ export class TurnMachine {
     this.timerLeft = this.rules.turnTicks;
     this.heldDir = 0;
     this.gateOpen = false;
+    this.timerRunning = !this.rules.timerOnInput;
     this.hurry = false;
     this.koThisTurn = 0;
     this.pendingFire = null;
@@ -482,7 +507,7 @@ export class TurnMachine {
           this.settleThenEnd(host);
           return;
         }
-        if (this.timerLeft === null) return;
+        if (this.timerLeft === null || !this.timerRunning) return;
         this.timerLeft -= 1;
         if (this.timerLeft > 0) return;
         // At 0 the turn is skipped and nothing fires (DR-043).

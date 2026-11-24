@@ -69,6 +69,8 @@ function filledSave() {
       timer: 60,
       starter: true,
       pickups: true,
+      passPhone: true,
+      hitOwnTeam: true,
     },
   };
   return s;
@@ -102,6 +104,8 @@ describe('ants.save.v1 (DR-018, J18, J48)', () => {
           timer: 30,
           starter: false,
           pickups: false,
+          passPhone: false,
+          hitOwnTeam: false,
         },
       },
     });

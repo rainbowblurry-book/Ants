@@ -368,7 +368,8 @@ function airTick(ant: Ant, grid: TerrainGrid, ev: AntStepEvents): void {
   for (let i = 0; i < n; i++) {
     const ny = ant.y + sy;
     if (sy < 0) {
-      if (grid.solidAt(ant.x, ny - HEAD_PROBE)) {
+      // A ceiling, or the top of the map for ants (OVR-016).
+      if (ny - HEAD_PROBE < 0 || grid.solidAt(ant.x, ny - HEAD_PROBE)) {
         ant.vy = 0;
         break;
       }
@@ -420,7 +421,8 @@ function hazards(ant: Ant, grid: TerrainGrid, ev: AntStepEvents): void {
   const inWater = ant.y >= grid.h || grid.materialAt(ant.x, ant.y - 1) === Material.WATER;
   ant.waterTicks = inWater ? ant.waterTicks + 1 : 0;
   if (ant.waterTicks < WATER_TICKS) return;
-  const spot = dryStandingPoint(grid, ant.x);
+  // OVR-011: no dry ground within 200 px, so try the nearest anywhere.
+  const spot = dryStandingPoint(grid, ant.x) ?? dryStandingPoint(grid, ant.x, grid.w);
   ant.waterTicks = 0;
   ant.vx = 0;
   ant.vy = 0;
@@ -431,7 +433,7 @@ function hazards(ant: Ant, grid: TerrainGrid, ev: AntStepEvents): void {
     ant.y = spot.y;
     ant.state = 'ground';
   } else {
-    // No dry ground within reach: see PROGRESS stage 2 (open question).
+    // No dry ground anywhere on the map (OVR-011).
     ant.state = 'ko';
     ant.koBy = 'void';
     ev.ko = 'void';
@@ -439,13 +441,18 @@ function hazards(ant: Ant, grid: TerrainGrid, ev: AntStepEvents): void {
 }
 
 /**
- * Nearest dry standing point within 200 px (DR-026): scans x0, x0+1, x0−1,
- * x0+2, … and takes the first column whose topmost cell, from the top of the
- * world down, is solid ground (not WATER). Returns the feet position.
+ * Nearest dry standing point within `reach` px, 200 by default (DR-026):
+ * scans x0, x0+1, x0−1, x0+2, … and takes the first column whose topmost
+ * cell, from the top of the world down, is solid ground (not WATER). Returns
+ * the feet position.
  */
-export function dryStandingPoint(grid: TerrainGrid, x0: number): { x: number; y: number } | null {
+export function dryStandingPoint(
+  grid: TerrainGrid,
+  x0: number,
+  reach: number = SWIM_REACH,
+): { x: number; y: number } | null {
   const cx = Math.floor(x0);
-  for (let d = 0; d <= SWIM_REACH; d++) {
+  for (let d = 0; d <= reach; d++) {
     for (const s of d === 0 ? [0] : [d, -d]) {
       const x = cx + s;
       if (x < WALL_MIN_X || x > WALL_MAX_X) continue;

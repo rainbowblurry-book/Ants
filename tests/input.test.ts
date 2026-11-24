@@ -19,7 +19,11 @@ import { defaultTwoPlayer } from '../src/save/schema.ts';
 import { FIRE_BUFFER_TICKS } from '../src/sim/commands.ts';
 import { Match } from '../src/sim/match.ts';
 import { isActive } from '../src/sim/movement.ts';
+import { runLog } from '../src/sim/replay.ts';
 import { GATE_LOCKOUT_TICKS, GATE_PAN_TICKS } from '../src/sim/turn.ts';
+
+/** The two-player setup with "Pass the phone" on (the gate, OVR-014). */
+const PASS = { ...defaultTwoPlayer(), passPhone: true };
 
 describe('key map (DR-121)', () => {
   it('maps every DR-121 key', () => {
@@ -143,10 +147,18 @@ describe('notice queue (DR-131)', () => {
 });
 
 describe('two-player slice (DR-182, DR-183, OVR-009)', () => {
-  it('builds a gated, coin-flip match with the 2P ammo and Jungle Home wind', () => {
+  it('builds a coin-flip match with the 2P ammo and Jungle Home wind; no gate by default (OVR-014)', () => {
     const cfg = versusMatch(defaultTwoPlayer(), 1234);
     const m = new Match(cfg);
-    expect(m.turns.rules.gate).toBe(true);
+    expect(m.turns.rules.gate).toBe(false);
+    expect(m.turns.rules.timerOnInput).toBe(true);
+    expect(m.world.friendlyFire).toBe(false);
+    const gated = new Match(
+      versusMatch({ ...defaultTwoPlayer(), passPhone: true, hitOwnTeam: true }, 1234),
+    );
+    expect(gated.turns.rules.gate).toBe(true);
+    expect(gated.turns.rules.timerOnInput).toBe(false);
+    expect(gated.world.friendlyFire).toBe(true);
     expect(m.turns.rules.turnTicks).toBe(30 * 60);
     expect(m.ants).toHaveLength(6);
     expect(m.ants.filter((a) => a.team === 0)).toHaveLength(3);
@@ -193,8 +205,8 @@ describe('two-player slice (DR-182, DR-183, OVR-009)', () => {
     }
   });
 
-  it('the gate holds the turn: ready is refused for 500 + 400 ms, then opens Move/Aim', () => {
-    const m = new Match(versusMatch(defaultTwoPlayer(), 7));
+  it('with "Pass the phone" the gate holds the turn: ready is refused for 500 + 400 ms, then opens Move/Aim', () => {
+    const m = new Match(versusMatch(PASS, 7));
     m.push({ kind: 'ready' });
     for (let i = 0; i < 120; i++) m.step();
     expect(m.phase).toBe('turnStart');
@@ -207,8 +219,45 @@ describe('two-player slice (DR-182, DR-183, OVR-009)', () => {
     expect(m.turns.timerLeft).toBeGreaterThan(30 * 60 - 5);
   });
 
+  it('without the gate, Move/Aim opens after TurnStart and the timer waits for the first input (OVR-014)', () => {
+    const m = new Match(versusMatch(defaultTwoPlayer(), 7));
+    while (m.phase !== 'aim') m.step();
+    for (let i = 0; i < 600; i++) m.step();
+    expect(m.phase).toBe('aim');
+    expect(m.turns.timerStarted).toBe(false);
+    expect(m.turns.timerLeft).toBe(30 * 60);
+    // walk 0 and cancel are not inputs; ready is.
+    m.push({ kind: 'walk', dir: 0 });
+    m.push({ kind: 'cancel' });
+    for (let i = 0; i < 10; i++) m.step();
+    expect(m.turns.timerLeft).toBe(30 * 60);
+    m.push({ kind: 'ready' });
+    for (let i = 0; i < 11; i++) m.step();
+    expect(m.turns.timerStarted).toBe(true);
+    // The ready lands on the first of the 11 ticks, and that tick counts.
+    expect(m.turns.timerLeft).toBe(30 * 60 - 11);
+    // Each turn waits again.
+    const turn = m.turns.turn;
+    while (m.turns.turn === turn || m.phase !== 'aim') m.step();
+    for (let i = 0; i < 30; i++) m.step();
+    expect(m.turns.timerLeft).toBe(30 * 60);
+  });
+
+  it('a walk also starts the waiting timer, and a replay gives the same state (OVR-014)', () => {
+    const m = new Match(versusMatch(defaultTwoPlayer(), 9));
+    while (m.phase !== 'aim') m.step();
+    m.push({ kind: 'walk', dir: 1 });
+    for (let i = 0; i < 20; i++) m.step();
+    m.push({ kind: 'walk', dir: 0 });
+    for (let i = 0; i < 20; i++) m.step();
+    expect(m.turns.timerStarted).toBe(true);
+    const r = new Match(versusMatch(defaultTwoPlayer(), 9));
+    runLog(r, m.log, m.tick);
+    expect(r.stateHash()).toBe(m.stateHash());
+  });
+
   const toAim = (seed: number) => {
-    const m = new Match(versusMatch(defaultTwoPlayer(), seed));
+    const m = new Match(versusMatch(PASS, seed));
     while (m.turns.phaseTick < GATE_PAN_TICKS + GATE_LOCKOUT_TICKS) m.step();
     m.push({ kind: 'ready' });
     while (m.phase !== 'aim') m.step();

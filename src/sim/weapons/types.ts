@@ -47,6 +47,8 @@ export interface World {
   /** The `spread` stream (Pollen jitter). */
   spread: Rng;
   pickups: Pickup[];
+  /** Blasts hurt the shooter's own team (DR-035; OVR-015 can turn it off). */
+  friendlyFire: boolean;
 }
 
 export interface Blast {

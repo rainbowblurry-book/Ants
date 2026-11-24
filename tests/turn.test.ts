@@ -567,6 +567,15 @@ describe('sudden death (DR-044)', () => {
     expect(dew.length).toBe(6);
     expect(m.result).toMatchObject({ winner: null, reason: 'eliminated', round: 25 });
   });
+
+  it('the warning comes 3 rounds before the dew, also on boss rules (OVR-012)', () => {
+    const boss = arena({ rules: { turnTicks: 1, dewFromRound: 30 } });
+    expect(boss.turns.rules.warnRound).toBe(27);
+    runTo(boss, 'matchEnd', 600000);
+    expect(eventsOf(boss, 'dewWarning').map((e) => e.round)).toEqual([27]);
+    // A config that names the warning round keeps it.
+    expect(arena({ rules: { warnRound: 5, dewFromRound: 30 } }).turns.rules.warnRound).toBe(5);
+  });
 });
 
 describe('two-player gate and skippable starts (DR-045, DR-071, DR-183)', () => {

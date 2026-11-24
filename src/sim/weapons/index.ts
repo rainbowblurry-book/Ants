@@ -143,6 +143,7 @@ function explodeAt(world: World, shot: Shot, blast: Blast): void {
       base: blast.base,
       direct: blast.direct,
       shooter: shot.shooter,
+      friendlyFire: world.friendlyFire,
     },
     views,
     shot.dealt,
