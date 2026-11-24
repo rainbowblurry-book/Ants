@@ -89,7 +89,8 @@ export class Pause extends Phaser.Scene {
       this,
       480,
       y + 66,
-      t('pause.round', { round: m.turns.round }),
+      // Q-15 B: the arena name (DR-181); the stand-in arena is Jungle Home (OVR-009).
+      t('pause.round', { arena: t('arena.jungleHome'), round: m.turns.round }),
       'caption',
       cssOnColor.panel,
     );
@@ -169,8 +170,8 @@ export class Pause extends Phaser.Scene {
   private confirmRestart(): void {
     if (this.resumingNow || modalOpen()) return;
     ConfirmModal.open(this, {
-      title: t('pause.restart'),
-      body: t('save.startNew'),
+      title: t('pause.restartTitle'),
+      body: t('pause.restartBody'),
       confirm: t('pause.restart'),
       cancel: t('modal.cancel'),
       style: 'destructive',

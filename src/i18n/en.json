@@ -1,5 +1,5 @@
 {
-  "_note": "English strings (DR-087, DR-196). Only copy written in the docs lives here; each group names its source. The F56 and F80 bakes take their charset from this file. hud.*: DR-122, DR-127, DR-131, DR-183, UI.md §4.5. weapon.*: PLAN §4. hud.wins, hud.draw, hud.rematch: DR-145 (the M1 match-end banner until Results, stage 7). pause.round: the two-player Pause caption (no level number; PROGRESS stage 5).",
+  "_note": "English strings (DR-087, DR-196). Only copy written in the docs lives here; each group names its source. The F56 and F80 bakes take their charset from this file. hud.*: DR-122, DR-127, DR-131, DR-183, UI.md §4.5. weapon.*: PLAN §4. hud.wins, hud.draw, hud.rematch: DR-145 (the M1 match-end banner until Results, stage 7). pause.round: the two-player Pause caption (no level number; PROGRESS stage 5). Stage 5b (owner's answers): pause.restartTitle, pause.restartBody (Q-14 A); pause.round with the arena name, arena.jungleHome (Q-15 B, DR-181); hud.hopHint, hud.flipHint (OVR-018, D07); hud.wind (OVR-018, D10); hud.dewFirst (OVR-018, D11).",
   "pause.title": "Paused",
   "pause.caption": "Level {level} · Round {round}",
   "pause.resume": "Resume",
@@ -27,7 +27,7 @@
   "hud.runForCover": "Run for cover!",
   "hud.calm": "Calm",
   "a11y.canvas": "ANTS! game",
-  "pause.round": "Round {round}",
+  "pause.round": "{arena} · Round {round}",
   "hud.turnOf": "{name}'s turn",
   "hud.turnOfS": "{name}' turn",
   "hud.goesFirst": "{name} goes first!",
@@ -45,5 +45,12 @@
   "weapon.plop": "Mound Plop",
   "hud.wins": "{name} win!",
   "hud.draw": "Draw!",
-  "hud.rematch": "Rematch"
+  "hud.rematch": "Rematch",
+  "pause.restartTitle": "Restart?",
+  "pause.restartBody": "Start this match again from the first turn?",
+  "arena.jungleHome": "Jungle Home",
+  "hud.hopHint": "Hop: a short jump forward",
+  "hud.flipHint": "Flip: a high jump backward",
+  "hud.wind": "Wind {v}",
+  "hud.dewFirst": "The dew is rising! Ants under it are out."
 }

@@ -97,6 +97,9 @@ const UI_ICONS = [
   'chevron-d',
   'star-round',
   'acorn-check',
+  // Stage 5b (OVR-018, D07): the Hop and Flip buttons.
+  'hop',
+  'flip',
 ] as const;
 export type IconName = (typeof UI_ICONS)[number];
 

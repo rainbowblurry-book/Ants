@@ -236,6 +236,7 @@ export class WindGauge extends Phaser.GameObjects.Container {
   private hubNum: BitmapLabel;
   private calm: Phaser.GameObjects.Text;
   private level = Number.NaN;
+  private box: JellyBox;
 
   constructor(
     scene: Phaser.Scene,
@@ -249,6 +250,7 @@ export class WindGauge extends Phaser.GameObjects.Container {
       radius: tokens.radius.lg,
       shadowY: tokens.shadowY.sm,
     });
+    this.box = box;
     this.add(box);
     const cx = rect.w / 2;
     const cy = rect.h / 2 - tokens.shape.shadeBand.base / 2;
@@ -288,6 +290,11 @@ export class WindGauge extends Phaser.GameObjects.Container {
     this.level = lv;
     this.calm.setVisible(lv === 0);
     this.hubNum.setText(lv === 0 ? '' : lv > 0 ? `+${lv}` : `−${-lv}`);
+    // A change pops the gauge, as a notice pops in (OVR-018, D10).
+    if (!first && !reducedMotion()) {
+      this.box.setScale(0.9);
+      this.scene.tweens.add({ targets: this.box, scale: 1, duration: 180, ease: 'Back.easeOut' });
+    }
     const side = Math.sign(lv);
     for (const img of this.chevrons) {
       const lit = side !== 0 && img.getData('side') === side && img.getData('i') < Math.abs(lv);
@@ -476,6 +483,11 @@ export class AntTag extends Phaser.GameObjects.Container {
 
   get size(): { w: number; h: number } {
     return this.key.startsWith('a') ? { w: 96, h: 40 } : { w: 76, h: 32 };
+  }
+
+  /** True once a knock-out tag has shrunk away. */
+  get finished(): boolean {
+    return this.gone;
   }
 
   show(v: TagView, now: number): void {

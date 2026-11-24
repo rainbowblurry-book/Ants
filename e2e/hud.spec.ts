@@ -122,7 +122,7 @@ test('a full turn by touch: gate, stepper, tray, slingshot, FIRE, handover', asy
   page,
 }, info) => {
   const touch = info.project.use.hasTouch === true;
-  const errors = await openHud(page, '?seed=42');
+  const errors = await openHud(page, '?pass=1&seed=42');
   await waitGateOpen(page);
   const team = (await state(page)).team;
   await tapRect(page, 'gate', touch);
@@ -160,7 +160,7 @@ test('a full turn by touch: gate, stepper, tray, slingshot, FIRE, handover', asy
 });
 
 test('a full turn by keyboard: Space, W, =, Tab, Space, handover', async ({ page }) => {
-  const errors = await openHud(page, '?seed=42');
+  const errors = await openHud(page, '?pass=1&seed=42');
   await waitGateOpen(page);
   const team = (await state(page)).team;
   await page.keyboard.press('Space');
@@ -191,7 +191,7 @@ test('a full turn by keyboard: Space, W, =, Tab, Space, handover', async ({ page
 
 test('667x375: one screenshot shows who is up, the wind and the aim', async ({ page }, info) => {
   test.skip(info.project.name !== 'phone-667x375', 'the readability check is the small phone');
-  const errors = await openHud(page, '?seed=42');
+  const errors = await openHud(page, '?pass=1&seed=42');
   await waitGateOpen(page);
   await page.keyboard.press('Space');
   await waitPhase(page, ['aim']);
@@ -220,7 +220,7 @@ test('667x375: one screenshot shows who is up, the wind and the aim', async ({ p
 test('DR-015: fire pressed in the air is buffered and taken on landing; too early is dropped', async ({
   page,
 }) => {
-  const errors = await openHud(page, '?seed=7');
+  const errors = await openHud(page, '?pass=1&seed=7');
   await waitGateOpen(page);
   await page.keyboard.press('Space');
   await waitPhase(page, ['aim']);
@@ -274,7 +274,7 @@ test('DR-015: fire pressed in the air is buffered and taken on landing; too earl
 
 for (const hand of ['right', 'left'] as const) {
   test(`live HUD rects pass UI.md §6 check 3 (${hand}-handed)`, async ({ page }, info) => {
-    const errors = await openHud(page, `?seed=1&hand=${hand}`);
+    const errors = await openHud(page, `?pass=1&seed=1&hand=${hand}`);
     const { rects, controls } = await page.evaluate(() => ({
       rects: (window.__hud as HudHook).rects(),
       controls: (window.__hud as HudHook).controls(),
@@ -316,7 +316,7 @@ test('Pause freezes the match; Resume waits the ready delay and clears buffers',
   page,
 }, info) => {
   const touch = info.project.use.hasTouch === true;
-  const errors = await openHud(page, '?seed=3');
+  const errors = await openHud(page, '?pass=1&seed=3');
   await waitGateOpen(page);
   await page.keyboard.press('Space');
   await waitPhase(page, ['aim']);
@@ -345,7 +345,7 @@ test('Pause freezes the match; Resume waits the ready delay and clears buffers',
 test('DR-183: the gate is locked for its first 400 ms on screen, even after the coin pop', async ({
   page,
 }) => {
-  const errors = await openHud(page, '?seed=42');
+  const errors = await openHud(page, '?pass=1&seed=42');
   const first = await page.evaluate(
     () =>
       new Promise<boolean>((resolve) => {
@@ -363,7 +363,7 @@ test('DR-183: the gate is locked for its first 400 ms on screen, even after the 
 });
 
 test('a resize mid-turn rebuilds the HUD with the same turn, plate and aim', async ({ page }) => {
-  const errors = await openHud(page, '?seed=42');
+  const errors = await openHud(page, '?pass=1&seed=42');
   await waitGateOpen(page);
   await page.keyboard.press('Space');
   await waitPhase(page, ['aim']);
@@ -379,5 +379,42 @@ test('a resize mid-turn rebuilds the HUD with the same turn, plate and aim', asy
   expect(after.team).toBe(before.team);
   expect(after.aim).toEqual(before.aim);
   expect(after.plate.length).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});
+
+test('stage 5b default: no gate, the timer waits for the first touch, one tag, tap an ant for its tag', async ({
+  page,
+}, info) => {
+  const touch = info.project.use.hasTouch === true;
+  const errors = await openHud(page, '?seed=42');
+  await waitPhase(page, ['aim']);
+  // Fast-forward 2 s of sim time: the timer has not started (OVR-014).
+  await page.evaluate(() => (window.__battle as BattleHook).stepTicks(120));
+  let s = await state(page);
+  expect(s.gate).toBe(false);
+  expect(s.timerStarted).toBe(false);
+  expect(s.timer).toBe(30);
+  // Only the active ant shows a tag (OVR-018, D03).
+  expect(s.tags.filter(Boolean)).toHaveLength(1);
+  expect(s.tags[s.ant]).toBe(true);
+  expect(s.moveBar).toBe(false);
+  // Tap another ant of the other team: its tag opens.
+  const other = s.team === 0 ? 3 : 0;
+  const at = (await page.evaluate((i) => (window.__hud as HudHook).antScreen(i), other)) as {
+    x: number;
+    y: number;
+  };
+  await tap(page, at.x, at.y, touch);
+  s = await state(page);
+  expect(s.tags[other]).toBe(true);
+  expect(s.timerStarted).toBe(false);
+  // Tap the active ant: the timer starts.
+  const me = (await page.evaluate((i) => (window.__hud as HudHook).antScreen(i), s.ant)) as {
+    x: number;
+    y: number;
+  };
+  await tap(page, me.x, me.y, touch);
+  await page.evaluate(() => (window.__battle as BattleHook).stepTicks(2));
+  expect((await state(page)).timerStarted).toBe(true);
   expect(errors).toEqual([]);
 });

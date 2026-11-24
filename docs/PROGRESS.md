@@ -1,6 +1,6 @@
 # Progress
 
-**Current stage:** Build **stage 5b** (fixes from the M1 phone playtest), branch `build/stage-05b-playtest`. Stage 5 stays open until 5b passes the owner's next playtest; then the `m1-hotseat` tag and stage 6. **Waiting for the owner's choices on the checklist page** (`ToUser/TODO.md` R-05).
+**Current stage:** Build **stage 5b** (fixes from the M1 phone playtest), branch `build/stage-05b-playtest`. Stage 5 stays open until 5b passes the owner's next playtest; then the `m1-hotseat` tag and stage 6. **Waiting for the owner's layout pick** (`ToUser/TODO.md` R-06); the other fixes are built.
 
 **Owner's to-do list:** `ToUser/TODO.md` is the one place for questions, reviews and checks for the owner. This file does not copy them.
 
@@ -9,6 +9,25 @@
 **Branches:** one per stage, `build/stage-NN-name`, merged to `main` when CI is green (DR-194).
 
 ## Build log
+
+### Stage 5b · Fixes from the M1 playtest — in progress 2026-11-24
+Branch `build/stage-05b-playtest`. The owner's checklist choices (D01–D12, read from the page's `answers` store) are archived in `ToUser/archive/ANSWERED.md`. Logged: OVR-013 (D01 full screen and the wide canvas), OVR-014 (D04 no gate by default, the timer waits for the first input), OVR-015 (D05 "Hit own team", off), OVR-016 (D06 a ceiling for ants), OVR-017 (D09 one aim per ant), OVR-018 (D03, D07, D08, D10, D11).
+
+**Built so far**
+- **OVR-011:** a swimmer with no dry ground within 200 px goes to the nearest dry ground anywhere (`dryStandingPoint` takes a reach); with none at all it is knocked out.
+- **OVR-012:** the warning round is `dewFromRound − 3` unless a config names it (`matchRules` in `src/sim/match.ts`; `SD_WARN_BEFORE`).
+- **OVR-014:** `TurnRules.timerOnInput`. In Move/Aim the timer waits until a walk, face, hop, flip or fire, or a `ready`; the Hud sends `ready` on an aim change, a weapon pick or a tap on the active ant (once per tick). `TwoPlayerSetup.passPhone` (default off) brings the gate back; dev switch `?pass=1`.
+- **OVR-015:** `World.friendlyFire`; `applyBlast` skips the shooter's team when it is false. `TwoPlayerSetup.hitOwnTeam` (default off); dev switch `?ff=1`. The campaign keeps DR-035.
+- **OVR-016:** a rising ant stops when its head probe would pass y 0 (`airTick`).
+- **OVR-017:** `AimMemory` is keyed by ant only.
+- **OVR-018:** only the active ant's tag (plus knock-out tags); a tap on another ant toggles its tag until TurnEnd (a tap moves less than the 20 px sling dead zone). Hop and Flip icons (`art/ui/icon-hop.svg`, `icon-flip.svg`) and a one-line hint on the first press of each in a match. The move bar sits under the active ant's feet, only while it walks, is in the air, or runs for cover. A wind change pops the gauge (the notice pop: 0.9 → 1, 180 ms) and queues "Wind +N" (info toast). The first dew rise queues a banner.
+- **OVR-013 (part):** the first tap on a touch screen asks for full screen and a landscape lock (`src/main.ts`; never under automation, not on desktop, where F still toggles).
+- **Q-14 A:** Restart dialog "Restart?" / "Start this match again from the first turn?". **Q-15 B:** the Pause caption "Jungle Home · Round R".
+- **Checklist page:** Part 1b (L01) shows two layout mockups for D01 A and D02 A; Part 2 test steps updated for the new rules (T15 added). Published to the same artifact.
+
+**Tests:** `npm test` 322 (new: OVR-011 far swim and no ground, OVR-012 boss warning, OVR-014 waiting timer, a walk starts it, replay, OVR-015 own team off and on, OVR-016 ceiling, the side walls, OVR-017). e2e: the gate tests run with `?pass=1`; a new test checks the default (no gate, the timer waits, one tag, a tap opens another ant's tag, a tap on the active ant starts the timer).
+
+**Waiting:** the layout (OVR-013 wide canvas, D02) after the owner's pick (R-06).
 
 ### Owner answers after the M1 playtest — 2026-11-17
 Moved to `ToUser/archive/ANSWERED.md`. Approved: Q-14 A (Restart dialog text), Q-15 B ("Jungle Home · Round R"), Q-16 A (OVR-009 stand-in arena until stage 9), Q-04 (OVR-011: nearest dry ground, else knock-out), Q-06 A (no change), Q-07 B (OVR-012: warning 3 rounds before the dew), R-03 (draw the ants before stage 7, when the owner writes "draw ant"). R-04 playtest: the screen is too small and busy, tags hide the active ant, the gate every turn is tiring, a friendly-fire option, ants leaving the map, Flip and the move bar unclear, a weapon change should keep the aim, wind and dew unexplained, and a request for an HTML checklist and a test plan per stage. These became the stage 5b list D01–D12 and the test plan T01–T14 on the checklist page (source `ToUser/checklists/stage-05b.html`, published as an artifact with a `db` store the builder reads). The owner said stage 5 is not done until this passes, so `m1-hotseat` is not pushed and stage 6 waits.
@@ -374,7 +393,7 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 **When the art is drawn:** add a Decision Record (DR-007b) that marks DR-007a's placeholders as replaced. Re-run the preview screenshots, and check the side pose reads clearly at 88x63 and at 667x375.
 
 ## Open items
-- **Questions and checks for the owner:** all in `ToUser/TODO.md` (open: Q-01 to Q-04, Q-06, Q-07, Q-14 to Q-17, R-02 to R-04). Answered items move to `ToUser/archive/ANSWERED.md`.
+- **Questions and checks for the owner:** all in `ToUser/TODO.md` (open: Q-01 to Q-03, Q-17, R-02, R-05, R-06). Answered items move to `ToUser/archive/ANSWERED.md`.
 - **Real-device checks** (UI.md §7, PLAN §12), for later stages: safe-area `env()` values in landscape, Hop-row thumb reach, device memory and blast ms, refitting the bot-cap constants against the real sim (stage 6).
 - **Placeholders still in the manifest:** every ant key, the weapon and pickup art, and the terrain palette. `trinketAnchor` is `null` on the ant frames until final art (DR-162, stage 12).
 - **Before stage 9:** a full code review of the whole repo (owner's request).
@@ -382,4 +401,4 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 - **GitHub Pages:** done by the user (Settings → Pages → Source: "GitHub Actions").
 
 ## Next step
-**Wait for the owner's M1 phone playtest** (`ToUser/TODO.md` R-04). Then stage 6, Bot AI (HARD): `src/ai/`, the bot turn visuals (DR-129: crosshair, power bar, HUD mirror at 55%).
+**Stage 5b:** wait for the owner's layout pick (`ToUser/TODO.md` R-06), build it with the OVR-013 wide canvas, merge, deploy, then the owner's phone test (R-05 Part 2). When it passes: the `m1-hotseat` tag, then stage 6, Bot AI (HARD): `src/ai/`, the bot turn visuals (DR-129: crosshair, power bar, HUD mirror at 55%).

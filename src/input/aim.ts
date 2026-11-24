@@ -35,18 +35,19 @@ export const clampPower = (p: number) => Math.min(POWER_MAX_MILLE, Math.max(0, p
 export const snapTen = (v: number) => Math.round(v / 10) * 10;
 
 /**
- * Each ant remembers its last angle and power per weapon (DR-033); switching
- * weapon restores that weapon's values (DR-121).
+ * Each ant remembers one angle and power; switching weapon keeps them
+ * (OVR-017, over DR-033's memory per weapon). The weapon argument stays so
+ * callers need not change if the owner asks for the old rule back.
  */
 export class AimMemory {
-  private map = new Map<string, Aim>();
+  private map = new Map<number, Aim>();
 
-  get(ant: number, weapon: WeaponId): Aim {
-    return { ...(this.map.get(`${ant}:${weapon}`) ?? DEFAULT_AIM) };
+  get(ant: number, _weapon: WeaponId): Aim {
+    return { ...(this.map.get(ant) ?? DEFAULT_AIM) };
   }
 
-  set(ant: number, weapon: WeaponId, aim: Aim): void {
-    this.map.set(`${ant}:${weapon}`, {
+  set(ant: number, _weapon: WeaponId, aim: Aim): void {
+    this.map.set(ant, {
       angleDeci: clampAngle(Math.round(aim.angleDeci)),
       powerMille: clampPower(Math.round(aim.powerMille)),
     });

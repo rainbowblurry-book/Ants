@@ -62,6 +62,11 @@ label.c { font: 800 13px var(--body); color: var(--muted) }
 textarea { width: 100%; min-height: 64px; resize: vertical; font: 600 16px/1.4 var(--body); color: var(--ink);
   background: var(--paper); border: 2px solid var(--line); border-radius: 12px; padding: 10px }
 .saved { font-size: 12px; color: var(--muted); min-height: 1.2em }
+.mock { display: grid; gap: 6px; margin: 0 }
+.mock figcaption { font: 800 15px var(--body) }
+.mock .cap { font-weight: 600; color: var(--ink-soft) }
+.rules { margin: 0; padding-left: 1.2em; color: var(--ink-soft) }
+.rules li + li { margin-top: 4px }
 footer { margin-top: 32px; color: var(--muted); font-size: 14px }
 @media (prefers-reduced-motion: reduce) { .fill { transition: none } }
 </style>
@@ -69,7 +74,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px }
 <main>
   <header class="top">
     <h1>Stage 5b: your playtest fixes</h1>
-    <p class="lede">Part 1: pick a choice for each fix and add a comment if you like. Part 2 is the test plan for the next phone playtest: mark each step after you try it. Your choices save by themselves, and the builder reads them here.</p>
+    <p class="lede">Part 1 is done: thank you. <b>New: Part 1b, pick a screen layout (L01).</b> The builder builds it, then you do Part 2 on your phone. Your choices save by themselves, and the builder reads them here.</p>
   </header>
   <div class="bar" role="status" aria-live="polite">
     <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
@@ -81,6 +86,10 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px }
   <p class="sec-note">"Needs your OK" means it changes a rule in the design docs. The builder changes nothing until you choose.</p>
   <div class="list" id="decide"></div>
 
+  <h2>Part 1b · Pick a screen layout</h2>
+  <p class="sec-note">You chose D01 A (full screen, controls at the edges) and D02 A (pictures first). Both pictures are a 19.5:9 phone like yours. The dashed strips are the extra width beside the 16:9 world: the controls move into them. On a 16:9 phone the same layout sits over the edges of the world, as now.</p>
+  <div class="list" id="layout"></div>
+
   <h2>Part 2 · Test after stage 5b is built</h2>
   <p class="sec-note">Do these on your phone, in landscape, once the builder says stage 5b is live. Mark each one Pass, Problem or Not tried, and write what happened.</p>
   <div class="list" id="test"></div>
@@ -89,6 +98,9 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px }
 </main>
 
 <script>
+const MOCK_A = "<svg viewBox=\"0 0 1170 540\" role=\"img\" aria-label=\"Layout A mockup\" style=\"width:100%;height:auto;display:block;border-radius:14px\"><rect x=\"0\" y=\"0\" width=\"1170\" height=\"540\" fill=\"#2E1A47\"/><rect x=\"105\" y=\"0\" width=\"960\" height=\"540\" fill=\"#BFE6F2\"/><polygon points=\"105,540 105,360 165,330 245,312 335,318 405,300 485,330 545,370 585,380 585,380 625,370 685,330 765,300 835,318 925,312 1005,330 1065,360 1065,540\" fill=\"#9A6A3A\" stroke=\"#2E1A47\" stroke-width=\"3\"/><polyline points=\"105,360 165,330 245,312 335,318 405,300 485,330 545,370 585,380 585,380 625,370 685,330 765,300 835,318 925,312 1005,330 1065,360\" fill=\"none\" stroke=\"#5C9E3A\" stroke-width=\"8\"/><ellipse cx=\"205\" cy=\"294\" rx=\"22\" ry=\"16\" fill=\"#0072B2\" stroke=\"#2E1A47\" stroke-width=\"3\"/><ellipse cx=\"435\" cy=\"282\" rx=\"22\" ry=\"16\" fill=\"#0072B2\" stroke=\"#2E1A47\" stroke-width=\"3\"/><ellipse cx=\"315\" cy=\"294\" rx=\"22\" ry=\"16\" fill=\"#0072B2\" stroke=\"#2E1A47\" stroke-width=\"3\"/><ellipse cx=\"965\" cy=\"294\" rx=\"22\" ry=\"16\" fill=\"#E69F00\" stroke=\"#2E1A47\" stroke-width=\"3\"/><ellipse cx=\"735\" cy=\"282\" rx=\"22\" ry=\"16\" fill=\"#E69F00\" stroke=\"#2E1A47\" stroke-width=\"3\"/><ellipse cx=\"855\" cy=\"294\" rx=\"22\" ry=\"16\" fill=\"#E69F00\" stroke=\"#2E1A47\" stroke-width=\"3\"/><rect x=\"0\" y=\"0\" width=\"105\" height=\"540\" fill=\"none\" stroke=\"#FFD978\" stroke-width=\"2\" stroke-dasharray=\"6 6\"/><rect x=\"1065\" y=\"0\" width=\"105\" height=\"540\" fill=\"none\" stroke=\"#FFD978\" stroke-width=\"2\" stroke-dasharray=\"6 6\"/><rect x=\"16\" y=\"16\" width=\"200\" height=\"48\" rx=\"14\" fill=\"#FFF7E3\" stroke=\"#0072B2\" stroke-width=\"4\"/><text x=\"116.0\" y=\"40.0\" font-size=\"20\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Blue  \u25cf  300</text><rect x=\"882\" y=\"16\" width=\"200\" height=\"48\" rx=\"14\" fill=\"#FFF7E3\" stroke=\"#E69F00\" stroke-width=\"4\"/><text x=\"982.0\" y=\"40.0\" font-size=\"20\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Amber  \u25b2  300</text><rect x=\"1090\" y=\"16\" width=\"64\" height=\"64\" rx=\"14\" fill=\"#FFF7E3\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"1122.0\" y=\"48.0\" font-size=\"24\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">II</text><rect x=\"321\" y=\"16\" width=\"320\" height=\"56\" rx=\"14\" fill=\"#0072B2\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"481.0\" y=\"44.0\" font-size=\"22\" fill=\"#FFFFFF\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Blue Caps' turn  \u23f130</text><rect x=\"649\" y=\"16\" width=\"200\" height=\"56\" rx=\"14\" fill=\"#1FA38A\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"749.0\" y=\"44.0\" font-size=\"22\" fill=\"#FFFFFF\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Wind \u25b6\u25b6 +2</text><ellipse cx=\"435\" cy=\"302\" rx=\"30\" ry=\"8\" fill=\"none\" stroke=\"#EE6083\" stroke-width=\"4\"/><polygon points=\"419,196 451,196 435,228\" fill=\"#EE6083\" stroke=\"#2E1A47\" stroke-width=\"3\"/><rect x=\"387\" y=\"230\" width=\"96\" height=\"34\" rx=\"8\" fill=\"#FFF7E3\" stroke=\"#EE6083\" stroke-width=\"4\"/><text x=\"435.0\" y=\"247.0\" font-size=\"20\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">100</text><rect x=\"359\" y=\"310\" width=\"152\" height=\"24\" rx=\"12\" fill=\"#FFD978\" stroke=\"#2E1A47\" stroke-width=\"3\"/><rect x=\"385\" y=\"314\" width=\"80\" height=\"16\" rx=\"8\" fill=\"#5C9E3A\"/><circle cx=\"373\" cy=\"322\" r=\"6\" fill=\"#2E1A47\"/><rect x=\"16\" y=\"372\" width=\"72\" height=\"72\" rx=\"14\" fill=\"#FFD978\" stroke=\"#2E1A47\" stroke-width=\"3\"/><g transform=\"translate(30,382) scale(1.4)\" color=\"#2E1A47\"><path d=\"M4 25 Q15 7 27 23 M26.4 16.0 L27 23 L20.5 20.5\" stroke=\"currentColor\" stroke-width=\"3.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M3 29 L29 29\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/></g><text x=\"78\" y=\"434\" font-size=\"13\" text-anchor=\"end\" font-family=\"Nunito,system-ui\" font-weight=\"800\" fill=\"#2E1A47\">50</text><rect x=\"96\" y=\"372\" width=\"72\" height=\"72\" rx=\"14\" fill=\"#FFD978\" stroke=\"#2E1A47\" stroke-width=\"3\"/><g transform=\"translate(110,382) scale(1.4)\" color=\"#2E1A47\"><path d=\"M25 26 C26 -2 7 -2 7 24 M10.7 18.1 L7 24 L3.3 18.1\" stroke=\"currentColor\" stroke-width=\"3.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M3 29 L29 29\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/></g><text x=\"158\" y=\"434\" font-size=\"13\" text-anchor=\"end\" font-family=\"Nunito,system-ui\" font-weight=\"800\" fill=\"#2E1A47\">80</text><rect x=\"16\" y=\"452\" width=\"72\" height=\"72\" rx=\"14\" fill=\"#FFD978\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"52.0\" y=\"488.0\" font-size=\"30\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">\u25c0</text><rect x=\"96\" y=\"452\" width=\"72\" height=\"72\" rx=\"14\" fill=\"#FFD978\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"132.0\" y=\"488.0\" font-size=\"30\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">\u25b6</text><circle cx=\"930\" cy=\"452\" r=\"72\" fill=\"#FFF7E3\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"930\" y=\"452\" font-size=\"20\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\" fill=\"#2E1A47\">Angle 45\u00b0</text><rect x=\"1082\" y=\"180\" width=\"72\" height=\"192\" rx=\"14\" fill=\"#FFF7E3\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"1118.0\" y=\"266.1\" font-size=\"18\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Power</text><text x=\"1118.0\" y=\"285.90000000000003\" font-size=\"18\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">60%</text><rect x=\"778\" y=\"452\" width=\"72\" height=\"72\" rx=\"14\" fill=\"#FFF7E3\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"814.0\" y=\"478.1\" font-size=\"18\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Seed</text><text x=\"814.0\" y=\"497.90000000000003\" font-size=\"18\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">\u221e</text><circle cx=\"1094\" cy=\"464\" r=\"60\" fill=\"#EE6083\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"1094\" y=\"464\" font-size=\"28\" fill=\"#FFFFFF\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">FIRE</text></svg>";
+const MOCK_B = "<svg viewBox=\"0 0 1170 540\" role=\"img\" aria-label=\"Layout B mockup\" style=\"width:100%;height:auto;display:block;border-radius:14px\"><rect x=\"0\" y=\"0\" width=\"1170\" height=\"540\" fill=\"#2E1A47\"/><rect x=\"105\" y=\"0\" width=\"960\" height=\"540\" fill=\"#BFE6F2\"/><polygon points=\"105,540 105,360 165,330 245,312 335,318 405,300 485,330 545,370 585,380 585,380 625,370 685,330 765,300 835,318 925,312 1005,330 1065,360 1065,540\" fill=\"#9A6A3A\" stroke=\"#2E1A47\" stroke-width=\"3\"/><polyline points=\"105,360 165,330 245,312 335,318 405,300 485,330 545,370 585,380 585,380 625,370 685,330 765,300 835,318 925,312 1005,330 1065,360\" fill=\"none\" stroke=\"#5C9E3A\" stroke-width=\"8\"/><ellipse cx=\"205\" cy=\"294\" rx=\"22\" ry=\"16\" fill=\"#0072B2\" stroke=\"#2E1A47\" stroke-width=\"3\"/><ellipse cx=\"435\" cy=\"282\" rx=\"22\" ry=\"16\" fill=\"#0072B2\" stroke=\"#2E1A47\" stroke-width=\"3\"/><ellipse cx=\"315\" cy=\"294\" rx=\"22\" ry=\"16\" fill=\"#0072B2\" stroke=\"#2E1A47\" stroke-width=\"3\"/><ellipse cx=\"965\" cy=\"294\" rx=\"22\" ry=\"16\" fill=\"#E69F00\" stroke=\"#2E1A47\" stroke-width=\"3\"/><ellipse cx=\"735\" cy=\"282\" rx=\"22\" ry=\"16\" fill=\"#E69F00\" stroke=\"#2E1A47\" stroke-width=\"3\"/><ellipse cx=\"855\" cy=\"294\" rx=\"22\" ry=\"16\" fill=\"#E69F00\" stroke=\"#2E1A47\" stroke-width=\"3\"/><rect x=\"0\" y=\"0\" width=\"105\" height=\"540\" fill=\"none\" stroke=\"#FFD978\" stroke-width=\"2\" stroke-dasharray=\"6 6\"/><rect x=\"1065\" y=\"0\" width=\"105\" height=\"540\" fill=\"none\" stroke=\"#FFD978\" stroke-width=\"2\" stroke-dasharray=\"6 6\"/><rect x=\"16\" y=\"16\" width=\"200\" height=\"48\" rx=\"14\" fill=\"#FFF7E3\" stroke=\"#0072B2\" stroke-width=\"4\"/><text x=\"116.0\" y=\"40.0\" font-size=\"20\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Blue  \u25cf  300</text><rect x=\"882\" y=\"16\" width=\"200\" height=\"48\" rx=\"14\" fill=\"#FFF7E3\" stroke=\"#E69F00\" stroke-width=\"4\"/><text x=\"982.0\" y=\"40.0\" font-size=\"20\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Amber  \u25b2  300</text><rect x=\"1090\" y=\"16\" width=\"64\" height=\"64\" rx=\"14\" fill=\"#FFF7E3\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"1122.0\" y=\"48.0\" font-size=\"24\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">II</text><rect x=\"321\" y=\"16\" width=\"320\" height=\"56\" rx=\"14\" fill=\"#0072B2\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"481.0\" y=\"44.0\" font-size=\"22\" fill=\"#FFFFFF\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Blue Caps' turn  \u23f130</text><rect x=\"649\" y=\"16\" width=\"200\" height=\"56\" rx=\"14\" fill=\"#1FA38A\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"749.0\" y=\"44.0\" font-size=\"22\" fill=\"#FFFFFF\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Wind \u25b6\u25b6 +2</text><ellipse cx=\"435\" cy=\"302\" rx=\"30\" ry=\"8\" fill=\"none\" stroke=\"#EE6083\" stroke-width=\"4\"/><polygon points=\"419,196 451,196 435,228\" fill=\"#EE6083\" stroke=\"#2E1A47\" stroke-width=\"3\"/><rect x=\"387\" y=\"230\" width=\"96\" height=\"34\" rx=\"8\" fill=\"#FFF7E3\" stroke=\"#EE6083\" stroke-width=\"4\"/><text x=\"435.0\" y=\"247.0\" font-size=\"20\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">100</text><rect x=\"359\" y=\"310\" width=\"152\" height=\"24\" rx=\"12\" fill=\"#FFD978\" stroke=\"#2E1A47\" stroke-width=\"3\"/><rect x=\"385\" y=\"314\" width=\"80\" height=\"16\" rx=\"8\" fill=\"#5C9E3A\"/><circle cx=\"373\" cy=\"322\" r=\"6\" fill=\"#2E1A47\"/><circle cx=\"88\" cy=\"452\" r=\"72\" fill=\"#FFF7E3\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"88\" y=\"452\" font-size=\"20\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\" fill=\"#2E1A47\">Angle 45\u00b0</text><rect x=\"168\" y=\"372\" width=\"72\" height=\"72\" rx=\"14\" fill=\"#FFD978\" stroke=\"#2E1A47\" stroke-width=\"3\"/><g transform=\"translate(182,382) scale(1.4)\" color=\"#2E1A47\"><path d=\"M4 25 Q15 7 27 23 M26.4 16.0 L27 23 L20.5 20.5\" stroke=\"currentColor\" stroke-width=\"3.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M3 29 L29 29\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/></g><text x=\"230\" y=\"434\" font-size=\"13\" text-anchor=\"end\" font-family=\"Nunito,system-ui\" font-weight=\"800\" fill=\"#2E1A47\">50</text><rect x=\"248\" y=\"372\" width=\"72\" height=\"72\" rx=\"14\" fill=\"#FFD978\" stroke=\"#2E1A47\" stroke-width=\"3\"/><g transform=\"translate(262,382) scale(1.4)\" color=\"#2E1A47\"><path d=\"M25 26 C26 -2 7 -2 7 24 M10.7 18.1 L7 24 L3.3 18.1\" stroke=\"currentColor\" stroke-width=\"3.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill=\"none\"/><path d=\"M3 29 L29 29\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/></g><text x=\"310\" y=\"434\" font-size=\"13\" text-anchor=\"end\" font-family=\"Nunito,system-ui\" font-weight=\"800\" fill=\"#2E1A47\">80</text><rect x=\"168\" y=\"452\" width=\"72\" height=\"72\" rx=\"14\" fill=\"#FFD978\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"204.0\" y=\"488.0\" font-size=\"30\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">\u25c0</text><rect x=\"248\" y=\"452\" width=\"72\" height=\"72\" rx=\"14\" fill=\"#FFD978\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"284.0\" y=\"488.0\" font-size=\"30\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">\u25b6</text><rect x=\"1082\" y=\"180\" width=\"72\" height=\"192\" rx=\"14\" fill=\"#FFF7E3\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"1118.0\" y=\"266.1\" font-size=\"18\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Power</text><text x=\"1118.0\" y=\"285.90000000000003\" font-size=\"18\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">60%</text><rect x=\"930\" y=\"452\" width=\"72\" height=\"72\" rx=\"14\" fill=\"#FFF7E3\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"966.0\" y=\"478.1\" font-size=\"18\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">Seed</text><text x=\"966.0\" y=\"497.90000000000003\" font-size=\"18\" fill=\"#2E1A47\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">\u221e</text><circle cx=\"1094\" cy=\"464\" r=\"60\" fill=\"#EE6083\" stroke=\"#2E1A47\" stroke-width=\"3\"/><text x=\"1094\" y=\"464\" font-size=\"28\" fill=\"#FFFFFF\" text-anchor=\"middle\" dominant-baseline=\"middle\" font-family=\"Nunito,system-ui\" font-weight=\"800\">FIRE</text></svg>";
+
 const DECIDE = [
   { id: "D01", title: "Make the game bigger on your phone", ok: true,
     why: "<b>Problem:</b> your phone is longer than the game (19.5:9 against 16:9), so the game sits in the middle with bars at the sides, and the browser bars take height too. Everything looks small.",
@@ -159,18 +171,45 @@ const DECIDE = [
       ["B", "Only at the big milestones (M1, M2, release)."] ] },
 ];
 
+const LAYOUT = [
+  { id: "L01", title: "Which screen layout?", ok: true,
+    why: `<b>What changes in both:</b>
+<ul class="rules">
+<li>The 4 big ▲ ▼ buttons go. The dial and the power slider keep their small ▲ ▼ (one step a tap).</li>
+<li>The 6 weapon buttons become one weapon button. Tap it: the 6 weapons open above it; pick one and they close.</li>
+<li>The weapon name pill goes (the weapon button shows the weapon).</li>
+<li>One row at the top: Blue team left, turn and timer, wind, Amber team right, Pause.</li>
+<li>Hop and Flip show icons (D07). The walk bar shows under the ant only while it moves (D08). Only your ant has a tag (D03).</li>
+</ul>
+<b>Rules the builder used</b> (common guidance for phone games, and the screens of other artillery games, not copied):
+<ul class="rules">
+<li>Thumbs rest in the bottom corners in landscape, so every control sits there. The top is for things you only read.</li>
+<li>Keep the middle of the screen free for the ants and the shot.</li>
+<li>Fewer buttons on screen; show a set only when you can use it (the weapon list opens on a tap).</li>
+<li>Every button stays at least 64 game px (about 44 pt on your phone, the usual minimum for a finger).</li>
+<li>Many artillery games aim by dragging on your unit; you keep that (the slingshot) and the dial.</li>
+</ul>
+<figure class="mock"><figcaption>A · Move left, shoot right <span class="cap">Left thumb: walk, Hop, Flip. Right thumb: angle dial, weapon, power, FIRE.</span></figcaption>${MOCK_A}</figure>
+<figure class="mock"><figcaption>B · Aim left, fire right <span class="cap">Left thumb: angle dial, then walk, Hop, Flip next to it. Right thumb: weapon, power, FIRE. This is the split of the design docs.</span></figcaption>${MOCK_B}</figure>`,
+    choices: [
+      ["A", "Layout A: move with the left thumb, aim and fire with the right.", true],
+      ["B", "Layout B: aim and move with the left thumb, power and fire with the right."],
+      ["C", "Neither: say what to change in the comment."] ] },
+];
+
 const TEST = [
-  { id: "T01", title: "Open the game", steps: ["Open the live link on your phone in landscape.", "Tap once. The game goes full screen (if D01 A or B)."] },
+  { id: "T01", title: "Open the game", steps: ["Open the live link on your phone in landscape.", "Tap once. The game goes full screen (Chrome on Android; Safari on iPhone cannot).", "The controls sit in the side space (L01)."] },
   { id: "T02", title: "Read the screen", steps: ["Without touching anything: can you see whose turn it is, the wind and the aim?", "Is any text too small at your normal holding distance?"] },
-  { id: "T03", title: "Find the active ant", steps: ["Is it clear at once which ant is yours this turn?", "Do the health tags still cover anything?"] },
+  { id: "T03", title: "Find the active ant", steps: ["Is it clear at once which ant is yours this turn? Only your ant has a tag.", "Tap another ant: its health tag shows until the turn ends. Tap it again to hide it."] },
   { id: "T04", title: "Aim with the dial", steps: ["Drag the dial. Drag it across to the other side: the ant turns round.", "Tap the small ▲ ▼: one degree each."] },
   { id: "T05", title: "Aim with the slingshot", steps: ["Put your finger on your ant and drag back, like a slingshot. Let go: nothing fires.", "Do the dots show where the shot goes?"] },
-  { id: "T06", title: "Set the power", steps: ["Drag the power slider, then tap its ▲ ▼.", "Change weapon: angle and power stay (if D09 A)."] },
+  { id: "T06", title: "Set the power and the weapon", steps: ["Drag the power slider, then tap its ▲ ▼.", "Tap the weapon button and pick another weapon: angle and power stay."] },
   { id: "T07", title: "Fire and run", steps: ["Press FIRE. After the shot you have 3 seconds to walk away.", "Did FIRE ever do nothing when you expected a shot?"] },
-  { id: "T08", title: "Walk, Hop and Flip", steps: ["Walk left and right. Hop. Flip.", "Is it clear what each one does, and how much walk is left?"] },
-  { id: "T09", title: "Pass the phone", steps: ["Play 4 turns with a second person.", "Is the turn change clear? Is the “Pass the phone” setting right for you (D04)?"] },
-  { id: "T10", title: "Edges of the map", steps: ["Blast an ant near the side of the map.", "It stays on the map (D06)."] },
-  { id: "T11", title: "Friendly fire", steps: ["Hit your own ant with “Hit own team” on, then off (D05)."] },
+  { id: "T08", title: "Walk, Hop and Flip", steps: ["Walk left and right: the walk bar shows under the ant while it moves.", "Hop, then Flip: the first time, a one-line hint shows.", "Is it clear what each one does, and how much walk is left?"] },
+  { id: "T09", title: "Pass the phone", steps: ["Play 4 turns with a second person. There is no “Tap to start”: the timer waits until the player touches the game (a control, or a tap on the ant).", "Then open the link with ?pass=1 at the end: “Tap to start” comes back (the “Pass the phone” setting; the Setup screen comes in stage 7).", "Which way is right for you?"] },
+  { id: "T10", title: "Edges of the map", steps: ["Blast an ant near the side of the map: it stays on the map.", "Blast an ant hard upward: it stops at the top and falls back."] },
+  { id: "T11", title: "Friendly fire", steps: ["With the normal link, hit your own ant: it takes no damage and is not pushed (“Hit own team” off).", "Open the link with ?ff=1 at the end and do it again: now it takes damage."] },
+  { id: "T15", title: "Wind and dew notices", steps: ["When the wind changes at the start of a turn, the gauge pops and “Wind +1” (or similar) shows for a moment.", "Optional, a long match: after round 20 the dew rises, and the first time a banner explains it."] },
   { id: "T12", title: "Pause and resume", steps: ["Tap pause, then Resume. Play waits a moment before it starts again.", "Switch to another app and back: the game is paused."] },
   { id: "T13", title: "Left-handed layout", steps: ["Open the link with ?hand=left at the end.", "FIRE is on the left, the dial on the right."] },
   { id: "T14", title: "Phone speed", steps: ["Open the link with ?mem at the end.", "Write the ms number from the bottom-left corner here."] },
@@ -178,7 +217,7 @@ const TEST = [
 
 const state = {};  // id -> {choice, status, comment}
 let db = null;
-const total = DECIDE.length + TEST.length;
+const total = DECIDE.length + LAYOUT.length + TEST.length;
 const $ = (s, el = document) => el.querySelector(s);
 
 function el(tag, attrs = {}, ...kids) {
@@ -192,7 +231,7 @@ function el(tag, attrs = {}, ...kids) {
 
 function progress() {
   let n = 0;
-  for (const it of DECIDE) if (state[it.id]?.choice) n++;
+  for (const it of [...DECIDE, ...LAYOUT]) if (state[it.id]?.choice) n++;
   for (const it of TEST) if (state[it.id]?.status) n++;
   $("#count").textContent = `${n} / ${total} answered`;
   $("#fill").style.width = `${(100 * n) / total}%`;
@@ -233,9 +272,9 @@ function commentBox(it, note) {
   return [el("label", { class: "c", for: id, text: "Comment" }), t];
 }
 
-function renderDecide() {
-  const root = $("#decide");
-  for (const it of DECIDE) {
+function renderDecide(list = DECIDE, sel = "#decide") {
+  const root = $(sel);
+  for (const it of list) {
     const note = el("div", { class: "saved" });
     const choices = el("div", { class: "choices", role: "radiogroup", "aria-label": it.title });
     for (const [letter, text, rec] of it.choices) {
@@ -288,6 +327,7 @@ function applyState() {
 }
 
 renderDecide();
+renderDecide(LAYOUT, "#layout");
 renderTest();
 progress();
 
@@ -310,7 +350,7 @@ progress();
       state[d.id] = { choice: v.choice, status: v.status, comment: v.comment };
     }
     applyState();
-    if (first) { status.textContent = snap.empty ? "No answers yet. Start with D01." : "Your saved answers are loaded."; first = false; }
+    if (first) { status.textContent = snap.empty ? "No answers yet. Start with D01." : (state.L01?.choice ? "Your saved answers are loaded." : "Your saved answers are loaded. Next: L01, pick a layout."); first = false; }
   }, () => {
     clearTimeout(giveUp);
     status.textContent = "Saved answers could not load. Reload the page to try again.";

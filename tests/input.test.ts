@@ -61,12 +61,12 @@ describe('key map (DR-121)', () => {
 });
 
 describe('aim (DR-033, DR-121)', () => {
-  it('remembers angle and power per ant and per weapon, 45° and 60% at first', () => {
+  it('remembers one angle and power per ant, kept across weapons, 45° and 60% at first (OVR-017)', () => {
     const m = new AimMemory();
     expect(m.get(0, 'seed')).toEqual(DEFAULT_AIM);
     m.set(0, 'seed', { angleDeci: 300, powerMille: 800 });
     expect(m.get(0, 'seed')).toEqual({ angleDeci: 300, powerMille: 800 });
-    expect(m.get(0, 'dewdrop')).toEqual(DEFAULT_AIM);
+    expect(m.get(0, 'dewdrop')).toEqual({ angleDeci: 300, powerMille: 800 });
     expect(m.get(1, 'seed')).toEqual(DEFAULT_AIM);
     m.set(0, 'pollen', { angleDeci: 2000, powerMille: -5 });
     expect(m.get(0, 'pollen')).toEqual({ angleDeci: 900, powerMille: 0 });

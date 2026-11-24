@@ -92,6 +92,14 @@ export interface HudState {
   plate: string;
   wind: number;
   timer: number | null;
+  /** False while the turn timer waits for the first input (OVR-014). */
+  timerStarted: boolean;
+  /** Per ant: is its tag on screen (OVR-018, D03). */
+  tags: boolean[];
+  /** The walk bar next to the ant is on screen (OVR-018, D08). */
+  moveBar: boolean;
+  /** The text of the notice showing, if any. */
+  noticeText: string | null;
   find: boolean;
   preview: boolean;
   ammo: Record<string, number>;
@@ -167,6 +175,19 @@ export class Hud extends Phaser.Scene {
   private gateShownAt = -1;
   /** A resize while paused rebuilds on resume, so the Hud stays frozen (DR-171). */
   private rebuildOnResume = false;
+  /** Ants whose tag a tap opened; they close at TurnEnd (OVR-018, D03). */
+  private shownTags = new Set<number>();
+  /** Hop and Flip hints already shown in this match (OVR-018, D07); kept over a rebuild. */
+  private hinted = new Set<string>();
+  private hintedFor: object | null = null;
+  /** A world touch that may be a tap (moved less than the sling dead zone). */
+  private tap: { id: number; x: number; y: number } | null = null;
+  /** The tick a `ready` went out to start the timer, so one frame sends one (OVR-014). */
+  private readySent = -1;
+  /** The wind level shown last, for the change notice (OVR-018, D10). */
+  private lastWind = Number.NaN;
+  /** The first dew rise has had its notice (OVR-018, D11). */
+  private dewSeen = false;
   private unsubs: (() => void)[] = [];
 
   constructor() {
@@ -196,6 +217,10 @@ export class Hud extends Phaser.Scene {
     this.ended = false;
     this.gateShownAt = -1;
     this.rebuildOnResume = false;
+    this.shownTags = new Set();
+    this.tap = null;
+    this.readySent = -1;
+    this.lastWind = Number.NaN;
   }
 
   create(): void {
@@ -207,6 +232,11 @@ export class Hud extends Phaser.Scene {
     const m = this.link.match;
     // Events already handled before a rebuild are not replayed.
     this.eventIndex = m.events.length;
+    this.dewSeen = m.turns.dewRise > 0;
+    if (this.hintedFor !== m) {
+      this.hintedFor = m;
+      this.hinted = new Set();
+    }
     for (const shot of [...m.shots, ...(m.shot ? [m.shot] : [])])
       this.shotSeen.set(shot, shot.events.length);
     if (
@@ -342,8 +372,9 @@ export class Hud extends Phaser.Scene {
       () => this.setWalk('right', true),
       () => this.setWalk('right', false),
     );
-    hold('hop', { label: t('hud.hop'), corner: String(HOP_COST) }, () => this.jump('hop'));
-    hold('flip', { label: t('hud.flip'), corner: String(FLIP_COST) }, () => this.jump('flip'));
+    // Icons in place of the words (OVR-018, D07).
+    hold('hop', { icon: 'ui.icon.hop', corner: String(HOP_COST) }, () => this.jump('hop'));
+    hold('flip', { icon: 'ui.icon.flip', corner: String(FLIP_COST) }, () => this.jump('flip'));
 
     this.dial = new Dial(
       this,
@@ -412,6 +443,7 @@ export class Hud extends Phaser.Scene {
 
   private setAim(a: Partial<Aim>): void {
     if (!this.canAim()) return;
+    this.startTimer();
     const cur = this.aim();
     this.link.aims.set(this.link.match.turns.ant, this.weapon(), { ...cur, ...a });
   }
@@ -422,6 +454,14 @@ export class Hud extends Phaser.Scene {
       angleDeci: clampAngle(cur.angleDeci + dAngle),
       powerMille: clampPower(cur.powerMille + dPower),
     });
+  }
+
+  /** OVR-014: the player's first input of the turn starts a waiting timer (a logged `ready`). */
+  private startTimer(): void {
+    const m = this.link.match;
+    if (!this.canAim() || m.turns.timerStarted || this.readySent === m.tick) return;
+    this.readySent = m.tick;
+    this.push({ kind: 'ready' });
   }
 
   private gateUp(): boolean {
@@ -491,6 +531,16 @@ export class Hud extends Phaser.Scene {
   private jump(kind: 'hop' | 'flip'): void {
     if (!this.canMove()) return;
     this.push({ kind });
+    // The first press of each in a match shows a one-line hint (OVR-018, D07).
+    if (!this.hinted.has(kind)) {
+      this.hinted.add(kind);
+      this.notices.push({
+        text: t(kind === 'hop' ? 'hud.hopHint' : 'hud.flipHint'),
+        priority: 'info',
+        kind: 'toast',
+        ms: NOTICE.toastMs,
+      });
+    }
   }
 
   private setWalk(side: 'left' | 'right', on: boolean): void {
@@ -535,6 +585,7 @@ export class Hud extends Phaser.Scene {
     if (!this.canAim()) return;
     const ammo = this.link.match.ammo[this.team]?.[w] ?? 0;
     if (!(ammo > 0)) return;
+    this.startTimer();
     this.link.weapon[this.team] = w;
   }
 
@@ -546,6 +597,7 @@ export class Hud extends Phaser.Scene {
     for (let k = 1; k <= WEAPON_IDS.length; k++) {
       const w = WEAPON_IDS[(i0 + dir * k + WEAPON_IDS.length * 2) % WEAPON_IDS.length] as WeaponId;
       if (pool[w] > 0) {
+        this.startTimer();
         this.link.weapon[this.team] = w;
         return;
       }
@@ -673,6 +725,7 @@ export class Hud extends Phaser.Scene {
           return;
         }
         const q = logicalPoint(this, p);
+        this.tap = { id: p.id, x: q.x, y: q.y };
         const m = this.link.match;
         const a = m.activeAnt;
         const v = this.link.view();
@@ -707,6 +760,11 @@ export class Hud extends Phaser.Scene {
     });
     const end = (p: Phaser.Input.Pointer) => {
       if (this.drag?.id === p.id) this.drag = null;
+      const tp = this.tap;
+      if (tp?.id !== p.id) return;
+      this.tap = null;
+      const q = logicalPoint(this, p);
+      if (!this.link.paused && Math.hypot(q.x - tp.x, q.y - tp.y) < SLING.deadZone) this.tapAt(q);
     };
     this.input.on('pointerup', end);
     this.input.on('pointerupoutside', end);
@@ -722,6 +780,31 @@ export class Hud extends Phaser.Scene {
         if (over.length === 0 && dy !== 0) this.cycleWeapon(dy > 0 ? 1 : -1);
       },
     );
+  }
+
+  /**
+   * A tap on the world (OVR-018, D03; OVR-014): on the active ant it starts a
+   * waiting timer; on another ant it opens or closes that ant's tag.
+   */
+  private tapAt(q: { x: number; y: number }): void {
+    const m = this.link.match;
+    const v = this.link.view();
+    const inside = (i: number) => {
+      const a = m.ants[i];
+      if (!a || !isActive(a)) return false;
+      const r = this.antScreenRect(v, a.x, a.y);
+      return q.x >= r.x && q.x <= r.x + r.w && q.y >= r.y && q.y <= r.y + r.h;
+    };
+    if (m.phase !== 'matchEnd' && inside(m.turns.ant)) {
+      this.startTimer();
+      return;
+    }
+    for (let i = 0; i < m.ants.length; i++) {
+      if (i === m.turns.ant || !inside(i)) continue;
+      if (this.shownTags.has(i)) this.shownTags.delete(i);
+      else this.shownTags.add(i);
+      return;
+    }
   }
 
   // ----------------------------------------------------------------- frame
@@ -787,8 +870,19 @@ export class Hud extends Phaser.Scene {
       p.sync(hp, p.team === team && phase !== 'matchEnd');
     }
 
-    // Wind and effects (DR-125, DR-127).
-    this.wind.show(m.world.wind.gauge(m.tick).level);
+    // Wind and effects (DR-125, DR-127). A change pops the gauge and shows a notice (OVR-018, D10).
+    const windLv = Math.round(m.world.wind.gauge(m.tick).level);
+    if (!Number.isNaN(this.lastWind) && windLv !== this.lastWind) {
+      const sign = windLv > 0 ? `+${windLv}` : windLv < 0 ? `−${-windLv}` : '0';
+      this.notices.push({
+        text: t('hud.wind', { v: sign }),
+        priority: 'info',
+        kind: 'toast',
+        ms: NOTICE.toastMs,
+      });
+    }
+    this.lastWind = windLv;
+    this.wind.show(windLv);
     const chips: string[] = [];
     const round = turns.round;
     const dewFrom = turns.rules.dewFromRound;
@@ -796,9 +890,20 @@ export class Hud extends Phaser.Scene {
     else if (round >= dewFrom - 3) chips.push(t('hud.dewIn', { n: dewFrom - round }));
     this.effects.show(chips);
 
-    // Move bar and weapon tray.
+    // Move bar: next to the ant, only while it walks, jumps or runs for cover (OVR-018, D08).
     const retreatF = retreat && turns.retreatLen > 0 ? turns.retreatLeft / turns.retreatLen : null;
-    this.moveBar.show(ant ? ant.budget : 0, retreatF);
+    const moving =
+      !!ant && isActive(ant) && this.canMove() && (turns.heldDir !== 0 || ant.state === 'air');
+    const barOn = !!ant && isActive(ant) && (moving || (retreat && ant.budget > 0));
+    this.moveBar.setVisible(barOn);
+    if (barOn && ant) {
+      const r = this.L.rects.moveBar as Rect;
+      const feet = worldToScreen(v, ant.x, ant.y);
+      const bx = Math.min(944 - r.w, Math.max(16, feet.x - r.w / 2));
+      const by = Math.min(524 - r.h, feet.y + 8);
+      this.moveBar.setPosition(Math.round((bx - r.x) * 2) / 2, Math.round((by - r.y) * 2) / 2);
+      this.moveBar.show(ant.budget, retreatF);
+    }
     const weapon = this.weapon();
     const pool = m.ammo[team];
     WEAPON_IDS.forEach((w, i) => {
@@ -921,8 +1026,15 @@ export class Hud extends Phaser.Scene {
     m.ants.forEach((a, i) => {
       const tag = this.tags[i];
       if (!tag) return;
-      const feet = worldToScreen(v, a.x, a.y);
       const active = i === activeIdx && isActive(a);
+      // Only the active ant's tag, a tapped one, or a knock-out (OVR-018, D03).
+      const want = active || this.shownTags.has(i) || !isActive(a);
+      if (!want) {
+        tag.setVisible(false);
+        return;
+      }
+      if (!tag.finished) tag.setVisible(true);
+      const feet = worldToScreen(v, a.x, a.y);
       const size = active ? { w: 96, h: 40 } : { w: 76, h: 32 };
       let y = feet.y - ANT_SIDE.h * v.zoom - 12;
       const x = Math.min(960 - size.w / 2, Math.max(size.w / 2, feet.x));
@@ -984,6 +1096,18 @@ export class Hud extends Phaser.Scene {
           if (e.phase === 'turnStart') {
             this.plate.dropIn();
             this.releaseAll();
+          }
+          if (e.phase === 'turnEnd') this.shownTags.clear();
+          break;
+        case 'dew':
+          if (!this.dewSeen) {
+            this.dewSeen = true;
+            this.notices.push({
+              text: t('hud.dewFirst'),
+              priority: 'suddenDeath',
+              kind: 'banner',
+              ms: NOTICE.toastMs,
+            });
           }
           break;
         case 'reject':
@@ -1125,6 +1249,10 @@ export class Hud extends Phaser.Scene {
           plate: this.plateText,
           wind: m.world.wind.gauge(m.tick).level,
           timer: m.turns.timerLeft === null ? null : Math.ceil(m.turns.timerLeft / 60),
+          timerStarted: m.turns.timerStarted,
+          tags: this.tags.map((tg) => tg.visible),
+          moveBar: this.moveBar.visible,
+          noticeText: this.notices.current?.text ?? null,
           find: this.find.visible,
           preview: this.link.preview !== null,
           ammo: { ...pool },

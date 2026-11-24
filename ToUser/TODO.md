@@ -1,14 +1,15 @@
 # To do for you (owner)
 
-Updated: 2026-11-17, stage 5b (fixes from your M1 playtest). How to use this file: see `README.md` in this folder. Answered items are in `archive/ANSWERED.md`.
+Updated: 2026-11-24, stage 5b (fixes from your M1 playtest). How to use this file: see `README.md` in this folder. Answered items are in `archive/ANSWERED.md`.
 
-**Do R-05 first: the stage 5b checklist page.** The builder changes nothing in stage 5b until you choose there. Until you answer the other items, the build follows the docs as written.
+**Do R-06 first: pick a screen layout on the checklist page.** The builder builds the layout after your pick. Your Part 1 choices (D01–D12) are done and archived. Until you answer the other items, the build follows the docs as written.
 
 **Summary**
 
 | ID | Short name | Type | Needed before |
 |---|---|---|---|
-| R-05 | Stage 5b checklist page | decide + test | stage 5b work |
+| R-06 | Pick a screen layout (L01) | decide | the stage 5b layout |
+| R-05 | Stage 5b phone test (Part 2) | test | the end of stage 5 |
 | Q-17 | Double-tap to find your ant | answer | stage 11 |
 | Q-01 | Back-flip fall damage | answer | stage 8 |
 | Q-02 | Mound Plop on water | answer | stage 8 |
@@ -56,12 +57,16 @@ Updated: 2026-11-17, stage 5b (fixes from your M1 playtest). How to use this fil
 
 ## Reviews and checks
 
-### R-05 · Stage 5b checklist page
-- **Status:** open. **Needed before:** any stage 5b work.
+### R-06 · Pick a screen layout (L01)
+- **Status:** open. **Needed before:** the stage 5b layout (D01 wide view, D02).
 - **Do this:** open https://claude.ai/artifact/KRCZS6YAh4o8CeXAQwRD62 (only you can open it).
-  1. Part 1: pick A, B or C for each fix D01 to D12, and add a comment if you like. Your choices save by themselves.
-  2. Part 2 is the test plan for your next phone playtest. Do it after the builder says stage 5b is live.
-  3. Write "checklist done" in the chat. The builder reads your answers from the page.
+  1. Part 1b: look at the two pictures, pick A, B or C for L01, and add a comment if you like.
+  2. Write "layout picked" in the chat. The builder reads your choice from the page.
+- **Your answer:** (on the page)
+
+### R-05 · Stage 5b phone test (Part 2 of the checklist page)
+- **Status:** open. **Needed before:** the end of stage 5 (the `m1-hotseat` tag and stage 6).
+- **Do this:** after the builder says stage 5b is live, do Part 2 (T01–T15) on your phone on the same page. Mark each step and write what happened. Then write "checklist done" in the chat.
 - **Your answer:** (on the page)
 
 ### R-02 · Phone speed check (optional, 1 minute)

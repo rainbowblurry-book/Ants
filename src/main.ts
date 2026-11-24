@@ -35,6 +35,32 @@ async function loadFonts(): Promise<void> {
   ]);
 }
 
+/**
+ * OVR-013 (D01 A): the first tap after the page loads asks for full screen
+ * and a landscape lock. Errors are ignored (iPhone Safari has no page full
+ * screen). Touch screens only, so a desktop keeps its window (F still
+ * toggles, DR-121); never under test automation. It does not ask again in
+ * this load.
+ */
+function fullscreenOnFirstTap(): void {
+  if (navigator.webdriver || !window.matchMedia?.('(pointer: coarse)').matches) return;
+  const root = document.documentElement;
+  const go = () => {
+    document.removeEventListener('pointerup', go, true);
+    if (document.fullscreenElement || !root.requestFullscreen) return;
+    root
+      .requestFullscreen({ navigationUI: 'hide' })
+      .then(() => {
+        const o = screen.orientation as ScreenOrientation & {
+          lock?: (o: string) => Promise<void>;
+        };
+        return o?.lock?.('landscape');
+      })
+      .catch(() => {});
+  };
+  document.addEventListener('pointerup', go, true);
+}
+
 function hideSplash(): void {
   const splash = document.getElementById('splash');
   if (!splash) return;
@@ -58,6 +84,7 @@ function pickScenes(): Phaser.Types.Scenes.SceneType[] {
 
 async function boot(): Promise<void> {
   blockBrowserGestures();
+  fullscreenOnFirstTap();
   await loadFonts();
 
   // Performance mode arrives with Settings (stage 7). Until then it is off.
