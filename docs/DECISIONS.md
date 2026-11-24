@@ -2828,7 +2828,7 @@ Logged by the builder. Tier T is applied at once. Tier G waits for the user's ap
   - **Wide canvas:** the logical height stays 540. The logical width is W = 540 × (viewport width / height), rounded to an even number, at least 960 and at most 1260 (21:9). A wider viewport letterboxes past 1260. The world stays 960 × 540 and is drawn in the middle; the side strips are HUD space. The HUD rects for the strips come with the D02 layout pick (the next OVR).
 - **Impact:** `src/boot/config.ts`, `src/boot/renderScale.ts`, `src/ui/layout.ts` (the Layout service and margins), `src/render/camera.ts` and `Battle` (the world offset), `src/hud/layout.ts`, `tests/render-scale.test.ts`, `tests/hud-layout.test.ts`, e2e at a 19.5:9 viewport.
 - **Tier:** G
-- **Status:** approved by the owner 2026-11-24 (D01 A). Full screen: applied in stage 5b. Wide canvas: applied with the D02 layout, after the owner picks a mockup.
+- **Status:** approved by the owner 2026-11-24 (D01 A). Applied in stage 5b (full screen; the wide canvas with OVR-019).
 - **Revert plan:** drop the fullscreen call and fix W at 960.
 
 ## OVR-014 · No tap gate by default; the timer waits for the first touch
@@ -2887,3 +2887,20 @@ Logged by the builder. Tier T is applied at once. Tier G waits for the user's ap
 - **Tier:** G
 - **Status:** approved by the owner 2026-11-24. To apply in stage 5b.
 - **Revert plan:** show every tag again, put the move bar back in the cluster, remove the two notices.
+
+## OVR-019 · Battle HUD layout A: move left, shoot right
+- **Overrides:** DR-120 (the HUD rects; J33, J38, J46 still apply where they say something), DR-121 on-screen angle and power steppers (the keys stay), DR-124 tray always on screen, the weapon name pill (UI.md §4.5). Completes OVR-013 (the wide canvas).
+- **Reason:** the owner's M1 playtest ("too many buttons and words") and the owner's pick of mockup A on the stage 5b checklist (L01, 2026-11-24), after D01 A and D02 A.
+- **Change:**
+  - **Screen:** W x 540 logical, W = 540 × viewport width / height, even, 960 to 1260 (OVR-013). The world camera draws the 960 x 540 world in the middle strip; the Hud spans the full width; Pause is centred.
+  - **Top row:** Blue pill top-left, the turn plate (with the timer) in the middle, Amber pill top-right next to Pause. The pills are 232 wide when W ≥ 1040, else 192 (the HP bar then shortens to w − 132 so the number never covers it). The wind gauge stays under the plate: next to it there is no room for its 360 px at W 960 (the mockup showed one row).
+  - **Left thumb:** a 2x2 pad: Hop (16,372), Flip (96,372), ◀ (16,452), ▶ (96,452), 72 each.
+  - **Right thumb:** FIRE in the corner (W − 136, 404, 120). Wide screens (side strip ≥ 88 plus the margin past 16): the power slider stands in the right strip (W − 88, 180, 72 x 192), the dial left of FIRE (W − 312, 380, 144), the weapon button left of the dial (W − 392, 452, 72). Narrow screens: power (FIRE − 104, 332), dial and weapon button to its left in the bottom row, so the clear zone stays free.
+  - **Weapon button:** shows the weapon and its ammo. A tap opens the tray (3x2 slots, 64 each) above it; a pick, a second tap, a touch on the world or the end of Move/Aim closes it. Keys 1–6, Tab, Q/E still pick without it.
+  - **Removed from the screen:** the four 64 px angle and power steppers (the dial and slider keep their own small ▲ ▼; the keys keep the stepper repeat) and the weapon name pill.
+  - **Clear zone:** on a wide screen it is the world strip only (y 176 to 328 as before).
+  - Left-handed mirrors the bottom across W; the top is never mirrored.
+- **Impact:** `src/hud/layout.ts`, `src/scenes/Hud.ts`, `src/hud/controls.ts` (`WeaponSlot` as the button, `setOpen`), `src/hud/readouts.ts`, `src/ui/layout.ts` (`screenSize`, `screenWidthFor`, `worldOffset`), `src/boot/config.ts` (`applyScreenCamera`, the world strip viewport), `src/hud/link.ts`, `src/scenes/Pause.ts`, `src/main.ts`, `tests/hud-layout.test.ts` (W 960 to 1260), e2e helpers.
+- **Tier:** G
+- **Status:** approved by the owner 2026-11-24 (L01 A). Applied in stage 5b.
+- **Revert plan:** set W to 960 and restore the DR-120 specs in `hudLayout`.

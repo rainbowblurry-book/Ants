@@ -1,12 +1,12 @@
 import * as Phaser from 'phaser';
 import { buildGameConfig, REG_RENDER_SCALE } from './boot/config';
-import { parseScaleOverride, pickRenderScale } from './boot/renderScale';
+import { LOGICAL_H, parseScaleOverride, pickRenderScale } from './boot/renderScale';
 import { t } from './i18n';
 import { Battle } from './scenes/Battle';
 import { Hud } from './scenes/Hud';
 import { Pause } from './scenes/Pause';
 import { UiLab } from './scenes/UiLab';
-import { LayoutService, REG_LAYOUT } from './ui/layout';
+import { LayoutService, REG_LAYOUT, screenSize, screenWidthFor, setScreenWidth } from './ui/layout';
 import { font } from './ui/theme';
 
 declare global {
@@ -90,15 +90,21 @@ async function boot(): Promise<void> {
   // Performance mode arrives with Settings (stage 7). Until then it is off.
   const s = parseScaleOverride(location.search) ?? pickRenderScale(window.devicePixelRatio, false);
 
+  // OVR-013: W follows the viewport's shape; LayoutService keeps it current.
+  setScreenWidth(screenWidthFor({ w: window.innerWidth, h: window.innerHeight }));
   const game = new Phaser.Game({
-    ...buildGameConfig(s, pickScenes()),
+    ...buildGameConfig(s, pickScenes(), screenSize.w),
     callbacks: {
       // Before any scene starts, so every scene can read S.
       preBoot: (g) => g.registry.set(REG_RENDER_SCALE, s),
     },
   });
   game.canvas.setAttribute('aria-label', t('a11y.canvas'));
-  const layout = new LayoutService(s, () => game.canvas);
+  const layout = new LayoutService(
+    s,
+    () => game.canvas,
+    (w) => game.scale.setGameSize(w * s, LOGICAL_H * s),
+  );
   layout.start();
   game.registry.set(REG_LAYOUT, layout);
   game.events.once('battle-ready', hideSplash);

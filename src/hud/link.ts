@@ -12,6 +12,7 @@ import type { CameraDirector, CamView } from '../render/camera';
 import type { CommandBody } from '../sim/commands';
 import type { Match } from '../sim/match';
 import type { WeaponId } from '../sim/weapons/types';
+import { screenSize } from '../ui/layout';
 import type { Handed } from './layout';
 
 export interface AimPreview {
@@ -51,10 +52,11 @@ export interface BattleLink {
 }
 
 /** Logical screen position of a world point under a camera view. */
+/** World → Hud screen px. The world camera's centre is the screen's centre (OVR-013). */
 export function worldToScreen(v: CamView, x: number, y: number): { x: number; y: number } {
-  return { x: (x - v.cx) * v.zoom + 480, y: (y - v.cy) * v.zoom + 270 };
+  return { x: (x - v.cx) * v.zoom + screenSize.w / 2, y: (y - v.cy) * v.zoom + 270 };
 }
 
 export function screenToWorld(v: CamView, x: number, y: number): { x: number; y: number } {
-  return { x: (x - 480) / v.zoom + v.cx, y: (y - 270) / v.zoom + v.cy };
+  return { x: (x - screenSize.w / 2) / v.zoom + v.cx, y: (y - 270) / v.zoom + v.cy };
 }

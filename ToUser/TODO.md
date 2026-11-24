@@ -2,13 +2,12 @@
 
 Updated: 2026-11-24, stage 5b (fixes from your M1 playtest). How to use this file: see `README.md` in this folder. Answered items are in `archive/ANSWERED.md`.
 
-**Do R-06 first: pick a screen layout on the checklist page.** The builder builds the layout after your pick. Your Part 1 choices (D01–D12) are done and archived. Until you answer the other items, the build follows the docs as written.
+**Do R-05 next: the stage 5b phone test (Part 2 of the checklist page).** Your choices D01–D12 and your layout pick (L01 A) are built and archived. Until you answer the other items, the build follows the docs as written.
 
 **Summary**
 
 | ID | Short name | Type | Needed before |
 |---|---|---|---|
-| R-06 | Pick a screen layout (L01) | decide | the stage 5b layout |
 | R-05 | Stage 5b phone test (Part 2) | test | the end of stage 5 |
 | Q-17 | Double-tap to find your ant | answer | stage 11 |
 | Q-01 | Back-flip fall damage | answer | stage 8 |
@@ -56,13 +55,6 @@ Updated: 2026-11-24, stage 5b (fixes from your M1 playtest). How to use this fil
 ---
 
 ## Reviews and checks
-
-### R-06 · Pick a screen layout (L01)
-- **Status:** open. **Needed before:** the stage 5b layout (D01 wide view, D02).
-- **Do this:** open https://claude.ai/artifact/KRCZS6YAh4o8CeXAQwRD62 (only you can open it).
-  1. Part 1b: look at the two pictures, pick A, B or C for L01, and add a comment if you like.
-  2. Write "layout picked" in the chat. The builder reads your choice from the page.
-- **Your answer:** (on the page)
 
 ### R-05 · Stage 5b phone test (Part 2 of the checklist page)
 - **Status:** open. **Needed before:** the end of stage 5 (the `m1-hotseat` tag and stage 6).

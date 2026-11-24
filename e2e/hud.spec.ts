@@ -11,7 +11,7 @@ import { expect, type Page, test } from '@playwright/test';
 import type { BattleHook } from '../src/scenes/Battle';
 import type { HudHook } from '../src/scenes/Hud';
 import type { PauseHook } from '../src/scenes/Pause';
-import { cssPoint, openGame, saveShot } from './helpers';
+import { cssPoint, openGame, saveShot, screenW } from './helpers';
 
 declare global {
   interface Window {
@@ -128,13 +128,12 @@ test('a full turn by touch: gate, stepper, tray, slingshot, FIRE, handover', asy
   await tapRect(page, 'gate', touch);
   await waitPhase(page, ['aim']);
 
-  const before = (await state(page)).aim;
-  await tapRect(page, 'angleUp', touch);
-  await tapRect(page, 'angleUp', touch);
-  expect((await state(page)).aim.angleDeci).toBe(before.angleDeci + 20);
-
+  // Layout A (OVR-019): the weapon button opens the tray; a pick closes it.
+  await tapRect(page, 'weapon', touch);
+  await expect.poll(async () => (await state(page)).trayOpen).toBe(true);
   await tapRect(page, 'slot1', touch);
-  expect((await state(page)).weapon).toBe('dewdrop');
+  await expect.poll(async () => (await state(page)).weapon).toBe('dewdrop');
+  expect((await state(page)).trayOpen).toBe(false);
 
   // Slingshot from the active ant: pull 100 px down and back, the shot goes up and forward.
   const s = await state(page);
@@ -207,13 +206,13 @@ test('667x375: one screenshot shows who is up, the wind and the aim', async ({ p
   for (const id of ['plate', 'wind', 'dial', 'power']) {
     const r = await rect(page, id);
     expect(r.x).toBeGreaterThanOrEqual(0);
-    expect(r.x + r.w).toBeLessThanOrEqual(960);
+    expect(r.x + r.w).toBeLessThanOrEqual(await screenW(page));
   }
   expect(s.alpha.dial).toBe(1);
   expect(s.alpha.power).toBe(1);
   // At 667 CSS px the 28 logical px label is still at least 19 CSS px (DR-080 floor 18).
   const box = await page.locator('#game canvas').boundingBox();
-  expect(((box?.width ?? 0) / 960) * 28).toBeGreaterThanOrEqual(18);
+  expect(((box?.height ?? 0) / 540) * 28).toBeGreaterThanOrEqual(18);
   expect(errors).toEqual([]);
 });
 
@@ -281,13 +280,14 @@ for (const hand of ['right', 'left'] as const) {
     }));
     const margins = await page.evaluate(() => window.__ants?.layout.margins);
     const m = margins ?? { top: 16, right: 16, bottom: 16, left: 16 };
+    const W = await screenW(page);
     for (const id of controls) {
       const r = rects[id] as R;
       expect(r.w, id).toBeGreaterThanOrEqual(64);
       expect(r.h, id).toBeGreaterThanOrEqual(64);
       expect(r.x, id).toBeGreaterThanOrEqual(m.left - 1e-6);
       expect(r.y, id).toBeGreaterThanOrEqual(m.top - 1e-6);
-      expect(r.x + r.w, id).toBeLessThanOrEqual(960 - m.right + 1e-6);
+      expect(r.x + r.w, id).toBeLessThanOrEqual(W - m.right + 1e-6);
       expect(r.y + r.h, id).toBeLessThanOrEqual(540 - m.bottom + 1e-6);
     }
     for (let i = 0; i < controls.length; i++) {

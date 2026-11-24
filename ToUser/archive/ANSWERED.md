@@ -4,6 +4,10 @@ The builder moves an item here from `../TODO.md` when it is done. Each entry kee
 
 ## 2026-11-24 (stage 5b checklist, Part 1)
 
+### R-06 · Pick a screen layout (L01)
+- **Your answer:** A (move with the left thumb; aim, weapon and fire with the right).
+- **Builder:** OVR-019, built in stage 5b with the wider view on long phones (OVR-013). One difference from the picture: the wind gauge stays under the turn plate, because there is no room for it in the top row on a 16:9 phone.
+
 ### R-05 · Stage 5b checklist page, Part 1 (D01–D12)
 - **Your answers** (read from the checklist page):
   - **D01 A:** full screen on the first tap, and a wider view with the controls at the edges. → OVR-013.

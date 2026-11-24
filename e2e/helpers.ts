@@ -26,15 +26,28 @@ export async function openGame(
   return errors;
 }
 
-/** CSS position of a logical (960x540) point on the FIT canvas. */
+/**
+ * CSS position of a logical point on the FIT canvas (W x 540, OVR-013). With
+ * `centred`, x is in a scene whose 0..960 sits in the middle (Pause, UiLab).
+ */
 export async function cssPoint(
   page: Page,
   x: number,
   y: number,
+  centred = false,
 ): Promise<{ x: number; y: number }> {
   const box = await page.locator('#game canvas').boundingBox();
   if (!box) throw new Error('no canvas');
-  return { x: box.x + (x * box.width) / 960, y: box.y + (y * box.height) / 540 };
+  const per = box.height / 540;
+  const off = centred ? (box.width / per - 960) / 2 : 0;
+  return { x: box.x + (x + off) * per, y: box.y + y * per };
+}
+
+/** The screen width W in logical px (OVR-013). */
+export async function screenW(page: Page): Promise<number> {
+  const box = await page.locator('#game canvas').boundingBox();
+  if (!box) throw new Error('no canvas');
+  return Math.round((box.width / box.height) * 540);
 }
 
 /** Saves a screenshot into test-results, and into SHOTS_OUT (or STAGE4_OUT) when set. */

@@ -17,13 +17,14 @@
  * stage 7, so those two buttons show the disabled state until then.
  */
 import * as Phaser from 'phaser';
-import { applyLogicalCamera, REG_RENDER_SCALE } from '../boot/config';
+import { applyScreenCamera, REG_RENDER_SCALE } from '../boot/config';
 import type { RenderScale } from '../boot/renderScale';
 import type { BattleLink } from '../hud/link';
 import { t } from '../i18n';
 import { ConfirmModal, modalOpen } from '../ui/ConfirmModal';
 import { Button, bindFocusKeys, FocusRing, Panel } from '../ui/components';
 import { FocusManager } from '../ui/focus';
+import { type LayoutService, REG_LAYOUT, screenSize, worldOffset } from '../ui/layout';
 import { reducedMotion } from '../ui/motion';
 import { BitmapLabel, bodyText } from '../ui/text';
 import { alpha, color, cssOnColor, tokens } from '../ui/theme';
@@ -68,14 +69,22 @@ export class Pause extends Phaser.Scene {
 
   create(): void {
     const s = this.registry.get(REG_RENDER_SCALE) as RenderScale;
-    applyLogicalCamera(this.cameras.main, s, 1);
+    // The panel is laid out in 0..960, centred on a screen that may be wider (OVR-013).
+    applyScreenCamera(this.cameras.main, s, 'centred');
     this.focus = new FocusManager();
     this.focus.setBack(() => this.resume());
 
     this.scrim = this.add
-      .rectangle(0, 0, 960, 540, color.scrim, alpha.scrim)
+      .rectangle(-worldOffset(), 0, screenSize.w, 540, color.scrim, alpha.scrim)
       .setOrigin(0, 0)
       .setInteractive();
+    const layoutService = this.registry.get(REG_LAYOUT) as LayoutService | undefined;
+    const offResize = layoutService?.onResize(() => {
+      applyScreenCamera(this.cameras.main, s, 'centred');
+      this.scrim.setPosition(-worldOffset(), 0).setSize(screenSize.w, 540);
+      this.scrim.input?.hitArea.setTo(0, 0, screenSize.w, 540);
+    });
+    if (offResize) this.events.once(Phaser.Scenes.Events.SHUTDOWN, offResize);
     this.root = this.add.container(0, 0);
     const n = 4;
     const h = 88 + n * BTN.h + (n - 1) * BTN.gap + 32;

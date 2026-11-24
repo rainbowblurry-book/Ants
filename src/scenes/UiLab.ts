@@ -4,7 +4,7 @@
  * Every label here is a string from the locale file.
  */
 import * as Phaser from 'phaser';
-import { applyLogicalCamera, REG_RENDER_SCALE } from '../boot/config';
+import { applyScreenCamera, REG_RENDER_SCALE } from '../boot/config';
 import type { RenderScale } from '../boot/renderScale';
 import { t } from '../i18n';
 import { image, loadSharedAssets } from '../ui/assets';
@@ -48,7 +48,7 @@ export class UiLab extends Phaser.Scene {
     const s = this.registry.get(REG_RENDER_SCALE) as RenderScale;
     const cam = this.cameras.main;
     cam.setBackgroundColor(cssColor['ink-soft']);
-    applyLogicalCamera(cam, s, 1);
+    applyScreenCamera(cam, s, 'centred');
     this.focus = new FocusManager();
 
     const activations: Record<string, number> = {};

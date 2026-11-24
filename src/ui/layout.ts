@@ -32,6 +32,32 @@ const L = tokens.layout;
 /** Rects in UI.md are written with this margin (M = 16). */
 export const SPEC_MARGIN = L.marginMin;
 
+/**
+ * OVR-013: the screen is W x 540 logical px. W follows the viewport's shape
+ * (540 x width / height, even, 960 to 1260); the 960 x 540 world sits in the
+ * middle, and the side strips are HUD space. One game per page, so W is
+ * module state, set by `LayoutService` (and tests).
+ */
+export const SCREEN_W_MIN = logical.width;
+export const SCREEN_W_MAX = 1260;
+export const screenSize = { w: logical.width as number };
+
+/** W for a viewport (OVR-013). */
+export function screenWidthFor(viewport: { w: number; h: number }): number {
+  if (!(viewport.w > 0 && viewport.h > 0)) return SCREEN_W_MIN;
+  const w = Math.round((logical.height * viewport.w) / viewport.h / 2) * 2;
+  return Math.min(SCREEN_W_MAX, Math.max(SCREEN_W_MIN, w));
+}
+
+export function setScreenWidth(w: number): void {
+  screenSize.w = w;
+}
+
+/** Left edge of the 960-wide world strip on the screen. */
+export function worldOffset(w: number = screenSize.w): number {
+  return (w - logical.width) / 2;
+}
+
 /** Snap to 0.5 logical px at S=2 and to whole px at S=1 (DR-085). */
 export function snap(v: number, s: 1 | 2): number {
   const step = s === 2 ? L.snap.S2 : L.snap.S1;
@@ -39,13 +65,16 @@ export function snap(v: number, s: 1 | 2): number {
 }
 
 /** CSS size of the FIT canvas inside a viewport. */
-export function fitCanvas(viewport: { w: number; h: number }): {
+export function fitCanvas(
+  viewport: { w: number; h: number },
+  width: number = screenSize.w,
+): {
   w: number;
   h: number;
   scale: number;
 } {
-  const scale = Math.min(viewport.w / logical.width, viewport.h / logical.height);
-  return { w: logical.width * scale, h: logical.height * scale, scale };
+  const scale = Math.min(viewport.w / width, viewport.h / logical.height);
+  return { w: width * scale, h: logical.height * scale, scale };
 }
 
 /** DR-085 margins, in logical px (not snapped). */
@@ -54,7 +83,7 @@ export function computeMargins(
   viewport: { w: number; h: number },
   canvasCss: { w: number; h: number } = fitCanvas(viewport),
 ): Margins {
-  const scale = canvasCss.w / logical.width;
+  const scale = canvasCss.h / logical.height;
   const lbX = Math.max(0, (viewport.w - canvasCss.w) / 2);
   const lbY = Math.max(0, (viewport.h - canvasCss.h) / 2);
   const side = (inset: number, letterbox: number) =>
@@ -74,11 +103,11 @@ export function snapMargins(m: Margins, s: 1 | 2): Margins {
   return { top: up(m.top), right: up(m.right), bottom: up(m.bottom), left: up(m.left) };
 }
 
-export function safeRect(m: Margins): Rect {
+export function safeRect(m: Margins, width: number = screenSize.w): Rect {
   return {
     x: m.left,
     y: m.top,
-    w: logical.width - m.left - m.right,
+    w: width - m.left - m.right,
     h: logical.height - m.top - m.bottom,
   };
 }
@@ -105,9 +134,9 @@ export function placeSpecRect(spec: Rect, anchor: Anchor, m: Margins): Rect {
   return { x, y, w: spec.w, h: spec.h };
 }
 
-/** Mirror a rect for the left-handed HUD: x' = 960 − x − w (UI.md §4.5). */
-export function mirrorX(r: Rect): Rect {
-  return { x: logical.width - r.x - r.w, y: r.y, w: r.w, h: r.h };
+/** Mirror a rect for the left-handed HUD: x' = W − x − w (UI.md §4.5, OVR-013). */
+export function mirrorX(r: Rect, width: number = screenSize.w): Rect {
+  return { x: width - r.x - r.w, y: r.y, w: r.w, h: r.h };
 }
 
 export function inside(inner: Rect, outer: Rect): boolean {
@@ -146,6 +175,8 @@ export class LayoutService {
   constructor(
     private readonly s: 1 | 2,
     private readonly canvas: () => HTMLCanvasElement | null,
+    /** Called when W changes, before the listeners (main.ts resizes the game). */
+    private readonly onWidth: (w: number) => void = () => {},
   ) {}
 
   start(): void {
@@ -176,8 +207,16 @@ export class LayoutService {
 
   update(): void {
     const viewport = { w: window.innerWidth, h: window.innerHeight };
+    const w = screenWidthFor(viewport);
+    const widthChanged = w !== screenSize.w;
+    if (widthChanged) {
+      setScreenWidth(w);
+      this.onWidth(w);
+    }
     const c = this.canvas()?.getBoundingClientRect();
-    const canvasCss = c && c.width > 0 ? { w: c.width, h: c.height } : fitCanvas(viewport);
+    // Right after a width change the canvas has not been laid out again: use the FIT maths.
+    const canvasCss =
+      !widthChanged && c && c.width > 0 ? { w: c.width, h: c.height } : fitCanvas(viewport);
     this.margins = snapMargins(computeMargins(this.readInsets(), viewport, canvasCss), this.s);
     this.safe = safeRect(this.margins);
     for (const l of this.listeners) l(this);

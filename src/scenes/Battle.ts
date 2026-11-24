@@ -42,6 +42,7 @@ import { muzzle, WEAPONS } from '../sim/weapons/index';
 import { CALM } from '../sim/wind';
 import { image, loadSharedAssets } from '../ui/assets';
 import { modalOpen } from '../ui/ConfirmModal';
+import { type LayoutService, REG_LAYOUT, worldOffset } from '../ui/layout';
 import { reducedMotion } from '../ui/motion';
 import { Nav } from '../ui/nav';
 import { color, tokens } from '../ui/theme';
@@ -169,6 +170,12 @@ export class Battle extends Phaser.Scene {
     const cam = this.cameras.main;
     cam.setBackgroundColor(this.palette.sky);
     applyLogicalCamera(cam, this.s, 1);
+    // OVR-013: a new screen width moves the world strip to the middle again.
+    const layoutService = this.registry.get(REG_LAYOUT) as LayoutService | undefined;
+    const offResize = layoutService?.onResize(() =>
+      cam.setViewport(worldOffset() * this.s, 0, 960 * this.s, 540 * this.s),
+    );
+    if (offResize) this.events.once(Phaser.Scenes.Events.SHUTDOWN, offResize);
 
     if (this.staticMode) {
       const grid = devArenaGrid();
@@ -518,8 +525,11 @@ export class Battle extends Phaser.Scene {
     ctx.drawImage(img, 0, 0);
     const px = ctx.getImageData(0, 0, w, h).data;
     const cam = this.cameras.main;
-    const toX = (wx: number) => (wx - cam.scrollX - cam.width / 2) * cam.zoom + cam.width / 2;
-    const toY = (wy: number) => (wy - cam.scrollY - cam.height / 2) * cam.zoom + cam.height / 2;
+    // The camera viewport is the world strip of the canvas (OVR-013): add its offset.
+    const toX = (wx: number) =>
+      (wx - cam.scrollX - cam.width / 2) * cam.zoom + cam.width / 2 + cam.x;
+    const toY = (wy: number) =>
+      (wy - cam.scrollY - cam.height / 2) * cam.zoom + cam.height / 2 + cam.y;
     const x0 = Math.max(0, Math.ceil(toX(world.x)) + 2);
     const y0 = Math.max(0, Math.ceil(toY(world.y)) + 2);
     const x1 = Math.min(w, Math.floor(toX(world.x + world.w)) - 2);

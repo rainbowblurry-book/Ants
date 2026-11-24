@@ -7,7 +7,7 @@ import { asset, badgeKey, RASTER } from '../assets/manifest';
 import { FLIP_COST, HOP_COST, WALK_BUDGET } from '../sim/movement';
 import { JellyBox, Panel } from '../ui/components';
 import { fitText } from '../ui/fitText';
-import type { Rect } from '../ui/layout';
+import { type Rect, worldOffset } from '../ui/layout';
 import { motionMs, reducedMotion } from '../ui/motion';
 import { BitmapLabel, bodyText } from '../ui/text';
 import { type ColorToken, color, cssColor, cssOnColor, onColor, tokens } from '../ui/theme';
@@ -63,7 +63,8 @@ export class TeamPill extends Phaser.GameObjects.Container {
   private drawBar(hp: number): void {
     this.drawn = hp;
     const x = 52 - this.rect.w / 2;
-    const w = 100;
+    // DR-128's 100, shorter in a narrow pill so the HP number never covers it (OVR-019).
+    const w = Math.min(100, this.rect.w - 132);
     const h = 16;
     const y = -h / 2;
     const f = Math.max(0, Math.min(1, hp / this.maxHp));
@@ -608,7 +609,7 @@ export class EdgeIndicator extends Phaser.GameObjects.Container {
 
   /** Target in logical screen px; distance in world px. Hidden when on screen. */
   point(tx: number, ty: number, distance: number): void {
-    const on = tx >= 0 && tx <= 960 && ty >= 0 && ty <= 540;
+    const on = tx >= worldOffset() && tx <= worldOffset() + 960 && ty >= 0 && ty <= 540;
     this.setVisible(!on);
     if (on) return;
     const x = Math.min(936, Math.max(24, tx));

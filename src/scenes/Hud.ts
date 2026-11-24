@@ -14,7 +14,7 @@
  */
 import * as Phaser from 'phaser';
 import { ANT_SIDE } from '../assets/manifest';
-import { applyLogicalCamera, REG_RENDER_SCALE } from '../boot/config';
+import { applyScreenCamera, REG_RENDER_SCALE } from '../boot/config';
 import type { RenderScale } from '../boot/renderScale';
 import {
   Dial,
@@ -63,13 +63,12 @@ import { GATE_LOCKOUT_TICKS, GATE_PAN_TICKS, type MatchEvent } from '../sim/turn
 import { WEAPON_IDS, type WeaponId } from '../sim/weapons/types';
 import { modalOpen } from '../ui/ConfirmModal';
 import { Button, IconButton, Panel } from '../ui/components';
-import { type LayoutService, REG_LAYOUT, type Rect } from '../ui/layout';
-import { BitmapLabel } from '../ui/text';
+import { type LayoutService, REG_LAYOUT, type Rect, screenSize, worldOffset } from '../ui/layout';
 import { color, tokens } from '../ui/theme';
 
 export const HUD_KEY = 'hud';
 
-const D = { frame: 0, world: 10, hud: 100, notice: 200, gate: 300 } as const;
+const D = { frame: 0, world: 10, hud: 100, tray: 150, notice: 200, gate: 300 } as const;
 /** DR-120: a control over the active ant fades to 40%; DR-123: dim to 55% after the shot. */
 const OVER_ANT_ALPHA = 0.4;
 const RETREAT_DIM = 0.55;
@@ -100,6 +99,8 @@ export interface HudState {
   moveBar: boolean;
   /** The text of the notice showing, if any. */
   noticeText: string | null;
+  /** The weapon tray pop-up is open (OVR-019). */
+  trayOpen: boolean;
   find: boolean;
   preview: boolean;
   ammo: Record<string, number>;
@@ -135,7 +136,6 @@ export class Hud extends Phaser.Scene {
   private wind!: WindGauge;
   private effects!: EffectsRow;
   private moveBar!: MoveBar;
-  private namePill!: BitmapLabel;
   private tags: AntTag[] = [];
   private edgeShot!: EdgeIndicator;
   private edgeAnt: EdgeIndicator[] = [];
@@ -148,6 +148,10 @@ export class Hud extends Phaser.Scene {
   private slider!: PowerSlider;
   private fireBtn!: FireButton;
   private slots: WeaponSlot[] = [];
+  private weaponBtn!: WeaponSlot;
+  private trayPanel!: Panel;
+  /** The weapon tray pop-up is open (OVR-019). */
+  private trayOpen = false;
   private pause!: IconButton;
   private find!: IconButton;
   // input state
@@ -225,10 +229,17 @@ export class Hud extends Phaser.Scene {
 
   create(): void {
     this.s = this.registry.get(REG_RENDER_SCALE) as RenderScale;
-    applyLogicalCamera(this.cameras.main, this.s, 1);
+    // The Hud spans the whole W-wide screen, side strips included (OVR-013).
+    applyScreenCamera(this.cameras.main, this.s, 'screen');
     const layoutService = this.registry.get(REG_LAYOUT) as LayoutService | undefined;
     const margins = layoutService?.margins ?? { top: 16, right: 16, bottom: 16, left: 16 };
-    this.L = hudLayout(margins, this.link.handed, { weapons: WEAPON_IDS.length }, this.s);
+    this.L = hudLayout(
+      margins,
+      this.link.handed,
+      { weapons: WEAPON_IDS.length },
+      this.s,
+      screenSize.w,
+    );
     const m = this.link.match;
     // Events already handled before a rebuild are not replayed.
     this.eventIndex = m.events.length;
@@ -288,7 +299,7 @@ export class Hud extends Phaser.Scene {
       const safe = {
         x: margins.left,
         y: margins.top,
-        w: 960 - margins.left - margins.right,
+        w: screenSize.w - margins.left - margins.right,
         h: 540 - margins.top - margins.bottom,
       };
       this.frame = new TeamFrame(this, safe).setDepth(D.frame);
@@ -311,11 +322,6 @@ export class Hud extends Phaser.Scene {
     this.wind = new WindGauge(this, R.wind as Rect, t('hud.calm')).setDepth(D.hud);
     this.effects = new EffectsRow(this, R.effects as Rect).setDepth(D.hud);
     this.moveBar = new MoveBar(this, R.moveBar as Rect).setDepth(D.hud);
-    const np = R.namePill as Rect;
-    const pill = new Panel(this, np, tokens.shadowY.sm).setDepth(D.hud);
-    this.namePill = new BitmapLabel(this, 0, 0, '', 'label', color.ink);
-    this.namePill.setTextOrigin(0.5, 0.5);
-    pill.face.add(this.namePill);
     this.noticeView = new NoticeView(this, R.notice as Rect).setDepth(D.notice);
     this.gate = new GateButton(this, R.gate as Rect, t('hud.tapToStart'), () =>
       this.passGate(),
@@ -354,12 +360,8 @@ export class Hud extends Phaser.Scene {
     this.reps.powerDown = new Repeater((c) =>
       this.nudgeAim(0, -(c ? POWER_STEP.coarse : POWER_STEP.fine)),
     );
-    const rep = (id: string) =>
-      [() => this.reps[id]?.down(performance.now()), () => this.reps[id]?.up()] as const;
-    hold('angleUp', { icon: 'ui.icon.chevron-u' }, ...rep('angleUp'));
-    hold('angleDown', { icon: 'ui.icon.chevron-d' }, ...rep('angleDown'));
-    hold('powerUp', { icon: 'ui.icon.chevron-u' }, ...rep('powerUp'));
-    hold('powerDown', { icon: 'ui.icon.chevron-d' }, ...rep('powerDown'));
+    // Layout A (OVR-019): no big steppers on screen. The keys keep them (DR-121), and the
+    // dial and slider keep their own small ▲ ▼.
     hold(
       'walkL',
       { icon: 'ui.icon.chevron-l' },
@@ -392,19 +394,22 @@ export class Hud extends Phaser.Scene {
     this.fireBtn = new FireButton(this, R.fire as Rect, R.fireVisual as Rect, t('hud.fire'), () =>
       this.fire(false),
     ).setDepth(D.hud);
+    // One weapon button; the tray pops up above it (OVR-019).
+    this.weaponBtn = new WeaponSlot(this, 'weapon', R.weapon as Rect, this.weapon(), () =>
+      this.toggleTray(),
+    ).setDepth(D.hud);
+    this.trayPanel = new Panel(this, R.tray as Rect, tokens.shadowY.sm).setDepth(D.tray);
     WEAPON_IDS.forEach((w, i) => {
       this.slots.push(
-        new WeaponSlot(this, i, this.L.slots[i] as Rect, w, () => this.pickWeapon(w)).setDepth(
-          D.hud,
-        ),
+        new WeaponSlot(this, i, this.L.slots[i] as Rect, w, () => {
+          this.pickWeapon(w);
+          this.setTray(false);
+        }).setDepth(D.tray),
       );
     });
+    this.setTray(false);
     const aimLive = () => this.canAim();
     const moveLive = () => this.canMove();
-    for (const id of ['angleUp', 'angleDown', 'powerUp', 'powerDown']) {
-      const b = this.ctl[id];
-      if (b) b.liveCheck = aimLive;
-    }
     for (const id of ['walkL', 'walkR', 'hop', 'flip']) {
       const b = this.ctl[id];
       if (b) b.liveCheck = moveLive;
@@ -413,6 +418,7 @@ export class Hud extends Phaser.Scene {
     this.slider.liveCheck = aimLive;
     this.fireBtn.liveCheck = aimLive;
     for (const sl of this.slots) sl.liveCheck = aimLive;
+    this.weaponBtn.liveCheck = aimLive;
     this.pause = new IconButton(this, {
       id: 'pause',
       hit: R.pause as Rect,
@@ -589,6 +595,19 @@ export class Hud extends Phaser.Scene {
     this.link.weapon[this.team] = w;
   }
 
+  /** Opens or closes the weapon tray above the weapon button (OVR-019). */
+  private setTray(open: boolean): void {
+    this.trayOpen = open;
+    this.trayPanel.setVisible(open);
+    for (const sl of this.slots) sl.setOpen(open);
+  }
+
+  private toggleTray(): void {
+    if (!this.canAim() && !this.trayOpen) return;
+    this.startTimer();
+    this.setTray(!this.trayOpen);
+  }
+
   private cycleWeapon(dir: 1 | -1): void {
     if (!this.canAim()) return;
     const pool = this.link.match.ammo[this.team];
@@ -726,6 +745,12 @@ export class Hud extends Phaser.Scene {
         }
         const q = logicalPoint(this, p);
         this.tap = { id: p.id, x: q.x, y: q.y };
+        if (this.trayOpen) {
+          // A touch outside the tray closes it and does nothing else.
+          this.setTray(false);
+          this.tap = null;
+          return;
+        }
         const m = this.link.match;
         const a = m.activeAnt;
         const v = this.link.view();
@@ -900,7 +925,7 @@ export class Hud extends Phaser.Scene {
     if (barOn && ant) {
       const r = this.L.rects.moveBar as Rect;
       const feet = worldToScreen(v, ant.x, ant.y);
-      const bx = Math.min(944 - r.w, Math.max(16, feet.x - r.w / 2));
+      const bx = Math.min(screenSize.w - 16 - r.w, Math.max(16, feet.x - r.w / 2));
       const by = Math.min(524 - r.h, feet.y + 8);
       this.moveBar.setPosition(Math.round((bx - r.x) * 2) / 2, Math.round((by - r.y) * 2) / 2);
       this.moveBar.show(ant.budget, retreatF);
@@ -910,10 +935,7 @@ export class Hud extends Phaser.Scene {
     WEAPON_IDS.forEach((w, i) => {
       this.slots[i]?.show({ weapon: w, ammo: pool?.[w] ?? 0, selected: w === weapon });
     });
-    this.namePill.fitTo(
-      t(`weapon.${weapon}` as Parameters<typeof t>[0]),
-      (this.L.rects.namePill as Rect).w - 24,
-    );
+    this.weaponBtn.show({ weapon, ammo: pool?.[weapon] ?? 0, selected: false });
     const aim = this.aim();
     const facing = (ant?.facing ?? 1) as 1 | -1;
     this.dial.show(aim.angleDeci, facing);
@@ -938,13 +960,11 @@ export class Hud extends Phaser.Scene {
       const r = this.L.rects[id] as Rect;
       return Math.min(base, over(r) ? OVER_ANT_ALPHA : 1);
     };
-    for (const id of ['angleUp', 'angleDown', 'powerUp', 'powerDown']) {
-      this.ctl[id]?.setLive(canAim).setDim(fade(id, aimDim));
-    }
+    this.weaponBtn.setLive(canAim).setDim(fade('weapon', aimDim));
     this.dial.setLive(canAim).setDim(fade('dial', aimDim));
     this.slider.setLive(canAim).setDim(fade('power', aimDim));
-    this.slots.forEach((s, i) => {
-      s.setLive(canAim).setDim(fade(`slot${i}`, aimDim));
+    this.slots.forEach((s) => {
+      s.setLive(canAim);
     });
     this.fireBtn.setLive(canAim).setDim(fade('fire', aimDim));
     const ringFire = turns.ring.pending.some((c) => c.kind === 'fire');
@@ -964,7 +984,10 @@ export class Hud extends Phaser.Scene {
     }
     this.pause.setAlpha(fade('pause', 1));
     const antOff = antRect
-      ? antRect.x + antRect.w < 0 || antRect.x > 960 || antRect.y + antRect.h < 0 || antRect.y > 540
+      ? antRect.x + antRect.w < worldOffset() ||
+        antRect.x > worldOffset() + 960 ||
+        antRect.y + antRect.h < 0 ||
+        antRect.y > 540
       : false;
     // Compare with where the camera can actually centre (it is clamped to the world).
     const goal = ant ? clampCentre(ant.x, ant.y - 22, v.zoom) : null;
@@ -1038,7 +1061,7 @@ export class Hud extends Phaser.Scene {
       const feet = worldToScreen(v, a.x, a.y);
       const size = active ? { w: 96, h: 40 } : { w: 76, h: 32 };
       let y = feet.y - ANT_SIDE.h * v.zoom - 12;
-      const x = Math.min(960 - size.w / 2, Math.max(size.w / 2, feet.x));
+      const x = Math.min(screenSize.w - size.w / 2, Math.max(size.w / 2, feet.x));
       // Overlapping tags are offset 36 px (DR-128).
       for (let k = 0; k < 4; k++) {
         const hitTag = placed.some(
@@ -1062,7 +1085,7 @@ export class Hud extends Phaser.Scene {
       const p = worldToScreen(v, body.p.x, body.p.y);
       const c = screenToWorld(
         v,
-        Math.min(936, Math.max(24, p.x)),
+        Math.min(worldOffset() + 936, Math.max(worldOffset() + 24, p.x)),
         Math.min(350, Math.max(188, p.y)),
       );
       this.edgeShot.point(p.x, p.y, Math.hypot(body.p.x - c.x, body.p.y - c.y));
@@ -1078,7 +1101,7 @@ export class Hud extends Phaser.Scene {
       const p = worldToScreen(v, ant.x, ant.y - 22);
       const c = screenToWorld(
         v,
-        Math.min(936, Math.max(24, p.x)),
+        Math.min(worldOffset() + 936, Math.max(worldOffset() + 24, p.x)),
         Math.min(350, Math.max(188, p.y)),
       );
       e.point(p.x, p.y, Math.hypot(ant.x - c.x, ant.y - 22 - c.y));
@@ -1098,6 +1121,7 @@ export class Hud extends Phaser.Scene {
             this.plate.dropIn();
             this.releaseAll();
           }
+          if (e.phase !== 'aim' && this.trayOpen) this.setTray(false);
           if (e.phase === 'turnEnd') this.shownTags.clear();
           break;
         case 'dew':
@@ -1218,7 +1242,7 @@ export class Hud extends Phaser.Scene {
       state: () => {
         const m = this.link.match;
         const pool = m.ammo[m.turns.team] ?? {};
-        const ids = ['dial', 'power', 'fire', 'angleUp', 'walkL', 'walkR', 'hop', 'flip', 'slot0'];
+        const ids = ['dial', 'power', 'fire', 'weapon', 'walkL', 'walkR', 'hop', 'flip', 'slot0'];
         const active: Record<string, boolean> = {};
         const alpha: Record<string, number> = {};
         for (const id of ids) {
@@ -1231,7 +1255,9 @@ export class Hud extends Phaser.Scene {
                   ? this.fireBtn
                   : id === 'slot0'
                     ? this.slots[0]
-                    : this.ctl[id];
+                    : id === 'weapon'
+                      ? this.weaponBtn
+                      : this.ctl[id];
           alpha[id] = o?.alpha ?? 0;
         }
         active.aim = this.canAim();
@@ -1254,6 +1280,7 @@ export class Hud extends Phaser.Scene {
           tags: this.tags.map((tg) => tg.visible),
           moveBar: this.moveBar.visible,
           noticeText: this.notices.current?.text ?? null,
+          trayOpen: this.trayOpen,
           find: this.find.visible,
           preview: this.link.preview !== null,
           ammo: { ...pool },

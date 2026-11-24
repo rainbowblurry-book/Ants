@@ -1,6 +1,6 @@
 # Progress
 
-**Current stage:** Build **stage 5b** (fixes from the M1 phone playtest), branch `build/stage-05b-playtest`. Stage 5 stays open until 5b passes the owner's next playtest; then the `m1-hotseat` tag and stage 6. **Waiting for the owner's layout pick** (`ToUser/TODO.md` R-06); the other fixes are built.
+**Current stage:** Build **stage 5b** (fixes from the M1 phone playtest), branch `build/stage-05b-playtest`. Stage 5 stays open until 5b passes the owner's next playtest; then the `m1-hotseat` tag and stage 6. **Layout A built (OVR-019); next: merge, deploy, the owner's phone test** (`ToUser/TODO.md` R-05).
 
 **Owner's to-do list:** `ToUser/TODO.md` is the one place for questions, reviews and checks for the owner. This file does not copy them.
 
@@ -29,7 +29,12 @@ Branch `build/stage-05b-playtest`. The owner's checklist choices (D01–D12, rea
 
 **Review (a subagent read the diff against OVR-011 to OVR-018):** 2 bugs, both fixed: a walk held through TurnStart walked the ant without starting the waiting timer (now the TurnStart → Move/Aim step starts it; unit test), and the new e2e test tapped an ant that can be off screen at zoom 1.15 (it now taps a team mate, waits out the coin pop and polls). Also: the wind notice now fires only for a change at TurnStart (an Oscillate wind would have spammed it).
 
-**Waiting:** the layout (OVR-013 wide canvas, D02) after the owner's pick (R-06).
+**Layout A (OVR-019, owner's pick L01 A) and the wide canvas (OVR-013)**
+- `screenSize.w` (module state in `src/ui/layout.ts`) is W; `LayoutService` recomputes it on every resize and `main.ts` calls `game.scale.setGameSize`. The Battle camera's viewport is the middle 960·S strip (`applyLogicalCamera`), so the world, its zoom and its clamping did not change. The Hud camera spans 0..W (`applyScreenCamera 'screen'`); Pause and UiLab are centred (`'centred'`: x 0..960 in the middle, the scrim covers W). `worldToScreen` uses W/2 as the screen centre.
+- `hudLayout(m, hand, mode, s, W)`: layout A rects (see OVR-019); `isWide` decides where the power slider goes. The weapon button is a `WeaponSlot` with id `weapon`; tray slots open with `setOpen` (a closed slot's zone takes no input).
+- Tests: `hud-layout` runs W 960, 1080, 1136, 1170 and 1260 × both hands × 4 margin sets × 5 modes (UI.md §6 check 3 plus the pop-up tray), plus the exact rects at 960 and 1170. e2e: `cssPoint` works in W (and centred scenes), the touch turn opens the tray and picks Dewdrop.
+- Review shots (scratch, not committed): 844x390 (W 1168, wide) and 667x375 (W 960) with the tray open.
+
 
 ### Owner answers after the M1 playtest — 2026-11-17
 Moved to `ToUser/archive/ANSWERED.md`. Approved: Q-14 A (Restart dialog text), Q-15 B ("Jungle Home · Round R"), Q-16 A (OVR-009 stand-in arena until stage 9), Q-04 (OVR-011: nearest dry ground, else knock-out), Q-06 A (no change), Q-07 B (OVR-012: warning 3 rounds before the dew), R-03 (draw the ants before stage 7, when the owner writes "draw ant"). R-04 playtest: the screen is too small and busy, tags hide the active ant, the gate every turn is tiring, a friendly-fire option, ants leaving the map, Flip and the move bar unclear, a weapon change should keep the aim, wind and dew unexplained, and a request for an HTML checklist and a test plan per stage. These became the stage 5b list D01–D12 and the test plan T01–T14 on the checklist page (source `ToUser/checklists/stage-05b.html`, published as an artifact with a `db` store the builder reads). The owner said stage 5 is not done until this passes, so `m1-hotseat` is not pushed and stage 6 waits.
@@ -395,7 +400,7 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 **When the art is drawn:** add a Decision Record (DR-007b) that marks DR-007a's placeholders as replaced. Re-run the preview screenshots, and check the side pose reads clearly at 88x63 and at 667x375.
 
 ## Open items
-- **Questions and checks for the owner:** all in `ToUser/TODO.md` (open: Q-01 to Q-03, Q-17, R-02, R-05, R-06). Answered items move to `ToUser/archive/ANSWERED.md`.
+- **Questions and checks for the owner:** all in `ToUser/TODO.md` (open: Q-01 to Q-03, Q-17, R-02, R-05). Answered items move to `ToUser/archive/ANSWERED.md`.
 - **Real-device checks** (UI.md §7, PLAN §12), for later stages: safe-area `env()` values in landscape, Hop-row thumb reach, device memory and blast ms, refitting the bot-cap constants against the real sim (stage 6).
 - **Placeholders still in the manifest:** every ant key, the weapon and pickup art, and the terrain palette. `trinketAnchor` is `null` on the ant frames until final art (DR-162, stage 12).
 - **Before stage 9:** a full code review of the whole repo (owner's request).
@@ -403,4 +408,4 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 - **GitHub Pages:** done by the user (Settings → Pages → Source: "GitHub Actions").
 
 ## Next step
-**Stage 5b:** wait for the owner's layout pick (`ToUser/TODO.md` R-06), build it with the OVR-013 wide canvas, merge, deploy, then the owner's phone test (R-05 Part 2). When it passes: the `m1-hotseat` tag, then stage 6, Bot AI (HARD): `src/ai/`, the bot turn visuals (DR-129: crosshair, power bar, HUD mirror at 55%).
+**Stage 5b:** merge to `main` when CI is green, deploy, then the owner's phone test (R-05, Part 2 of the checklist page). When it passes: the `m1-hotseat` tag, then stage 6, Bot AI (HARD): `src/ai/`, the bot turn visuals (DR-129: crosshair, power bar, HUD mirror at 55%).

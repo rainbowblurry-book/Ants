@@ -629,10 +629,18 @@ export class WeaponSlot extends Phaser.GameObjects.Container implements Ctl {
     return this.liveCheck ? this.liveCheck() : this.live;
   }
   private view: SlotView | null = null;
+  private zone: Phaser.GameObjects.Zone;
 
-  constructor(scene: Phaser.Scene, index: number, hit: Rect, weapon: string, onPick: () => void) {
+  /** `index` names a tray slot (`slot0`..); a string id makes the weapon button (OVR-019). */
+  constructor(
+    scene: Phaser.Scene,
+    index: number | string,
+    hit: Rect,
+    weapon: string,
+    onPick: () => void,
+  ) {
     super(scene, 0, 0);
-    this.id = `slot${index}`;
+    this.id = typeof index === 'string' ? index : `slot${index}`;
     this.hit = hit;
     this.box = new JellyBox(scene, hit, {
       fill: 'panel',
@@ -648,7 +656,9 @@ export class WeaponSlot extends Phaser.GameObjects.Container implements Ctl {
     this.box.face.add([this.icon, this.badge, this.num]);
     this.add(this.box);
     const zone = zoneFor(scene, hit);
+    this.zone = zone;
     zone.on('pointerdown', () => {
+      if (!this.visible) return;
       if (!this.isLive() || (this.view?.ammo ?? 0) <= 0) {
         this.box.deny();
         return;
@@ -661,7 +671,12 @@ export class WeaponSlot extends Phaser.GameObjects.Container implements Ctl {
 
   show(v: SlotView): void {
     const prev = this.view;
-    if (prev && prev.ammo === v.ammo && prev.selected === v.selected) return;
+    if (prev && prev.ammo === v.ammo && prev.selected === v.selected && prev.weapon === v.weapon)
+      return;
+    if (prev && prev.weapon !== v.weapon) {
+      const e = asset(`weapon.icon.${v.weapon}`);
+      this.icon.setTexture(e.atlas, e.frame);
+    }
     this.view = { ...v };
     const empty = v.ammo <= 0;
     // Panel cards carry no band (UI.md §1.2); selected and empty slots do.
@@ -690,6 +705,13 @@ export class WeaponSlot extends Phaser.GameObjects.Container implements Ctl {
 
   setDim(alpha: number): this {
     this.setAlpha(alpha);
+    return this;
+  }
+
+  /** Shows or hides a pop-up tray slot; a hidden slot takes no input (OVR-019). */
+  setOpen(on: boolean): this {
+    this.setVisible(on);
+    if (this.zone.input) this.zone.input.enabled = on;
     return this;
   }
 }

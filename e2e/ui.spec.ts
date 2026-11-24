@@ -16,7 +16,7 @@ declare global {
 async function centre(page: Page, id: string): Promise<{ x: number; y: number }> {
   const r = await page.evaluate((i) => window.__uilab?.rect(i) ?? null, id);
   if (!r) throw new Error(`no rect ${id}`);
-  return cssPoint(page, r.x + r.w / 2, r.y + r.h / 2);
+  return cssPoint(page, r.x + r.w / 2, r.y + r.h / 2, true);
 }
 
 const count = (page: Page, id: string) =>
@@ -45,7 +45,7 @@ test('dragging more than 16 px out cancels; a disabled button never acts', async
   await openGame(page, '?scene=uilab', '__uilab');
   const p = await centre(page, 'btn-secondary');
   const box = await page.locator('#game canvas').boundingBox();
-  const perLogical = (box?.width ?? 960) / 960;
+  const perLogical = (box?.height ?? 540) / 540;
   await page.mouse.move(p.x, p.y);
   await page.mouse.down();
   // 32 + 30 logical px below the centre: past the bottom edge plus the 16 px slop.

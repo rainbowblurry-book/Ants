@@ -74,7 +74,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px }
 <main>
   <header class="top">
     <h1>Stage 5b: your playtest fixes</h1>
-    <p class="lede">Part 1 is done: thank you. <b>New: Part 1b, pick a screen layout (L01).</b> The builder builds it, then you do Part 2 on your phone. Your choices save by themselves, and the builder reads them here.</p>
+    <p class="lede">Parts 1 and 1b are done and built: thank you. <b>Now Part 2: test on your phone.</b> Open <a href="https://rainbowblurry-book.github.io/Ants/">rainbowblurry-book.github.io/Ants</a> in landscape. Your marks save by themselves, and the builder reads them here.</p>
   </header>
   <div class="bar" role="status" aria-live="polite">
     <div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div>
@@ -90,8 +90,8 @@ footer { margin-top: 32px; color: var(--muted); font-size: 14px }
   <p class="sec-note">You chose D01 A (full screen, controls at the edges) and D02 A (pictures first). Both pictures are a 19.5:9 phone like yours. The dashed strips are the extra width beside the 16:9 world: the controls move into them. On a 16:9 phone the same layout sits over the edges of the world, as now.</p>
   <div class="list" id="layout"></div>
 
-  <h2>Part 2 · Test after stage 5b is built</h2>
-  <p class="sec-note">Do these on your phone, in landscape, once the builder says stage 5b is live. Mark each one Pass, Problem or Not tried, and write what happened.</p>
+  <h2>Part 2 · Test on your phone (stage 5b is live)</h2>
+  <p class="sec-note">Open the game link above on your phone, in landscape. Mark each step Pass, Problem or Not tried, and write what happened. If the old version shows, reload the page once.</p>
   <div class="list" id="test"></div>
 
   <footer>Stage 5 stays open until this checklist passes. Questions that stay open are also listed in ToUser/TODO.md.</footer>
@@ -201,7 +201,7 @@ const TEST = [
   { id: "T01", title: "Open the game", steps: ["Open the live link on your phone in landscape.", "Tap once. The game goes full screen (Chrome on Android; Safari on iPhone cannot).", "The controls sit in the side space (L01)."] },
   { id: "T02", title: "Read the screen", steps: ["Without touching anything: can you see whose turn it is, the wind and the aim?", "Is any text too small at your normal holding distance?"] },
   { id: "T03", title: "Find the active ant", steps: ["Is it clear at once which ant is yours this turn? Only your ant has a tag.", "Tap another ant: its health tag shows until the turn ends. Tap it again to hide it."] },
-  { id: "T04", title: "Aim with the dial", steps: ["Drag the dial. Drag it across to the other side: the ant turns round.", "Tap the small ▲ ▼: one degree each."] },
+  { id: "T04", title: "Aim with the dial", steps: ["The dial is next to FIRE (layout A). Drag it. Drag it across to the other side: the ant turns round.", "Tap the small ▲ ▼ on the dial: one degree each."] },
   { id: "T05", title: "Aim with the slingshot", steps: ["Put your finger on your ant and drag back, like a slingshot. Let go: nothing fires.", "Do the dots show where the shot goes?"] },
   { id: "T06", title: "Set the power and the weapon", steps: ["Drag the power slider, then tap its ▲ ▼.", "Tap the weapon button and pick another weapon: angle and power stay."] },
   { id: "T07", title: "Fire and run", steps: ["Press FIRE. After the shot you have 3 seconds to walk away.", "Did FIRE ever do nothing when you expected a shot?"] },
@@ -211,7 +211,7 @@ const TEST = [
   { id: "T11", title: "Friendly fire", steps: ["With the normal link, hit your own ant: it takes no damage and is not pushed (“Hit own team” off).", "Open the link with ?ff=1 at the end and do it again: now it takes damage."] },
   { id: "T15", title: "Wind and dew notices", steps: ["When the wind changes at the start of a turn, the gauge pops and “Wind +1” (or similar) shows for a moment.", "Optional, a long match: after round 20 the dew rises, and the first time a banner explains it."] },
   { id: "T12", title: "Pause and resume", steps: ["Tap pause, then Resume. Play waits a moment before it starts again.", "Switch to another app and back: the game is paused."] },
-  { id: "T13", title: "Left-handed layout", steps: ["Open the link with ?hand=left at the end.", "FIRE is on the left, the dial on the right."] },
+  { id: "T13", title: "Left-handed layout", steps: ["Open the link with ?hand=left at the end.", "FIRE, the dial, the power and the weapon button are on the left; walk, Hop and Flip on the right."] },
   { id: "T14", title: "Phone speed", steps: ["Open the link with ?mem at the end.", "Write the ms number from the bottom-left corner here."] },
 ];
 
