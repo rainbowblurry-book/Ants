@@ -24,14 +24,7 @@ import { SIM_HZ } from '../sim/physics.ts';
 import { FIRE_LOCK_TICKS } from '../sim/turn.ts';
 import { drawErrors, fireValues, perceivedWind, pickCandidate, type ShotErrors } from './error.ts';
 import { type BotMove, type SolverJob, type SolverResult, startSolver } from './solver.ts';
-import type {
-  BotJob,
-  BotMemory,
-  BotParams,
-  BotTurnPlan,
-  Candidate,
-  MovePlan,
-} from './types.ts';
+import type { BotJob, BotMemory, BotParams, BotTurnPlan, Candidate, MovePlan } from './types.ts';
 
 export interface BotTurnInput {
   match: Match;
@@ -59,7 +52,7 @@ export interface BotPlanJob extends BotJob {
 }
 
 /** Recommended sims per `step` call (one call a frame): see tests/solver.test.ts. */
-export const BOT_SIMS_PER_FRAME = 60;
+export const BOT_SIMS_PER_FRAME = 48;
 
 /** Aim settle (DR-066 aim phase 0.6–1.2 s): 72 ticks at L0 down to 36 at L100. */
 export const SETTLE_MAX_TICKS = 72;

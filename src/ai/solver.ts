@@ -2,16 +2,20 @@
  * The shot solver (DR-060, J9, J22; DR-009 bot notes), run as a time-sliced
  * job.
  *
- * Search, per (target, weapon) pair:
- *   1. Sweep 15 angles, 15°..85° in 5° steps. At each, find the power that
- *      lands on the target: a power search seeded by a vacuum-ballistics
- *      guess, kept inside a [short, long] bracket and finished by
- *      interpolation (a safeguarded bisection, so it always converges).
+ * Search, per weapon:
+ *   1. At each of the 2 targets, sweep 15 angles, 15°..85° in 5° steps,
+ *      facing the target. At each angle, find the power that lands on the
+ *      target: a power search seeded by a vacuum-ballistics guess, kept
+ *      inside a [short, long] bracket and finished by interpolation (a
+ *      safeguarded bisection, so it always converges; it stops within 1 px).
  *      Score every sim.
- *   2. Keep the 3 best angles and refine each on a 3×3 grid at ±0.3° and
- *      ±3‰ (the nearest integer steps to 0.25° and 0.25%, DR-011 units).
- *      The Roller gets an extra ±2% power refine, because landing is not
- *      monotonic in power on slopes (DR-009).
+ *   2. Keep the weapon's 3 best shots (J22 band first within 2 points) and
+ *      refine each on a 3×3 grid at ±0.3° and ±3‰ (the nearest integer steps
+ *      to 0.25° and 0.25%, DR-011 units). The Roller gets an extra ±2% power
+ *      refine, because landing is not monotonic in power on slopes (DR-009).
+ * Facing: always toward the target. Aim is limited to −20°..+90° of facing,
+ * so the other facing could only reach the target off a wall bounce, which
+ * is not worth a second sweep of the budget.
  * Targets: the 2 best enemies by a cheap pre-score (distance and HP).
  * Weapons: every weapon with ammo, never the Plop (DR-009).
  * Score = Σ enemy damage + 20 per enemy KO − 20 per ally KO
@@ -21,22 +25,24 @@
  * try up to 3 walk strides of 40 px (the walk is simulated with the real
  * movement code on a copy of the ant), each with an 8-angle grid.
  *
- * Budget: ≤ 250 sims per pair (≤ 120 with 5 or more weapons), ≤ 1,200 per
- * turn. A share of the turn cap is held back for the move-first check.
+ * Budget: ≤ 250 sims per (weapon, target) (≤ 120 with 5 or more weapons),
+ * ≤ 1,200 per turn; MOVE_RESERVE of the turn cap is held back for the
+ * move-first check. Pollen and Grub get 60% of a weapon's share (HEAVY).
+ * Measured on the stand-in arena with all 5 weapons: about 470 sims a turn.
  *
- * Slicing: the job yields after every simulated shot, so `step(maxSims)` runs
- * exactly that many sims. The AI never reads a clock; the scene picks
+ * Slicing: the job yields before every simulated shot, so `step(maxSims)`
+ * runs at most that many sims, and the call that runs the last sim also
+ * finishes the job. The AI never reads a clock; the scene picks
  * maxSims. Pollen and Grub change the terrain during a shot, so they run on
- * one scratch grid reset from the live grid before each sim (a plain copy of
- * the cells) instead of a fresh clone per sim; that is the same physics as
- * `simulateShot`, at a fraction of the cost (tests/solver.test.ts checks
- * they agree).
+ * one scratch copy of the grid, made once per turn; after each sim the cells
+ * the shot changed (its dirty rects) are copied back from the live grid.
+ * That is the same physics as `simulateShot` without its fresh clone per sim
+ * (about 6× cheaper; tests/solver.test.ts checks they agree).
  *
  * Never mutates the live world. Pure TS: no Phaser, no clock, no banned Math.
  */
 
-import { WALK_BUDGET } from '../sim/movement.ts';
-import { type Ant, antSpeed, isActive, stepAnt, walkStep } from '../sim/movement.ts';
+import { type Ant, antSpeed, isActive, stepAnt, WALK_BUDGET, walkStep } from '../sim/movement.ts';
 import { ANT_CAPSULE, GRAVITY, LAUNCH_BASE, LAUNCH_RANGE } from '../sim/physics.ts';
 import type { Ammo } from '../sim/pickups.ts';
 import { Rng } from '../sim/rng.ts';
@@ -93,6 +99,22 @@ export const STRIDE_PAIRS = 2;
 /** Power-search sims per angle: the most in the sweep, and at a stride. */
 export const SIMS_PER_ANGLE = 8;
 export const SIMS_PER_STRIDE_ANGLE = 5;
+/**
+ * Pollen and Grub cost about 3× a Seed sim (puffs and tunnels change the
+ * terrain), so they get a smaller share of the per-weapon budget and fewer
+ * power-search sims per angle. Both are 1-ammo specials in two-player, and
+ * the Pollen spread and the Grub's 30 px blast forgive a coarser power.
+ */
+export const HEAVY: Readonly<Record<WeaponId, boolean>> = {
+  seed: false,
+  dewdrop: false,
+  roller: false,
+  pollen: true,
+  grub: true,
+  plop: true,
+};
+export const HEAVY_SHARE = 0.6;
+export const SIMS_PER_ANGLE_HEAVY = 5;
 /** Sims held back from the main search for the move-first check. */
 export const MOVE_RESERVE =
   STRIDES * STRIDE_PAIRS * STRIDE_ANGLES.length * SIMS_PER_STRIDE_ANGLE + TOP_N * 8;
@@ -168,6 +190,7 @@ export interface SolverJob {
 
 /** Internal: one scored sim. */
 interface Eval {
+  target: number;
   angleDeci: number;
   powerMille: number;
   score: number;
@@ -261,7 +284,22 @@ function better(a: Eval, b: Eval | null): boolean {
   if (ea !== eb) return ea < eb;
   if (inBand(a.angleDeci) !== inBand(b.angleDeci)) return inBand(a.angleDeci);
   if (a.angleDeci !== b.angleDeci) return a.angleDeci < b.angleDeci;
+  if (a.target !== b.target) return a.target < b.target;
   return a.powerMille < b.powerMille;
+}
+
+/**
+ * The best `n` evals of one pair for the refine: the J22 band first among
+ * those within TIE_POINTS of the pair's best, then `better`.
+ */
+function topEvals(evals: readonly Eval[], n: number): Eval[] {
+  let best = Number.NEGATIVE_INFINITY;
+  for (const e of evals) if (e.score > best) best = e.score;
+  const group = (e: Eval) => (e.score >= best - TIE_POINTS ? (inBand(e.angleDeci) ? 0 : 1) : 2);
+  return evals
+    .slice()
+    .sort((a, b) => group(a) - group(b) || (better(a, b) ? -1 : better(b, a) ? 1 : 0))
+    .slice(0, n);
 }
 
 // ------------------------------------------------------------- targets, weapons
@@ -294,7 +332,7 @@ export function usableWeapons(ammo: Readonly<Ammo>, only?: readonly WeaponId[]):
  * (up positive) at `angleDeci`. Only a starting guess for the power search.
  */
 export function guessPower(angleDeci: number, dist: number, h: number, wMul: number): number {
-  const d = dist < 1 ? 1 : dist;
+  const d = Math.max(dist, 1);
   const c = cosDeci(angleDeci);
   const s = sinDeci(angleDeci);
   const denom = 2 * c * (d * s - h * c);
@@ -506,6 +544,7 @@ class Search {
     } else if (res.impact) ix = res.impact.x;
     else ix = me.x + me.facing * 4000;
     const ev: Eval = {
+      target,
       angleDeci: a,
       powerMille: p,
       score: s.score - stand.penalty,
@@ -553,8 +592,8 @@ class Search {
     let p = guessPower(angleDeci, aimDist, h, wMul);
     let best: Eval | null = null;
     for (let n = 0; n < k && this.left > 0; n++) {
-      const ev = this.shoot(stand, weapon, target, angleDeci, p);
       yield;
+      const ev = this.shoot(stand, weapon, target, angleDeci, p);
       if (better(ev, best)) best = ev;
       const f = ev.past;
       if ((f < 0 ? -f : f) <= LAND_TOL_PX) break;
@@ -577,8 +616,8 @@ class Search {
         next = guessPower(angleDeci, aimDist, h, wMul);
       }
       if (!(next > lo && next < hi) || next === p) {
-        const l = lo < 0 ? 0 : lo;
-        const u = hi > 1000 ? 1000 : hi;
+        const l = Math.max(lo, 0);
+        const u = Math.min(hi, 1000);
         next = (l + u) >> 1;
         if (next <= lo) next = lo + 1;
         if (next >= hi) next = hi - 1;
@@ -594,8 +633,8 @@ class Search {
     for (const da of [-REFINE_DECI, 0, REFINE_DECI]) {
       for (const dp of [-REFINE_MILLE, 0, REFINE_MILLE]) {
         if ((da === 0 && dp === 0) || this.left <= 0) continue;
-        const ev = this.shoot(stand, weapon, target, e.angleDeci + da, e.powerMille + dp);
         yield;
+        const ev = this.shoot(stand, weapon, target, e.angleDeci + da, e.powerMille + dp);
         if (better(ev, best)) best = ev;
       }
     }
@@ -603,8 +642,8 @@ class Search {
       const c = best;
       for (const dp of [-ROLLER_REFINE_MILLE, ROLLER_REFINE_MILLE]) {
         if (this.left <= 0) break;
-        const ev = this.shoot(stand, weapon, target, c.angleDeci, c.powerMille + dp);
         yield;
+        const ev = this.shoot(stand, weapon, target, c.angleDeci, c.powerMille + dp);
         if (better(ev, best)) best = ev;
       }
     }
@@ -615,42 +654,50 @@ class Search {
    * Full search of one (weapon, target) pair from a stand within `budget`
    * sims. Returns its refined top candidates (distinct angles).
    */
-  *pair(
+  /**
+   * Full search of one weapon from a stand: the angle sweep at each target
+   * within `budget` sims in all, then the refine of the weapon's `refineTop`
+   * best shots (over every target). Returns those shots (distinct angles).
+   */
+  *weaponSearch(
     stand0: Stand,
     weapon: WeaponId,
-    target: number,
+    targets: readonly number[],
     angles: readonly number[],
     perAngle: number,
     budget: number,
     refineTop: number,
   ): Generator<void, Candidate[], void> {
-    const stand = this.facingStand(stand0, target);
     const start = this.sims;
-    const reserve = refineTop * (8 + (weapon === 'roller' ? 2 : 0));
-    const sweep = budget - reserve;
+    const need = 8 + (weapon === 'roller' ? 2 : 0);
+    const sweep = budget - refineTop * need;
     const evals: Eval[] = [];
-    for (let i = 0; i < angles.length; i++) {
-      const used = this.sims - start;
-      const share = Math.floor((sweep - used) / (angles.length - i));
-      const k = share < 2 ? 2 : Math.min(share, perAngle);
-      if (used + k > budget || this.left <= 0) break;
-      const e = yield* this.powerSearch(stand, weapon, target, angles[i] as number, k);
-      if (e) evals.push(e);
+    const runs = targets.length * angles.length;
+    let run = 0;
+    for (const target of targets) {
+      const stand = this.facingStand(stand0, target);
+      for (const angle of angles) {
+        const used = this.sims - start;
+        const share = Math.floor((sweep - used) / (runs - run));
+        run++;
+        const k = share < 2 ? 2 : Math.min(share, perAngle);
+        if (used + k > budget || this.left <= 0) break;
+        const e = yield* this.powerSearch(stand, weapon, target, angle, k);
+        if (e) evals.push(e);
+      }
     }
-    evals.sort((a, b) => (better(a, b) ? -1 : better(b, a) ? 1 : 0));
-    const top = evals.slice(0, TOP_N);
+    const top = topEvals(evals, TOP_N);
     const out: Candidate[] = [];
-    const facing = (stand.ants[this.shooter] as Ant).facing;
     for (let i = 0; i < top.length; i++) {
       let e = top[i] as Eval;
-      const need = 8 + (weapon === 'roller' ? 2 : 0);
+      const stand = this.facingStand(stand0, e.target);
       if (i < refineTop && this.sims - start + need <= budget && this.left >= need) {
-        e = yield* this.refine(stand, weapon, target, e);
+        e = yield* this.refine(stand, weapon, e.target, e);
       }
       out.push({
         weapon,
-        target,
-        facing,
+        target: e.target,
+        facing: (stand.ants[this.shooter] as Ant).facing,
         angleDeci: e.angleDeci,
         powerMille: e.powerMille,
         score: e.score,
@@ -676,22 +723,22 @@ class Search {
       return finish([], null, Number.NEGATIVE_INFINITY);
     }
     const allowMove = this.input.allowMove !== false && me.state === 'ground';
-    const pairs: { weapon: WeaponId; target: number }[] = [];
-    for (const weapon of weapons) for (const target of targets) pairs.push({ weapon, target });
     const perPairCap = weapons.length >= MANY_WEAPONS ? SIMS_PER_PAIR_MANY : SIMS_PER_PAIR;
-    const mainBudget = this.cap - (allowMove ? MOVE_RESERVE : 0);
-    const perPair = Math.min(perPairCap, Math.floor(mainBudget / pairs.length));
+    const reserve = allowMove ? Math.min(MOVE_RESERVE, Math.floor(this.cap / 3)) : 0;
+    const mainBudget = this.cap - reserve;
+    const pairs = weapons.length * targets.length;
+    const perWeapon = Math.min(perPairCap, Math.floor(mainBudget / pairs)) * targets.length;
     const stand: Stand = { ants: src.ants, delay: 0, penalty: 0 };
 
     let all: Candidate[] = [];
-    for (const pr of pairs) {
-      const got = yield* this.pair(
+    for (const weapon of weapons) {
+      const got = yield* this.weaponSearch(
         stand,
-        pr.weapon,
-        pr.target,
+        weapon,
+        targets,
         SWEEP_ANGLES,
-        SIMS_PER_ANGLE,
-        perPair,
+        HEAVY[weapon] ? SIMS_PER_ANGLE_HEAVY : SIMS_PER_ANGLE,
+        HEAVY[weapon] ? Math.floor(perWeapon * HEAVY_SHARE) : perWeapon,
         TOP_N,
       );
       all = all.concat(got);
@@ -699,8 +746,7 @@ class Search {
     const ranked = rankCandidates(all);
     const best = ranked[0];
     const standScore = best ? best.score : Number.NEGATIVE_INFINITY;
-    const needMove =
-      !best || best.score < MOVE_BELOW_SCORE || best.selfDamage > MOVE_SELF_DAMAGE;
+    const needMove = !best || best.score < MOVE_BELOW_SCORE || best.selfDamage > MOVE_SELF_DAMAGE;
     if (!allowMove || !needMove) return finish(ranked, null, standScore);
 
     // Move first: up to 3 strides, each with an 8-angle grid for the 2 best pairs.
@@ -732,10 +778,10 @@ class Search {
       let got: Candidate[] = [];
       const budget = STRIDE_ANGLES.length * SIMS_PER_STRIDE_ANGLE;
       for (const sp of stridePairs) {
-        const c = yield* this.pair(
+        const c = yield* this.weaponSearch(
           st,
           sp.weapon,
-          sp.target,
+          [sp.target],
           STRIDE_ANGLES,
           SIMS_PER_STRIDE_ANGLE,
           budget,
@@ -744,10 +790,15 @@ class Search {
         got = got.concat(c);
       }
       const r = rankCandidates(got);
-      tried.push({ move: w.move, score: r[0]?.score ?? Number.NEGATIVE_INFINITY, ranked: r, stand: st });
+      tried.push({
+        move: w.move,
+        score: r[0]?.score ?? Number.NEGATIVE_INFINITY,
+        ranked: r,
+        stand: st,
+      });
     };
     yield* tryStride.call(this, towardTarget, STRIDE_PX);
-    yield* tryStride.call(this, (-towardTarget) as 1 | -1, STRIDE_PX);
+    yield* tryStride.call(this, -towardTarget as 1 | -1, STRIDE_PX);
     // Third stride: two strides in the better direction so far.
     let dir3: 1 | -1 = towardTarget;
     if (tried.length > 0) {
@@ -771,6 +822,7 @@ class Search {
       }
       const st = this.facingStand(pick.stand, c.target);
       const e: Eval = {
+        target: c.target,
         angleDeci: c.angleDeci,
         powerMille: c.powerMille,
         score: c.score,

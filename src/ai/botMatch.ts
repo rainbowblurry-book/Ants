@@ -9,13 +9,25 @@
  * (bracketing, DR-067 rattled). Pure: no clock, no Phaser.
  */
 
-import { ANT_MAX_HP, blastDistance } from '../sim/damage.ts';
-import { type Ant, isActive } from '../sim/movement.ts';
+import { ANT_MAX_HP } from '../sim/damage.ts';
 import { Match, type MatchConfig } from '../sim/match.ts';
+import { type Ant, isActive } from '../sim/movement.ts';
 import type { MatchResult } from '../sim/turn.ts';
-import { BOT_SIMS_PER_FRAME, BotDriver, type BotPlan, type BotPlanJob, startBotTurn } from './bot.ts';
+import {
+  BOT_SIMS_PER_FRAME,
+  BotDriver,
+  type BotPlan,
+  type BotPlanJob,
+  startBotTurn,
+} from './bot.ts';
 import { botParams } from './botParams.ts';
-import { afterShot, type ShotOutcome } from './error.ts';
+import {
+  afterShot,
+  type HitBlast,
+  isLethalBlast,
+  missFromImpact,
+  type ShotOutcome,
+} from './error.ts';
 import { type BotMemory, freshMemory } from './types.ts';
 
 export interface BotSide {
@@ -52,15 +64,9 @@ export interface BotMatchResult {
   /** Solver sims per bot turn, in order. */
   sims: number[];
   stateHash: number;
-}
-
-/** DR-062: the shot's closest blast is within 0.5·r of the target's hurtbox surface. */
-export function shotHit(
-  blasts: readonly { x: number; y: number; r: number }[],
-  target: { x: number; y: number },
-): boolean {
-  for (const b of blasts) if (blastDistance(b.x, b.y, target) <= 0.5 * b.r) return true;
-  return false;
+  /** Turn timeouts and rejected commands (both should stay 0 for bots). */
+  timeouts: number;
+  rejects: number;
 }
 
 /** The DR-061 / DR-067 outcome of one bot shot, for `afterShot`. */
@@ -83,19 +89,23 @@ export function shotOutcome(
     enemyMax = Math.max(enemyMax, ANT_MAX_HP);
     if (isActive(a)) left++;
   }
-  const blasts: { x: number; y: number; r: number }[] = [];
+  // DR-062 on the shot's first blast (a fizzle first is a miss), as the cap suite does.
+  let first: HitBlast | null = null;
+  let fizzled = false;
   for (const e of shot?.events ?? []) {
-    if (e.kind === 'blast') blasts.push({ x: e.blast.x, y: e.blast.y, r: e.blast.r });
+    if (e.kind === 'blast') {
+      first = { x: e.blast.x, y: e.blast.y, r: e.blast.r, direct: e.blast.direct };
+      break;
+    }
+    if (e.kind === 'fizzle') {
+      fizzled = true;
+      break;
+    }
   }
-  const hit = targetAt !== null && shotHit(blasts, targetAt);
-  // Signed miss along the shot: past the target is positive. Range grows
-  // about as v², so a relative range error r is about r/2 in relative power.
-  let missPower = 0;
-  if (targetAt && blasts.length > 0) {
-    const b = blasts[0] as { x: number };
-    const dist = Math.abs(targetAt.x - shooterX);
-    if (dist > 0) missPower = ((b.x - targetAt.x) * plan.facing) / (2 * dist);
-  }
+  const hit =
+    targetAt !== null && first !== null && !fizzled && isLethalBlast(first, plan.target, targetAt);
+  const missPower =
+    targetAt && first ? missFromImpact(shooterX, targetAt.x, first.x, plan.powerMille) : 0;
   return {
     outcome: {
       target: plan.target,
@@ -134,10 +144,22 @@ export function runBotMatch(opts: BotMatchOptions): BotMatchResult {
 
   const settle = () => {
     if (!pending) return;
-    const shot = match.shots.length > pending.shotsBefore ? match.shots[pending.shotsBefore] : undefined;
-    const { outcome, hit } = shotOutcome(match, pending.plan, pending.team, pending.x, pending.target, shot);
+    const shot =
+      match.shots.length > pending.shotsBefore ? match.shots[pending.shotsBefore] : undefined;
+    const { outcome, hit } = shotOutcome(
+      match,
+      pending.plan,
+      pending.team,
+      pending.x,
+      pending.target,
+      shot,
+    );
     const side = opts.sides[pending.team] as BotSide;
-    memory[pending.team] = afterShot(pending.plan.memory, botParams(side.level, { boss: side.boss }), outcome);
+    memory[pending.team] = afterShot(
+      pending.plan.memory,
+      botParams(side.level, { boss: side.boss }),
+      outcome,
+    );
     const log: BotShotLog = {
       team: pending.team,
       ant: pending.ant,
@@ -196,5 +218,19 @@ export function runBotMatch(opts: BotMatchOptions): BotMatchResult {
     match.step();
   }
   settle();
-  return { result: match.result, ticks: match.tick, shots, sims, stateHash: match.stateHash() };
+  let timeouts = 0;
+  let rejects = 0;
+  for (const e of match.events) {
+    if (e.kind === 'timeout') timeouts++;
+    else if (e.kind === 'reject') rejects++;
+  }
+  return {
+    result: match.result,
+    ticks: match.tick,
+    shots,
+    sims,
+    stateHash: match.stateHash(),
+    timeouts,
+    rejects,
+  };
 }
