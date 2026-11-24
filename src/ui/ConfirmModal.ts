@@ -9,11 +9,13 @@
  * Android back and B cancel. A scrim tap cancels non-destructive modals only.
  * At most one modal is open. It owns a focus scope, so focus is trapped.
  */
+
 import * as Phaser from 'phaser';
 import { t } from '../i18n';
 import { Button, FocusRing, Panel } from './components';
 import { fitText } from './fitText';
 import type { FocusManager } from './focus';
+import { screenSize, worldOffset } from './layout';
 import { motionMs, reducedMotion } from './motion';
 import type { Nav } from './nav';
 import { BitmapLabel, bodyText } from './text';
@@ -80,7 +82,8 @@ export class ConfirmModal extends Phaser.GameObjects.Container {
     scene.add.existing(this);
 
     const scrim = scene.add
-      .rectangle(0, 0, logical.width, logical.height, color.scrim, alpha.scrim)
+      // Centred scenes (Pause, UiLab): x 0..960 is the middle; cover the side strips too (OVR-013).
+      .rectangle(-worldOffset(), 0, screenSize.w, logical.height, color.scrim, alpha.scrim)
       .setOrigin(0, 0)
       .setInteractive();
     scrim.on('pointerup', () => {

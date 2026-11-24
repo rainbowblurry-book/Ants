@@ -659,7 +659,9 @@ export class WeaponSlot extends Phaser.GameObjects.Container implements Ctl {
     this.zone = zone;
     zone.on('pointerdown', () => {
       if (!this.visible) return;
-      if (!this.isLive() || (this.view?.ammo ?? 0) <= 0) {
+      // The weapon button opens the tray even when its weapon is used up (OVR-019).
+      const empty = this.id !== 'weapon' && (this.view?.ammo ?? 0) <= 0;
+      if (!this.isLive() || empty) {
         this.box.deny();
         return;
       }

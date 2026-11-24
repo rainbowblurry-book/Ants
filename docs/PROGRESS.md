@@ -34,6 +34,8 @@ Branch `build/stage-05b-playtest`. The owner's checklist choices (D01–D12, rea
 - `hudLayout(m, hand, mode, s, W)`: layout A rects (see OVR-019); `isWide` decides where the power slider goes. The weapon button is a `WeaponSlot` with id `weapon`; tray slots open with `setOpen` (a closed slot's zone takes no input).
 - Tests: `hud-layout` runs W 960, 1080, 1136, 1170 and 1260 × both hands × 4 margin sets × 5 modes (UI.md §6 check 3 plus the pop-up tray), plus the exact rects at 960 and 1170. e2e: `cssPoint` works in W (and centred scenes), the touch turn opens the tray and picks Dewdrop.
 - Review shots (scratch, not committed): 844x390 (W 1168, wide) and 667x375 (W 960) with the tray open.
+- The owner's L01 comment: the wind is a small readout under the plate (drifting chevrons, the number, "No wind"), `WindChip`.
+- **Review (a subagent):** 3 bugs, all fixed: the open tray covered the dial and Phaser gave the dial zone the tap (the tray now right-aligns with the weapon button; a test checks it covers no control); the weapon button refused taps when its weapon was used up; edge indicators still clamped to x 24..936. Also: ConfirmModal's scrim covers the side strips, tags stay over the world strip, a tap outside the strip opens no tag, two e2e taps convert in Pause's centred frame.
 
 
 ### Owner answers after the M1 playtest — 2026-11-17

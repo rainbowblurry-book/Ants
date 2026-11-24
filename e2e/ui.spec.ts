@@ -103,7 +103,7 @@ test('confirm modal: safe default focus, focus trap, Esc and B cancel, scrim rul
   await page.mouse.click(destructive.x, destructive.y);
   await expect.poll(() => page.evaluate(() => window.__uilab?.modalOpen())).toBe(true);
   expect(await page.evaluate(() => window.__uilab?.focused())).toBe('modal-cancel');
-  const corner = await cssPoint(page, 40, 40);
+  const corner = await cssPoint(page, 40, 40, true);
   await page.mouse.click(corner.x, corner.y);
   await page.waitForTimeout(100);
   expect(await page.evaluate(() => window.__uilab?.modalOpen())).toBe(true);

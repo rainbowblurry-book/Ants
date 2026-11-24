@@ -62,6 +62,9 @@ describe('HUD layout A (UI.md §6 check 3, OVR-013, OVR-019)', () => {
             // The tray pop-up: on screen, slots 64 with 8 apart, clear of FIRE by 32.
             const tray = l.rects.tray as Rect;
             expect(inside(tray, safe), 'tray').toBe(true);
+            // It covers no control: a zone under it would win the tap (Phaser sorts zones first-made first).
+            for (const id of ids)
+              expect(overlaps(tray, l.rects[id] as Rect), `tray over ${id}`).toBe(false);
             for (const r of l.slots) {
               expect(r.w).toBeGreaterThanOrEqual(64);
               expect(inside(r, tray)).toBe(true);

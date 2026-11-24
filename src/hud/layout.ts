@@ -133,7 +133,8 @@ function specs(mode: HudMode, W: number, wide: boolean): Record<string, Spec> {
   const pad = 8;
   const tw = cols * slot.size + (cols - 1) * slot.gap + 2 * pad;
   const th = rows * slot.size + (rows - 1) * slot.gap + 2 * pad;
-  out.tray = bot(weaponX + 36 - tw / 2, 452 - 8 - th, tw, th, 'BR');
+  // Right-aligned with the button, so it never covers the dial (a zone under it would win the tap).
+  out.tray = bot(weaponX + 72 - tw, 452 - 8 - th, tw, th, 'BR');
   return out;
 }
 

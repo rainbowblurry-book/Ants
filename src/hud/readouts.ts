@@ -698,7 +698,7 @@ export class EdgeIndicator extends Phaser.GameObjects.Container {
     const on = tx >= worldOffset() && tx <= worldOffset() + 960 && ty >= 0 && ty <= 540;
     this.setVisible(!on);
     if (on) return;
-    const x = Math.min(936, Math.max(24, tx));
+    const x = Math.min(worldOffset() + 936, Math.max(worldOffset() + 24, tx));
     const y = Math.min(350, Math.max(188, ty));
     this.setPosition(x, y);
     const a = Math.atan2(ty - y, tx - x);

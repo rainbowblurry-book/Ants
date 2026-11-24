@@ -812,6 +812,7 @@ export class Hud extends Phaser.Scene {
    * waiting timer; on another ant it opens or closes that ant's tag.
    */
   private tapAt(q: { x: number; y: number }): void {
+    if (q.x < worldOffset() || q.x > worldOffset() + 960) return;
     const m = this.link.match;
     const v = this.link.view();
     const inside = (i: number) => {
@@ -1061,7 +1062,11 @@ export class Hud extends Phaser.Scene {
       const feet = worldToScreen(v, a.x, a.y);
       const size = active ? { w: 96, h: 40 } : { w: 76, h: 32 };
       let y = feet.y - ANT_SIDE.h * v.zoom - 12;
-      const x = Math.min(screenSize.w - size.w / 2, Math.max(size.w / 2, feet.x));
+      // Tags stay over the world strip (OVR-013).
+      const x = Math.min(
+        worldOffset() + 960 - size.w / 2,
+        Math.max(worldOffset() + size.w / 2, feet.x),
+      );
       // Overlapping tags are offset 36 px (DR-128).
       for (let k = 0; k < 4; k++) {
         const hitTag = placed.some(

@@ -333,7 +333,10 @@ test('Pause freezes the match; Resume waits the ready delay and clears buffers',
   const r = await page.evaluate(() => (window.__pause as PauseHook).rect('resume'));
   const resume = r as R;
   const tappedAt = Date.now();
-  await tap(page, resume.x + resume.w / 2, resume.y + resume.h / 2, touch);
+  // Pause is a centred scene (OVR-013): convert in its frame.
+  const rp = await cssPoint(page, resume.x + resume.w / 2, resume.y + resume.h / 2, true);
+  if (touch) await page.touchscreen.tap(rp.x, rp.y);
+  else await page.mouse.click(rp.x, rp.y);
   await page.waitForFunction(() => window.__pause === undefined, null, { timeout: 5_000 });
   expect(Date.now() - tappedAt).toBeGreaterThanOrEqual(600);
   await page.waitForFunction((t) => (window.__battle as BattleHook).tick() > t, t1);
