@@ -156,6 +156,9 @@ describe('BotDriver (DR-066 timing through the player command path)', () => {
     expect(outcome.enemyMaxHp).toBe(100);
     expect(outcome.enemyAntsLeft).toBeGreaterThan(0);
     expect(typeof outcome.hit).toBe('boolean');
+    expect(Number.isFinite(outcome.missPower)).toBe(true);
+    if (outcome.hit) expect(outcome.missPower).toBe(0);
+    expect(outcome.missAngle).toBe(0);
     expect(bot.memory.rattled).toBe(true);
     // Back to the human; the driver lets go.
     expect(until(() => m.turns.team !== BOT_TEAM)).toBe(true);

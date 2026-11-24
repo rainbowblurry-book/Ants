@@ -23,7 +23,7 @@
  */
 import { startBotTurn } from '../ai/bot.ts';
 import { botParams } from '../ai/botParams.ts';
-import { afterShot, type ShotOutcome } from '../ai/error.ts';
+import { afterShot, isLethalBlast, missFromImpact, type ShotOutcome } from '../ai/error.ts';
 import {
   type BotJob,
   type BotMemory,
@@ -31,7 +31,7 @@ import {
   type BotTurnPlan,
   freshMemory,
 } from '../ai/types.ts';
-import { ANT_MAX_HP, blastDistance } from '../sim/damage.ts';
+import { ANT_MAX_HP } from '../sim/damage.ts';
 import type { Match } from '../sim/match.ts';
 import { antSpeed, isActive } from '../sim/movement.ts';
 import { GATE_LOCKOUT_TICKS, GATE_PAN_TICKS, SETTLE_SPEED } from '../sim/turn.ts';
@@ -87,6 +87,9 @@ export class BotDriver {
   private shotsBefore = 0;
   private shotAnt = -1;
   private hit: boolean | null = null;
+  /** Shooter x when it fired, and the miss along the shot from the impact (DR-061). */
+  private shooterX = 0;
+  private missPower = 0;
 
   constructor(cfg: BotConfig, deps: Partial<BotDeps> = {}) {
     this.team = cfg.team;
@@ -219,6 +222,7 @@ export class BotDriver {
     this.fired = false;
     this.reported = false;
     this.hit = null;
+    this.missPower = 0;
     this.paramsUsed = null;
   }
 
@@ -252,6 +256,7 @@ export class BotDriver {
     const weapon = pool && pool[plan.weapon] > 0 ? plan.weapon : 'seed';
     this.shotsBefore = m.shots.length;
     this.shotAnt = m.turns.ant;
+    this.shooterX = m.activeAnt?.x ?? 0;
     this.fired = true;
     this.fireTries++;
     m.push({ kind: 'fire', weapon, angleDeci: plan.angleDeci, powerMille: plan.powerMille });
@@ -286,20 +291,26 @@ export class BotDriver {
     return s && s.shooter === this.shotAnt ? s : null;
   }
 
-  /** DR-062: the first blast or fizzle is the impact; a hit is d ≤ 0.5·r to the target's hurtbox. */
+  /**
+   * DR-062: the first blast or fizzle is the impact, read on the tick it lands
+   * (the target has not been knocked back yet). A hit is d ≤ 0.5·r to the
+   * target's hurtbox; the miss along the shot feeds DR-061 bracketing.
+   */
   private watchShot(m: Match): void {
     if (this.hit !== null) return;
     const shot = this.shot(m);
     if (!shot) return;
     const first = shot.events.find((e) => e.kind === 'blast' || e.kind === 'fizzle');
     if (!first) return;
-    const target = m.ants[this.plan?.target ?? -1];
-    if (first.kind !== 'blast' || !target) {
+    const ti = this.plan?.target ?? -1;
+    const target = m.ants[ti];
+    if (!target) {
       this.hit = false;
       return;
     }
-    const d = blastDistance(first.blast.x, first.blast.y, target);
-    this.hit = d <= 0.5 * first.blast.r;
+    const impactX = first.kind === 'blast' ? first.blast.x : first.x;
+    this.missPower = missFromImpact(this.shooterX, target.x, impactX, this.plan?.powerMille ?? 0);
+    this.hit = first.kind === 'blast' && isLethalBlast(first.blast, ti, target);
   }
 
   private report(m: Match): void {
@@ -314,16 +325,14 @@ export class BotDriver {
       damage += shot?.dealt[i] ?? 0;
       if (isActive(a)) left++;
     });
-    // TODO(stage 6): missPower / missAngle (the signed miss along the shot, for DR-061
-    // bracketing) are 0 here: the scene cannot measure them cheaply. The solver can fill
-    // them from its own shot sim of the fired values, or `afterShot` can work without them.
+    // missAngle stays 0: the miss is corrected through power only (src/ai/error.ts).
     const outcome: ShotOutcome = {
       target: this.plan?.target ?? -1,
       damageToEnemy: damage,
       enemyMaxHp: ANT_MAX_HP,
       hit: this.hit ?? false,
       enemyAntsLeft: left,
-      missPower: 0,
+      missPower: this.hit ? 0 : this.missPower,
       missAngle: 0,
     };
     this.lastOutcome = outcome;
