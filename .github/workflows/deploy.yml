@@ -3,18 +3,23 @@ name: Deploy Ants to GitHub Pages
 # PLAN §11 (DR-017), plus the e2e job from DR-192.
 # OVR-001: tests also run on the stage branches (build/**), so a stage can be
 # proven green before it is merged. Only main builds and deploys.
+# Owner, 2026-11-24: skip CI when a push changes only docs/ or ToUser/.
 on:
   push:
     branches: [main, "build/**"]
+    paths-ignore: ["docs/**", "ToUser/**"]
   pull_request:
+    paths-ignore: ["docs/**", "ToUser/**"]
   workflow_dispatch:
 
 permissions:
   contents: read
 
+# Owner, 2026-11-24: a new push cancels the older run on the same branch.
+# Not on main, so a Pages deploy is never cut off halfway.
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test:
@@ -30,8 +35,13 @@ jobs:
       - run: npm run lint
       - run: npm test
 
+  # Owner, 2026-11-24: one e2e job per viewport, run side by side.
   e2e:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [phone-844x390, phone-667x375, desktop-1280x720]
     env:
       BASE_PATH: /Ants/
     steps:
@@ -43,11 +53,11 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run build
-      - run: npm run e2e
+      - run: npm run e2e -- --project=${{ matrix.project }}
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: e2e-results
+          name: e2e-results-${{ matrix.project }}
           path: test-results
           if-no-files-found: ignore
           retention-days: 14

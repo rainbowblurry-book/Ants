@@ -49,6 +49,11 @@ export interface World {
   pickups: Pickup[];
   /** Blasts hurt the shooter's own team (DR-035; OVR-015 can turn it off). */
   friendlyFire: boolean;
+  /**
+   * A bot dry run (src/ai/shotSim.ts): blasts change no terrain and pop no
+   * pickups. Only set on a throw-away world copy; a match never sets it.
+   */
+  dry?: boolean;
 }
 
 export interface Blast {

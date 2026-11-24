@@ -116,7 +116,9 @@ export function shotLive(shot: Shot): boolean {
 
 function explodeAt(world: World, shot: Shot, blast: Blast): void {
   const g = world.grid;
-  if (blast.fill) {
+  if (world.dry) {
+    // Bot dry run: the terrain and pickups stay as they are.
+  } else if (blast.fill) {
     const active = world.ants.filter(isActive);
     g.fill(blast.x, blast.y, blast.r, Material.SOIL, (x, y) => {
       for (const a of active) {

@@ -2,13 +2,12 @@
 
 Updated: 2026-11-24, stage 5 (M1) closed after your phone test. How to use this file: see `README.md` in this folder. Answered items are in `archive/ANSWERED.md`.
 
-**Stage 5 (M1) passed your phone test.** Do R-08 when you can (push one tag). Your feel notes are kept in R-07 for later. Until you answer the other items, the build follows the docs as written.
+**Stage 5 (M1) passed your phone test.** Your feel notes are kept in R-07 for later. Until you answer the other items, the build follows the docs as written.
 
 **Summary**
 
 | ID | Short name | Type | Needed before |
 |---|---|---|---|
-| R-08 | Push the `m1-hotseat` tag | do | any time |
 | R-07 | Your feel notes (handling, power) | decide later | after the final UI |
 | Q-17 | Double-tap to find your ant | answer | stage 11 |
 | Q-01 | Back-flip fall damage | answer | stage 8 |
@@ -56,14 +55,6 @@ Updated: 2026-11-24, stage 5 (M1) closed after your phone test. How to use this 
 ---
 
 ## Reviews and checks
-
-### R-08 · Push the `m1-hotseat` tag
-- **Status:** open. **Needed before:** nothing; it marks M1 in the history.
-- **Why you:** the builder's session cannot push tags (HTTP 403).
-- **Do this (one of):**
-  - On GitHub: Releases → "Draft a new release" → tag `m1-hotseat`, target commit `deb38a0` (main) → Publish.
-  - Or in a terminal: `git tag m1-hotseat deb38a0 && git push origin m1-hotseat`.
-- **Your answer:**
 
 ### R-07 · Your feel notes after the M1 test (keep for later)
 - **Status:** open. **Needed before:** your decisions once the final UI is in (you asked to wait).

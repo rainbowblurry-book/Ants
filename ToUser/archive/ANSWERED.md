@@ -2,6 +2,12 @@
 
 The builder moves an item here from `../TODO.md` when it is done. Each entry keeps the item ID, your answer, the date, and what the builder does with it.
 
+## 2026-11-24 (tag)
+
+### R-08 · Push the `m1-hotseat` tag
+- **Your answer:** done. The tag is on GitHub at `deb38a0`.
+- **Builder:** checked with `git ls-remote --tags`. Nothing more to do.
+
 ## 2026-11-24 (stage 5b checklist, Part 2: the phone test)
 
 ### R-05 · Stage 5b phone test
