@@ -314,6 +314,92 @@ export class WindGauge extends Phaser.GameObjects.Container {
   }
 }
 
+/**
+ * The small wind readout under the turn plate (OVR-019, the owner's L01
+ * comment): three chevrons drift in the wind's direction (faster when it is
+ * stronger) beside the signed number, or "No wind". A change pops it
+ * (OVR-018, D10). Reduced motion: the chevrons stand still.
+ */
+export class WindChip extends Phaser.GameObjects.Container {
+  private chevrons: Phaser.GameObjects.Image[] = [];
+  private num: BitmapLabel;
+  private calm: Phaser.GameObjects.Text;
+  private box: JellyBox;
+  private level = Number.NaN;
+  private phase = { t: 0 };
+  private drift: Phaser.Tweens.Tween | null = null;
+  private readonly lane: { x0: number; w: number; y: number };
+
+  constructor(
+    scene: Phaser.Scene,
+    readonly rect: Rect,
+    calmText: string,
+  ) {
+    super(scene, 0, 0);
+    this.box = new JellyBox(scene, rect, {
+      fill: 'info',
+      shade: 'info-shade',
+      radius: tokens.radius.lg,
+      shadowY: tokens.shadowY.sm,
+    });
+    this.add(this.box);
+    const y = -tokens.shape.shadeBand.base / 2;
+    this.lane = { x0: -rect.w / 2 + 14, w: rect.w * 0.55 - 14, y };
+    const ch = asset('ui.wind.chevron');
+    for (let i = 0; i < 3; i++) {
+      const img = scene.add.image(0, y, ch.atlas, ch.frame).setScale(0.6 / RASTER);
+      img.setTint(color['meaning-white']);
+      this.chevrons.push(img);
+    }
+    this.num = new BitmapLabel(scene, rect.w * 0.3, y + 1, '', 'numeral', color['meaning-white']);
+    this.num.setTextOrigin(0.5, 0.5);
+    this.calm = bodyText(scene, 0, y, calmText, 'body', cssOnColor.info).setOrigin(0.5, 0.5);
+    this.box.face.add([...this.chevrons, this.num, this.calm]);
+    scene.add.existing(this);
+  }
+
+  /** Places the chevrons along the lane for a phase 0..1, fading at both ends. */
+  private place(side: number): void {
+    const { x0, w } = this.lane;
+    this.chevrons.forEach((img, i) => {
+      const f = (this.phase.t + i / 3) % 1;
+      const along = side > 0 ? f : 1 - f;
+      img.setX(x0 + along * w);
+      img.setAlpha(Math.min(1, f * 4, (1 - f) * 4));
+    });
+  }
+
+  show(level: number): void {
+    const lv = Math.round(level);
+    if (lv === this.level) return;
+    const first = Number.isNaN(this.level);
+    this.level = lv;
+    const side = Math.sign(lv);
+    this.calm.setVisible(side === 0);
+    this.num.setVisible(side !== 0).setText(lv > 0 ? `+${lv}` : `−${-lv}`);
+    for (const img of this.chevrons) img.setVisible(side !== 0).setFlipX(side < 0);
+    this.drift?.stop();
+    this.drift = null;
+    this.phase.t = 0;
+    if (side !== 0) {
+      this.place(side);
+      if (!reducedMotion()) {
+        this.drift = this.scene.tweens.add({
+          targets: this.phase,
+          t: 1,
+          duration: Math.max(500, 1500 - 200 * Math.abs(lv)),
+          repeat: -1,
+          onUpdate: () => this.place(side),
+        });
+      }
+    }
+    if (!first && !reducedMotion()) {
+      this.box.setScale(0.9);
+      this.scene.tweens.add({ targets: this.box, scale: 1, duration: 180, ease: 'Back.easeOut' });
+    }
+  }
+}
+
 /** One chip of the effects row (DR-125, DR-127): 40 tall, body 22. */
 export class EffectsRow extends Phaser.GameObjects.Container {
   private texts: string[] = [];

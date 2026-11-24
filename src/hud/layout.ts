@@ -104,7 +104,8 @@ function specs(mode: HudMode, W: number, wide: boolean): Record<string, Spec> {
     teamB: top(W - 88 - pillW, 16, pillW, mode.boss ? 72 : 48, 'TR'),
     plate: top(c - 180, 16, 360, 56, 'TC'),
     timer: top(c + 124, 20, 48, 48, 'TC'),
-    wind: top(c - 180, 80, 360, 48, 'TC'),
+    // A small wind readout under the plate (the owner's L01 comment).
+    wind: top(c - 100, 80, 200, 44, 'TC'),
     effects: top(c - 240, 132, 480, 40, 'TC'),
     pause: top(W - 80, 16, 64, 64, 'TR'),
     find: top(W - 80, 88, 64, 64, 'TR'),

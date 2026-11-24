@@ -40,7 +40,7 @@ import {
   TeamPill,
   TurnPlate,
   teamFill,
-  WindGauge,
+  WindChip,
 } from '../hud/readouts';
 import { t } from '../i18n';
 import {
@@ -133,7 +133,7 @@ export class Hud extends Phaser.Scene {
   private frame: TeamFrame | null = null;
   private pills: TeamPill[] = [];
   private plate!: TurnPlate;
-  private wind!: WindGauge;
+  private wind!: WindChip;
   private effects!: EffectsRow;
   private moveBar!: MoveBar;
   private tags: AntTag[] = [];
@@ -319,7 +319,7 @@ export class Hud extends Phaser.Scene {
       );
     }
     this.plate = new TurnPlate(this, R.plate as Rect, R.timer as Rect).setDepth(D.hud);
-    this.wind = new WindGauge(this, R.wind as Rect, t('hud.calm')).setDepth(D.hud);
+    this.wind = new WindChip(this, R.wind as Rect, t('hud.calm')).setDepth(D.hud);
     this.effects = new EffectsRow(this, R.effects as Rect).setDepth(D.hud);
     this.moveBar = new MoveBar(this, R.moveBar as Rect).setDepth(D.hud);
     this.noticeView = new NoticeView(this, R.notice as Rect).setDepth(D.notice);

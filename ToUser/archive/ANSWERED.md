@@ -6,7 +6,7 @@ The builder moves an item here from `../TODO.md` when it is done. Each entry kee
 
 ### R-06 · Pick a screen layout (L01)
 - **Your answer:** A (move with the left thumb; aim, weapon and fire with the right).
-- **Builder:** OVR-019, built in stage 5b with the wider view on long phones (OVR-013). One difference from the picture: the wind gauge stays under the turn plate, because there is no room for it in the top row on a 16:9 phone.
+- **Builder:** OVR-019, built in stage 5b with the wider view on long phones (OVR-013). Your comment (the wind as a small animation left or right, the turn in the centre with the timer, the wind number and "No wind" below): built as a small wind readout under the turn plate, with drifting chevrons and the number, or "No wind".
 
 ### R-05 · Stage 5b checklist page, Part 1 (D01–D12)
 - **Your answers** (read from the checklist page):
