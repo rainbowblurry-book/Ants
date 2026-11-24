@@ -1,17 +1,15 @@
-# Handoff: ANTS! build, stage 5b (fixes from the owner's M1 playtest) → live, waiting for the owner's phone test
-Seq: 13 | Date: 2026-11-24 | Branch@commit: main = build/stage-05b-playtest@deb38a0 (+ this handoff commit on the branch) | Status: blocked on the owner (Part 2 phone test, R-05)
+# Handoff: ANTS! build → stage 5 (M1) closed; next stage 6, Bot AI (HARD)
+Seq: 14 | Date: 2026-11-24 | Branch@commit: build/stage-05b-playtest (stage 5 close docs; merge to main after CI) ; main@deb38a0 deployed | Status: ready for stage 6
 Saved to: rainbowblurry-book/Ants, docs/SESSION_HANDOFF.md (the one and only handoff file; docs/HANDOFF.md is the build plan)
 
 ## Goal
-Build the Phaser 3 ant artillery game ANTS! exactly as planned in `docs/HANDOFF.md`, one stage at a time. You are the **builder**. Now: stage 5b, fix what the owner's M1 phone playtest found, until a second playtest passes. **Stage 5 is not done until then; do not start stage 6** (owner, 2026-11-17).
+Build the Phaser 3 ant artillery game ANTS! exactly as planned in `docs/HANDOFF.md`, one stage at a time. You are the **builder**. Stage 5 (M1) passed the owner's phone test on 2026-11-24. Next: **stage 6, Bot AI (HARD)**.
 
 ## State
-- Done 2026-11-24: D01–D12 and L01 A (with the owner's wind comment) built: OVR-011 to OVR-019 in `docs/DECISIONS.md`; details in `docs/PROGRESS.md` "Stage 5b". Layout A + wide canvas (W 960..1260, world in the middle strip). Two review subagents: 5 bugs found, all fixed.
-- Tests: `npm test` 484 pass; e2e 61 pass, 2 skipped by design (local and CI).
-- `main` fast-forwarded to deb38a0; CI run 42 green and **deployed** to https://rainbowblurry-book.github.io/Ants/.
-- Checklist page republished (version 3): Part 2 (T01–T15) points at the live link. `ToUser/TODO.md` R-05 = the phone test.
-- Blocked / waiting on: the owner's Part 2 marks on the checklist page.
-- Not done: `m1-hotseat` tag (after the test passes; the owner pushes it), stage 6.
+- Done: stages 0–5 and 5b. Owner's phone test (R-05): T01–T08, T10–T12, T15 pass; T09, T13, T14 not tried; no problems. Archived in `ToUser/archive/ANSWERED.md`.
+- `main` = deb38a0, deployed at https://rainbowblurry-book.github.io/Ants/. The stage 5 close docs (TODO, ANSWERED, PROGRESS, this file) are on `build/stage-05b-playtest`; merge them to `main` with `--ff-only` once CI is green on that branch (check first: it may already be done).
+- Tag `m1-hotseat`: local only, at deb38a0. The owner pushes it (`ToUser/TODO.md` R-08); this session cannot push tags (HTTP 403).
+- Waiting on the owner (not blocking): R-08 tag, R-07 feel notes (later), Q-01–Q-03 (stage 8), Q-17 (stage 11), R-02 phone ms.
 - Uncommitted work: none.
 
 ## Decisions (with why)
@@ -25,7 +23,8 @@ User's standing rules (their words, repeated in every stage prompt):
 - Before committing: `npm run ci` + `npm run e2e`, then confirm on CI. Run a review subagent on the diff before merging (this session it found 2 real bugs).
 - Owner: a full code review of the whole repo before stage 9. Credit line "Made by BlurryRainbow" (stage 7).
 - One place per thing: owner items only in `ToUser/TODO.md` (done → `ToUser/archive/ANSWERED.md`); the handoff only here.
-- Owner: playtests and choices go on an HTML checklist page (artifact with a `db` store), item by item; every stage ends with its own checklist page and the next stage waits for it (D12 A).
+- Owner: playtests and choices go on an HTML checklist page (artifact with a `db` store), item by item; every stage ends with its own checklist page and the next stage waits for it (D12 A). Owner, 2026-11-24: carry the test protocol forward and add to it as features arrive (put T09 pass the phone, T13 left-handed, T14 phone ms on the stage 6 page).
+- Owner, 2026-11-24: wait for the final UI before more feel decisions; then bring back R-07 (jagged handling, power hard to judge) as checklist choices.
 - Owner's D choices (2026-11-24): D01 A, D02 A, D03 B, D04 A (+ "timer waits for the first touch"), D05 B, D06 A, D07 A, D08 A ("test, then maybe change"), D09 A, D10 A, D11 A, D12 A. Builder's readings, to confirm in the playtest: own team includes the shooter and "not hit" means no knockback (T11); Hop/Flip hints once per match; tapped tags close at TurnEnd; full screen only on touch screens.
 
 ## Do
@@ -56,9 +55,11 @@ User's standing rules (their words, repeated in every stage prompt):
 - Builder's suggestion, not agreed: the Jungle Home palette with the biome kit (stage 8).
 
 ## Next steps
-1. Read the checklist answers (`ArtifactData list`, collection `answers`, docs T01–T15). If not all marked, remind the owner of R-05 and stop.
-2. Turn every "Problem" and comment into a stage 5b fix list (new OVRs from OVR-020 where a rule changes; ask on the page or in TODO where unclear). Small fixes: build on `build/stage-05b-playtest`, CI, merge, deploy, ask for a re-test of those steps.
-3. When Part 2 passes: archive R-05, tag `m1-hotseat` at the merge commit (the owner pushes the tag), update PROGRESS, then stage 6 (Bot AI, HARD) with its own checklist page (D12 A).
+1. Check CI on `build/stage-05b-playtest`; if green and `main` is behind, `git checkout main && git merge --ff-only build/stage-05b-playtest && git push origin main`.
+2. Read `ToUser/TODO.md` for new owner answers (apply, archive). Then read `docs/HANDOFF.md` §2 and the §3 stage 6 entry, and the DRs it names (DR-129 bot visuals, the bot AI DRs; PLAN §6).
+3. Branch `build/stage-06-bot-ai` from `main`. HARD stage: do it yourself at high effort; review subagent before merging.
+4. Build the bot on the layout A HUD (OVR-019): the DR-129 bot turn visuals must fit the new rects (`hudLayout`, W 960..1260).
+5. End with a stage 6 checklist page (new artifact, `ToUser/checklists/stage-06.html`, same `answers` pattern) incl. T09, T13, T14 carried forward; stop at the end of the stage.
 
 ## Key files & links
 - `ToUser/TODO.md` (R-06, R-05), `ToUser/archive/ANSWERED.md` (D01–D12), `docs/PROGRESS.md` "Stage 5b", `docs/DECISIONS.md` OVR-013..OVR-018 at the end.
@@ -67,8 +68,8 @@ User's standing rules (their words, repeated in every stage prompt):
 - CI: https://github.com/rainbowblurry-book/Ants/actions · Live: https://rainbowblurry-book.github.io/Ants/
 
 ## Previous handoffs
+- seq 13 (2026-11-24): stage 5b live, waiting for the owner's phone test.
 - seq 12 (2026-11-24): stage 5b fixes built, waiting for the layout pick.
 - seq 11 (2026-11-17): stage 5b plan published, waiting for the owner's checklist choices.
 - seq 10 (2026-11-17): stage 5 done (M1), waiting for the phone playtest.
 - seq 9 (2026-11-17): stage 4 done, owner answers applied, start stage 5.
-- seq 8 (2026-11-17): stage 4 done, before the owner's answers.

@@ -1,6 +1,6 @@
 # Progress
 
-**Current stage:** Build **stage 5b** (fixes from the M1 phone playtest), branch `build/stage-05b-playtest`. Stage 5 stays open until 5b passes the owner's next playtest; then the `m1-hotseat` tag and stage 6. **Layout A built (OVR-019); next: merge, deploy, the owner's phone test** (`ToUser/TODO.md` R-05).
+**Current stage:** **stage 5 (M1) done** after the owner's phone test (2026-11-24). Next: **stage 6, Bot AI (HARD)**, with its own checklist page (D12 A) that also carries T09, T13 and T14 forward.
 
 **Owner's to-do list:** `ToUser/TODO.md` is the one place for questions, reviews and checks for the owner. This file does not copy them.
 
@@ -10,7 +10,10 @@
 
 ## Build log
 
-### Stage 5b · Fixes from the M1 playtest — in progress 2026-11-24
+### Owner's phone test of stage 5b — 2026-11-24
+Pass: T01–T08, T10–T12, T15; not tried: T09, T13, T14; no problems. The owner closed stage 5 ("go to the next step") and asked to keep the test protocol growing. Feel notes (jagged handling, power hard to judge) wait for the final UI: `ToUser/TODO.md` R-07. Tag `m1-hotseat` at deb38a0 is for the owner to push (R-08).
+
+### Stage 5b · Fixes from the M1 playtest — done 2026-11-24 (merged and deployed at deb38a0)
 Branch `build/stage-05b-playtest`. The owner's checklist choices (D01–D12, read from the page's `answers` store) are archived in `ToUser/archive/ANSWERED.md`. Logged: OVR-013 (D01 full screen and the wide canvas), OVR-014 (D04 no gate by default, the timer waits for the first input), OVR-015 (D05 "Hit own team", off), OVR-016 (D06 a ceiling for ants), OVR-017 (D09 one aim per ant), OVR-018 (D03, D07, D08, D10, D11).
 
 **Built so far**
@@ -402,7 +405,7 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 **When the art is drawn:** add a Decision Record (DR-007b) that marks DR-007a's placeholders as replaced. Re-run the preview screenshots, and check the side pose reads clearly at 88x63 and at 667x375.
 
 ## Open items
-- **Questions and checks for the owner:** all in `ToUser/TODO.md` (open: Q-01 to Q-03, Q-17, R-02, R-05). Answered items move to `ToUser/archive/ANSWERED.md`.
+- **Questions and checks for the owner:** all in `ToUser/TODO.md` (open: Q-01 to Q-03, Q-17, R-02, R-07, R-08). Answered items move to `ToUser/archive/ANSWERED.md`.
 - **Real-device checks** (UI.md §7, PLAN §12), for later stages: safe-area `env()` values in landscape, Hop-row thumb reach, device memory and blast ms, refitting the bot-cap constants against the real sim (stage 6).
 - **Placeholders still in the manifest:** every ant key, the weapon and pickup art, and the terrain palette. `trinketAnchor` is `null` on the ant frames until final art (DR-162, stage 12).
 - **Before stage 9:** a full code review of the whole repo (owner's request).
@@ -410,4 +413,4 @@ These are AI-generated (Gemini) images, used **as reference only**. They are nev
 - **GitHub Pages:** done by the user (Settings → Pages → Source: "GitHub Actions").
 
 ## Next step
-**Stage 5b:** merge to `main` when CI is green, deploy, then the owner's phone test (R-05, Part 2 of the checklist page). When it passes: the `m1-hotseat` tag, then stage 6, Bot AI (HARD): `src/ai/`, the bot turn visuals (DR-129: crosshair, power bar, HUD mirror at 55%).
+**Stage 6, Bot AI (HARD):** `src/ai/`, the bot turn visuals (DR-129: crosshair, power bar, HUD mirror at 55%), on the layout A HUD. End it with a checklist page (D12 A) that carries T09, T13, T14 forward.

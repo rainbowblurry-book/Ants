@@ -2,6 +2,13 @@
 
 The builder moves an item here from `../TODO.md` when it is done. Each entry keeps the item ID, your answer, the date, and what the builder does with it.
 
+## 2026-11-24 (stage 5b checklist, Part 2: the phone test)
+
+### R-05 · Stage 5b phone test
+- **Your marks:** Pass: T01–T08, T10, T11, T12, T15. Not tried: T09 (pass the phone), T13 (left-handed), T14 (phone speed). No problems marked.
+- **Your comment (T14):** go to the next step, but carry this test protocol and try more things as they are added. You want to see the final UI before more decisions. Handling feels a bit rough or jagged; power is hard to judge (100% sometimes too far, no way to gauge where it lands).
+- **Builder:** stage 5 (M1) is closed. T09, T13 and T14 move to the next stage's checklist. Your feel notes are R-07 in `../TODO.md`. The tag is R-08 (you push it).
+
 ## 2026-11-24 (stage 5b checklist, Part 1)
 
 ### R-06 · Pick a screen layout (L01)

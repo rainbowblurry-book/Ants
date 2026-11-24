@@ -1,14 +1,15 @@
 # To do for you (owner)
 
-Updated: 2026-11-24, stage 5b (fixes from your M1 playtest). How to use this file: see `README.md` in this folder. Answered items are in `archive/ANSWERED.md`.
+Updated: 2026-11-24, stage 5 (M1) closed after your phone test. How to use this file: see `README.md` in this folder. Answered items are in `archive/ANSWERED.md`.
 
-**Do R-05 next: the stage 5b phone test (Part 2 of the checklist page).** Your choices D01–D12 and your layout pick (L01 A) are built and archived. Until you answer the other items, the build follows the docs as written.
+**Stage 5 (M1) passed your phone test.** Do R-08 when you can (push one tag). Your feel notes are kept in R-07 for later. Until you answer the other items, the build follows the docs as written.
 
 **Summary**
 
 | ID | Short name | Type | Needed before |
 |---|---|---|---|
-| R-05 | Stage 5b phone test (Part 2) | test | the end of stage 5 |
+| R-08 | Push the `m1-hotseat` tag | do | any time |
+| R-07 | Your feel notes (handling, power) | decide later | after the final UI |
 | Q-17 | Double-tap to find your ant | answer | stage 11 |
 | Q-01 | Back-flip fall damage | answer | stage 8 |
 | Q-02 | Mound Plop on water | answer | stage 8 |
@@ -56,10 +57,22 @@ Updated: 2026-11-24, stage 5b (fixes from your M1 playtest). How to use this fil
 
 ## Reviews and checks
 
-### R-05 · Stage 5b phone test (Part 2 of the checklist page)
-- **Status:** open. **Needed before:** the end of stage 5 (the `m1-hotseat` tag and stage 6).
-- **Do this:** after the builder says stage 5b is live, do Part 2 (T01–T15) on your phone on the same page. Mark each step and write what happened. Then write "checklist done" in the chat.
-- **Your answer:** (on the page)
+### R-08 · Push the `m1-hotseat` tag
+- **Status:** open. **Needed before:** nothing; it marks M1 in the history.
+- **Why you:** the builder's session cannot push tags (HTTP 403).
+- **Do this (one of):**
+  - On GitHub: Releases → "Draft a new release" → tag `m1-hotseat`, target commit `deb38a0` (main) → Publish.
+  - Or in a terminal: `git tag m1-hotseat deb38a0 && git push origin m1-hotseat`.
+- **Your answer:**
+
+### R-07 · Your feel notes after the M1 test (keep for later)
+- **Status:** open. **Needed before:** your decisions once the final UI is in (you asked to wait).
+- **Your notes (T14, 2026-11-24):** handling feels a bit rough or jagged; power is hard to judge: 100% sometimes goes too far, and there is no way to set or gauge how far or short a shot lands.
+- **Facts the builder can add now:**
+  - The aim dots show the first 0.48 s of flight on purpose (DR-033: you read the wind, it is the skill). An Assist setting shows 1.0 s (stage 7 Settings; `?assist=1` today).
+  - "Jagged" can be frame rate or the sim step. R-02 (`?mem`, the ms number) tells which.
+- **Later choices (not now):** a longer preview, a landing marker, finer power near the top, or a smoother camera. The builder brings these back as a checklist item when the final UI exists.
+- **Your answer:** (later)
 
 ### R-02 · Phone speed check (optional, 1 minute)
 - **Status:** open. **Needed before:** stage 13.
