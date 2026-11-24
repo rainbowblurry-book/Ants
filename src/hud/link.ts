@@ -22,6 +22,16 @@ export interface AimPreview {
   powerMille: number;
 }
 
+/** A `?bot` match (proposed OVR-020): what the HUD needs about the bot team. */
+export interface BotView {
+  team: number;
+  level: number;
+  /** It is the bot's turn: the player's input is ignored and the controls are inactive. */
+  turn: boolean;
+  /** The bot's aim as shown now, for the dial and slider mirror at 55% (DR-129), or null. */
+  aim: { angleDeci: number; powerMille: number } | null;
+}
+
 export interface BattleLink {
   match: Match;
   /** Team names (J45). */
@@ -36,6 +46,8 @@ export interface BattleLink {
   weapon: WeaponId[];
   /** Set by the Hud each frame; the Battle draws the dots in the world (DR-129). */
   preview: AimPreview | null;
+  /** Set by the Battle each frame in a bot match; null in the hot seat. */
+  bot: BotView | null;
   /** The view the Battle camera drew last (gameplay zoom, logical px). */
   view(): CamView;
   cam: CameraDirector;

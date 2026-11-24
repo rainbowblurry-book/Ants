@@ -72,6 +72,8 @@ const D = { frame: 0, world: 10, hud: 100, tray: 150, notice: 200, gate: 300 } a
 /** DR-120: a control over the active ant fades to 40%; DR-123: dim to 55% after the shot. */
 const OVER_ANT_ALPHA = 0.4;
 const RETREAT_DIM = 0.55;
+/** DR-129 / DR-121: in a bot's turn the dial and slider mirror its aim at 55%, not interactive. */
+const BOT_MIRROR = 0.55;
 /** DR-183: the first turn's coin-flip pop. */
 const COIN_MS = 1000;
 /** DR-128: hits within 300 ms are summed. */
@@ -103,6 +105,8 @@ export interface HudState {
   trayOpen: boolean;
   find: boolean;
   preview: boolean;
+  /** A bot match (proposed OVR-020): is it the bot's turn, and the aim the dial and slider mirror. */
+  bot: { turn: boolean; mirror: { angleDeci: number; powerMille: number } | null } | null;
   ammo: Record<string, number>;
   active: Record<string, boolean>;
   alpha: Record<string, number>;
@@ -472,19 +476,32 @@ export class Hud extends Phaser.Scene {
 
   private gateUp(): boolean {
     const m = this.link.match;
-    return this.link.versus && m.phase === 'turnStart' && m.turns.rules.gate && !m.turns.turnLost;
+    return (
+      this.link.versus &&
+      m.phase === 'turnStart' &&
+      m.turns.rules.gate &&
+      !m.turns.turnLost &&
+      !this.botTurn()
+    );
+  }
+
+  /** A bot plays this turn (proposed OVR-020): the player's input is ignored, Pause still works. */
+  private botTurn(): boolean {
+    const b = this.link.bot;
+    const m = this.link.match;
+    return !!b && !m.over && m.turns.team === b.team;
   }
 
   private canAim(): boolean {
     const m = this.link.match;
     const a = m.activeAnt;
-    return !this.link.paused && m.phase === 'aim' && !!a && isActive(a);
+    return !this.link.paused && !this.botTurn() && m.phase === 'aim' && !!a && isActive(a);
   }
 
   private canMove(): boolean {
     const m = this.link.match;
     const a = m.activeAnt;
-    return !this.link.paused && m.turns.canMove && !!a && isActive(a);
+    return !this.link.paused && !this.botTurn() && m.turns.canMove && !!a && isActive(a);
   }
 
   // -------------------------------------------------------------- actions
@@ -854,8 +871,13 @@ export class Hud extends Phaser.Scene {
       const real = performance.now();
       for (const r of Object.values(this.reps)) r.update(real);
     }
-    const want = this.canMove() || phase === 'turnStart' ? this.walkDir() : 0;
-    if (want !== turns.heldDir && !(this.walkSent.dir === want && this.walkSent.tick === m.tick)) {
+    const botTurn = this.botTurn();
+    const want = this.canMove() || (phase === 'turnStart' && !botTurn) ? this.walkDir() : 0;
+    if (
+      !botTurn &&
+      want !== turns.heldDir &&
+      !(this.walkSent.dir === want && this.walkSent.tick === m.tick)
+    ) {
       if (this.canMove() || phase === 'turnStart' || want === 0) {
         this.push({ kind: 'walk', dir: want });
         this.walkSent = { dir: want, tick: m.tick };
@@ -937,7 +959,8 @@ export class Hud extends Phaser.Scene {
       this.slots[i]?.show({ weapon: w, ammo: pool?.[w] ?? 0, selected: w === weapon });
     });
     this.weaponBtn.show({ weapon, ammo: pool?.[weapon] ?? 0, selected: false });
-    const aim = this.aim();
+    // In a bot's turn the dial and slider mirror the bot's aim (DR-129).
+    const aim = (botTurn ? link.bot?.aim : null) ?? this.aim();
     const facing = (ant?.facing ?? 1) as 1 | -1;
     this.dial.show(aim.angleDeci, facing);
     this.slider.show(aim.powerMille);
@@ -947,7 +970,7 @@ export class Hud extends Phaser.Scene {
     const canAim = this.canAim();
     const canMove = this.canMove();
     const shotTaken = phase === 'fire' || phase === 'resolve';
-    const aimDim = shotTaken ? RETREAT_DIM : 1;
+    const aimDim = botTurn ? BOT_MIRROR : shotTaken ? RETREAT_DIM : 1;
     const airborne = ant?.state !== 'ground';
     const budget = ant?.budget ?? 0;
     const antRect = ant ? this.antScreenRect(v, ant.x, ant.y) : null;
@@ -1288,6 +1311,12 @@ export class Hud extends Phaser.Scene {
           trayOpen: this.trayOpen,
           find: this.find.visible,
           preview: this.link.preview !== null,
+          bot: this.link.bot
+            ? {
+                turn: this.botTurn(),
+                mirror: this.link.bot.aim ? { ...this.link.bot.aim } : null,
+              }
+            : null,
           ammo: { ...pool },
           active,
           alpha,
