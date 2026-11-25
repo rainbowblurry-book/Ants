@@ -34,6 +34,11 @@
       "soil-800": "#5E3519",
       "sky-100": "#EAFBD8",
       "sky-400": "#8EE0CC",
+      "ant-500": "#B4532A",
+      "ant-700": "#7A3418",
+      "ant-900": "#5A1E2A",
+      "tongue-400": "#E8456B",
+      "dew-300": "#9AD9F2",
       "white": "#FFFFFF"
     },
     "space": { "1": 4, "2": 8, "3": 12, "4": 16, "6": 24, "8": 32, "12": 48 },
@@ -75,7 +80,13 @@
       "move-fill": "{leaf-600}",
       "heal": "{leaf-200}",
       "scrim": { "color": "{plum-900}", "alpha": 0.7 },
-      "letterbox": "{plum-900}"
+      "letterbox": "{plum-900}",
+      "_ant": "CREATIVE §2, DR-007, R-03: ant art only. ant-tongue is decorative, never a UI action colour (DR-080).",
+      "ant-body": "{ant-500}",
+      "ant-shade": "{ant-700}",
+      "ant-mouth": "{ant-900}",
+      "ant-tongue": "{tongue-400}",
+      "ant-sweat": "{dew-300}"
     },
     "onColor": {
       "_decision": "DR-080 (ratios verified 2026-11-16)",

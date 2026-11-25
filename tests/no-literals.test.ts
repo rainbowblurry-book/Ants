@@ -67,9 +67,10 @@ describe('no colour literals (UI.md §6 check 2)', () => {
     expect(bad).toEqual([]);
   });
 
-  it('UI and placeholder art use only #fff and var(--token)', () => {
+  it('UI, ant and placeholder art use only #fff and var(--token)', () => {
     const svgs = [
       ...walk(join(root, 'art', 'ui'), ['.svg']),
+      ...walk(join(root, 'art', 'ants'), ['.svg']),
       ...walk(join(root, 'art', 'placeholder'), ['.svg']),
     ];
     expect(svgs.length).toBeGreaterThan(0);

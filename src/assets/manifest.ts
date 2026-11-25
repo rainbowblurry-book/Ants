@@ -120,17 +120,25 @@ export type WeaponArt = (typeof WEAPON_ART)[number];
 export const TEAM_NAMES = ['blue', 'amber'] as const;
 export type TeamName = (typeof TEAM_NAMES)[number];
 
-const SIDE_POSES = ['walk', 'idle', 'aim', 'hop', 'flip', 'ko'] as const;
-const HERO_POSES = ['idle', 'cocky', 'win', 'lose'] as const;
-const FACES = ['cocky', 'aim', 'oops', 'dizzy'] as const;
+/** Ant poses and faces (CREATIVE §2). tools/draw-ants.ts draws one SVG per entry. */
+export const SIDE_POSES = ['walk', 'idle', 'aim', 'hop', 'flip', 'ko'] as const;
+export type SidePose = (typeof SIDE_POSES)[number];
+export const HERO_POSES = ['idle', 'cocky', 'win', 'lose'] as const;
+export const FACES = ['cocky', 'aim', 'oops', 'dizzy'] as const;
 
-/** DR-027: the ant is drawn 88x63; the hurtbox is a capsule 22 px above the feet. */
+/**
+ * DR-027: the ant is drawn 88x63 (the 140x100 side art frame at 0.63); the
+ * hurtbox is a capsule 22 px above the feet.
+ */
 export const ANT_SIDE = { w: 88, h: 63 } as const;
 const ANT_HURTBOX = { centreUp: 22, halfSeg: 12, r: 16 } as const;
-/** Results shows the hero at 160 tall (UI.md §5); the placeholder keeps its aspect. */
-const ANT_HERO = { w: 104, h: 160 } as const;
+/** Results shows the hero at 160 tall (UI.md §5); the 120x150 art frame keeps its 4:5 aspect. */
+export const ANT_HERO = { w: 128, h: 160 } as const;
+/** Head-only faces: square for the 64 px Dot avatar (UI.md §4). */
+export const ANT_FACE = { w: 64, h: 64 } as const;
 
-const PH = 'art/reference/placeholder';
+/** Final ant art (R-03): original flat SVG drawn by tools/draw-ants.ts. */
+const ANTS = 'art/ants';
 
 function buildSources(): SourceDef[] {
   const out: SourceDef[] = [];
@@ -160,11 +168,16 @@ function buildSources(): SourceDef[] {
   }
   add('ph/pickup-honey', 'art/placeholder/pickup-honey.svg', 32, 32, true);
   add('ph/pickup-seeds', 'art/placeholder/pickup-seeds.svg', 32, 32, true);
-  add('ph/side-a', `${PH}/side-a.png`, ANT_SIDE.w, ANT_SIDE.h, true);
-  add('ph/side-b', `${PH}/side-b.png`, ANT_SIDE.w, ANT_SIDE.h, true);
-  add('ph/hero-a', `${PH}/hero-a.png`, ANT_HERO.w, ANT_HERO.h, true);
-  add('ph/hero-b', `${PH}/hero-b.png`, ANT_HERO.w, ANT_HERO.h, true);
-  for (const f of FACES) add(`ph/face-${f}`, `${PH}/face-${f}.png`, 67, 61, true);
+  // The ants (R-03, CREATIVE §2): one frame per team and pose, faces once.
+  for (const team of TEAM_NAMES) {
+    for (const pose of SIDE_POSES) {
+      add(`ant/side-${pose}-${team}`, `${ANTS}/side-${pose}-${team}.svg`, ANT_SIDE.w, ANT_SIDE.h);
+    }
+    for (const pose of HERO_POSES) {
+      add(`ant/hero-${pose}-${team}`, `${ANTS}/hero-${pose}-${team}.svg`, ANT_HERO.w, ANT_HERO.h);
+    }
+  }
+  for (const f of FACES) add(`ant/face-${f}`, `${ANTS}/face-${f}.svg`, ANT_FACE.w, ANT_FACE.h);
   return out;
 }
 
@@ -202,33 +215,33 @@ function buildAssets(): Record<string, AssetEntry> {
   }
   ph('pickup.honey', 'ph/pickup-honey');
   ph('pickup.seeds', 'ph/pickup-seeds');
-  TEAM_NAMES.forEach((team, i) => {
-    const t = i === 0 ? 'a' : 'b';
+  for (const team of TEAM_NAMES) {
     for (const pose of SIDE_POSES) {
       out[`ant.side.${team}.${pose}`] = {
-        frame: `ph/side-${t}`,
+        frame: `ant/side-${pose}-${team}`,
         atlas: 'shared',
         // Feet at the bottom centre (the sim's ant y is the feet line, DR-027).
         originX: 0.5,
         originY: 1,
-        placeholder: true,
+        placeholder: false,
         trinketAnchor: null,
         hurtbox: ANT_HURTBOX,
       };
     }
     for (const pose of HERO_POSES) {
       out[`ant.hero.${team}.${pose}`] = {
-        frame: `ph/hero-${t}`,
+        frame: `ant/hero-${pose}-${team}`,
         atlas: 'shared',
         originX: 0.5,
         originY: 1,
-        placeholder: true,
+        placeholder: false,
         trinketAnchor: null,
       };
     }
-  });
-  for (const f of FACES) ph(`ant.face.${f}`, `ph/face-${f}`);
-  ph('dot.avatar', 'ph/face-cocky');
+  }
+  for (const f of FACES) ui(`ant.face.${f}`, `ant/face-${f}`);
+  // Dot squints at everything (STORY.md), so her avatar is the aim face.
+  ui('dot.avatar', 'ant/face-aim');
   return out;
 }
 
@@ -245,7 +258,7 @@ export function sliceKey(set: SliceSet, layer: SliceLayer): AssetKey {
   return `ui.slice.${set}.${layer}`;
 }
 
-export function antSideKey(team: number, pose: (typeof SIDE_POSES)[number]): AssetKey {
+export function antSideKey(team: number, pose: SidePose): AssetKey {
   return `ant.side.${TEAM_NAMES[team] ?? 'blue'}.${pose}`;
 }
 

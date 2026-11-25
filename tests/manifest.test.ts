@@ -9,17 +9,22 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
+  ANT_SIDE,
   ASSETS,
   ATLAS_PAGE_MAX,
   ATLASES,
+  FACES,
   FONTS,
+  HERO_POSES,
   MAX_RESIDENT_PAGES,
   placeholders,
   RASTER,
+  SIDE_POSES,
   SOURCES,
 } from '../src/assets/manifest.ts';
 import { bakeAll, bakeCharsets, KNOWN_MISSING } from '../tools/bake-fonts.ts';
 import { areaReport, buildAtlas, planAtlas, pngSize, UI_AREA_MAX_MP } from '../tools/build-ui.ts';
+import { ANT_ART_DIR, antArt } from '../tools/draw-ants.ts';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const plan = planAtlas('shared');
@@ -69,15 +74,58 @@ describe('asset manifest (DR-195)', () => {
     expect(bad).toEqual([]);
   });
 
-  it('ant keys use the DR-195 shape and are flagged as placeholders', () => {
-    expect(ASSETS['ant.side.blue.idle']?.placeholder).toBe(true);
-    expect(ASSETS['ant.side.amber.ko']?.placeholder).toBe(true);
+  it('ant keys use the DR-195 shape and are final art, not placeholders (R-03)', () => {
     expect(ASSETS['ant.side.blue.idle']?.originY).toBe(1);
+    expect(ASSETS['ant.side.blue.idle']?.originX).toBe(0.5);
+    expect(ASSETS['ant.side.amber.ko']?.hurtbox).toEqual({ centreUp: 22, halfSeg: 12, r: 16 });
+    const antKeys = Object.keys(ASSETS).filter((k) => k.startsWith('ant.') || k === 'dot.avatar');
+    // 2 teams x (6 side + 4 hero) + 4 faces + the Dot avatar.
+    expect(antKeys.length).toBe(2 * (SIDE_POSES.length + HERO_POSES.length) + FACES.length + 1);
     const ph = placeholders();
-    expect(ph).toContain('ant.side.blue.idle');
+    expect(ph.filter((k) => antKeys.includes(k))).toEqual([]);
     expect(ph).toContain('terrain.palette');
     // UI art is final, not placeholder.
     expect(ph.some((k) => k.startsWith('ui.'))).toBe(false);
+    // Each ant key has its own frame from art/ants, and no source is a PNG cut-out.
+    for (const k of antKeys) {
+      const src = SOURCES.find((s) => s.frame === ASSETS[k]?.frame);
+      expect(src?.src, k).toMatch(/^art\/ants\/.+\.svg$/);
+      expect(src?.placeholder, k).toBe(false);
+    }
+    expect(SOURCES.filter((s) => s.src.endsWith('.png'))).toEqual([]);
+    const side = SOURCES.find((s) => s.frame === ASSETS['ant.side.blue.walk']?.frame);
+    expect(side && { w: side.w, h: side.h }).toEqual(ANT_SIDE);
+    expect(ASSETS['ant.side.blue.walk']?.frame).not.toBe(ASSETS['ant.side.blue.idle']?.frame);
+    expect(ASSETS['ant.side.blue.idle']?.frame).not.toBe(ASSETS['ant.side.amber.idle']?.frame);
+  });
+
+  it('art/ants matches tools/draw-ants.ts (run node tools/draw-ants.ts)', () => {
+    const art = antArt();
+    expect(art.size).toBe(2 * (SIDE_POSES.length + HERO_POSES.length) + FACES.length);
+    for (const [name, text] of art) {
+      expect(readFileSync(join(ANT_ART_DIR, name), 'utf8'), name).toBe(text);
+    }
+    // Flat art only (CREATIVE §1, DR-003a): no gradients, filters, images or patterns.
+    for (const text of art.values()) {
+      expect(text).not.toMatch(/<(linearGradient|radialGradient|filter|image|pattern)\b/);
+    }
+  });
+
+  it('ant frames exist in the built atlas (npm run assets)', () => {
+    const file = join(root, 'public', `${ATLASES.shared.path}.json`);
+    if (!existsSync(file)) return; // built by `npm run assets` before tests in CI
+    const json = JSON.parse(readFileSync(file, 'utf8')) as {
+      textures: { frames: { filename: string; frame: { w: number; h: number } }[] }[];
+    };
+    const frames = new Map(json.textures.flatMap((t) => t.frames).map((f) => [f.filename, f]));
+    for (const [k, e] of Object.entries(ASSETS)) {
+      if (!k.startsWith('ant.') && k !== 'dot.avatar') continue;
+      expect(frames.has(e.frame), k).toBe(true);
+    }
+    expect(frames.get(ASSETS['ant.side.amber.aim']?.frame ?? '')?.frame).toMatchObject({
+      w: ANT_SIDE.w * RASTER,
+      h: ANT_SIDE.h * RASTER,
+    });
   });
 });
 
