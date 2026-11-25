@@ -17,6 +17,7 @@
  * N (proposed OVR-020, until the stage 7 menus).
  */
 import * as Phaser from 'phaser';
+import { BOT_SIMS_PER_FRAME } from '../ai/bot';
 import {
   ANT_SIDE,
   ATLASES,
@@ -28,7 +29,7 @@ import { applyLogicalCamera, REG_RENDER_SCALE } from '../boot/config';
 import type { RenderScale } from '../boot/renderScale';
 import { shownAim } from '../game/botAim';
 import { botSetup, parseBotConfig } from '../game/botConfig';
-import { BotDriver, type BotPhase, SimBudget } from '../game/botDriver';
+import { type BotPhase, BotPlayer, SimBudget } from '../game/botPlayer';
 import { versusMatch } from '../game/twoPlayer';
 import type { AimPreview, BattleLink } from '../hud/link';
 import { AimMemory } from '../input/aim';
@@ -60,8 +61,8 @@ export const BATTLE_KEY = 'battle';
 /** DR-129 bot crosshair (r 18, 4 ticks) and power bar (16x72), placeholder art. */
 const BOT_CROSS = { r: 18, stroke: 4, outline: 2, tickIn: 10, tickOut: 26 } as const;
 const BOT_BAR = { w: 16, h: 72, outline: 3 } as const;
-/** Solver sims per tick when a test steps the sim through the hook. */
-const HOOK_SIMS = 64;
+/** Solver sims per tick when a test steps the sim through the hook (no frames run between). */
+const HOOK_SIMS = BOT_SIMS_PER_FRAME;
 
 export interface BattleHook {
   ready: boolean;
@@ -184,8 +185,8 @@ export class Battle extends Phaser.Scene {
   /** Focus was lost during Resume's ready delay: land on Pause again (DR-171). */
   private interrupted = false;
   /** `?bot` (proposed OVR-020): the driver of the bot team, or null. */
-  private bot: BotDriver | null = null;
-  private simBudget = new SimBudget();
+  private bot: BotPlayer | null = null;
+  private simBudget = new SimBudget(4, 0.1, BOT_SIMS_PER_FRAME);
   /** DR-129 bot aim: the crosshair in place of the ring, and the power bar behind the ant. */
   private crosshair!: Phaser.GameObjects.Graphics;
   private powerBar!: Phaser.GameObjects.Graphics;
@@ -198,7 +199,7 @@ export class Battle extends Phaser.Scene {
   init(): void {
     // Phaser reuses the scene instance on restart: reset the per-run bot state.
     this.bot = null;
-    this.simBudget = new SimBudget();
+    this.simBudget = new SimBudget(4, 0.1, BOT_SIMS_PER_FRAME);
     this.botShown = null;
   }
 
@@ -212,7 +213,7 @@ export class Battle extends Phaser.Scene {
     this.staticMode = params.get('static') === '1';
     // Until the stage 7 Setup screen: dev switches for the two new options (OVR-014, OVR-015).
     const botCfg = this.staticMode ? null : parseBotConfig(location.search);
-    this.bot = botCfg ? new BotDriver(botCfg) : null;
+    this.bot = botCfg ? new BotPlayer(botCfg) : null;
     this.setup = botSetup(
       {
         ...defaultTwoPlayer(),

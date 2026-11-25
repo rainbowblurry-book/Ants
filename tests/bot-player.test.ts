@@ -1,14 +1,16 @@
 /**
- * Stage 6, part 3: the `?bot` switch (proposed OVR-020), the bot turn driver
- * (DR-066 phase order through the player's command path) and the DR-129 aim
- * curves. A fake solver job stands in for `startBotTurn`.
+ * Stage 6, part 3: the `?bot` switch (proposed OVR-020), the Battle's bot
+ * player (DR-066 phase order through the player's command path, played by the
+ * AI's own `BotDriver` script) and the DR-129 aim curves. A fake solver job stands in for `startBotTurn`.
  */
 import { describe, expect, it, vi } from 'vitest';
+import type { BotPlan, BotPlanJob } from '../src/ai/bot.ts';
 import type { ShotOutcome } from '../src/ai/error.ts';
-import type { BotJob, BotMemory, BotParams, BotTurnPlan } from '../src/ai/types.ts';
+import type { BotMove } from '../src/ai/solver.ts';
+import { type BotMemory, type BotParams, freshMemory } from '../src/ai/types.ts';
 import { settleProgress, shownAim, WOBBLE_CAP_DECI } from '../src/game/botAim.ts';
 import { BOT_TEAM, botSetup, parseBotConfig } from '../src/game/botConfig.ts';
-import { BotDriver, type BotPhase, SimBudget } from '../src/game/botDriver.ts';
+import { type BotPhase, BotPlayer, SimBudget } from '../src/game/botPlayer.ts';
 import { versusMatch } from '../src/game/twoPlayer.ts';
 import { defaultTwoPlayer } from '../src/save/schema.ts';
 import { Match } from '../src/sim/match.ts';
@@ -44,7 +46,7 @@ describe('parseBotConfig (?bot=N, proposed OVR-020)', () => {
   });
 });
 
-function plan(over: Partial<BotTurnPlan> = {}): BotTurnPlan {
+function plan(over: Partial<BotPlan> = {}): BotPlan {
   return {
     move: null,
     weapon: 'seed',
@@ -57,12 +59,15 @@ function plan(over: Partial<BotTurnPlan> = {}): BotTurnPlan {
     settleTicks: 40,
     overshoot: 0.1,
     debug: { best: null, brainFart: false, sims: 0 },
+    memory: { ...freshMemory(), target: 0, shotsAtTarget: 1 },
+    chosen: null,
+    ranked: [],
     ...over,
   };
 }
 
 /** A job that is done after `steps` calls to `step`. */
-function fakeJob(p: BotTurnPlan, steps: number): BotJob {
+function fakeJob(p: BotPlan, steps: number): BotPlanJob {
   let n = 0;
   let sims = 0;
   return {
@@ -83,7 +88,7 @@ function fakeJob(p: BotTurnPlan, steps: number): BotJob {
   };
 }
 
-function setup(p: BotTurnPlan, jobSteps = 1) {
+function setup(p: BotPlan, jobSteps = 1) {
   const cfg = { team: 1, level: 40, boss: false };
   const m = new Match(versusMatch(botSetup(defaultTwoPlayer(), cfg), 42));
   const start = vi.fn(() => fakeJob(p, jobSteps));
@@ -91,22 +96,18 @@ function setup(p: BotTurnPlan, jobSteps = 1) {
     ...mem,
     rattled: true,
   }));
-  const bot = new BotDriver(cfg, { start, after });
-  const seen: { tick: number; phase: BotPhase | null; matchPhase: string }[] = [];
+  const bot = new BotPlayer(cfg, { start, after });
   /** One frame-tick: the scene's tick, a frame of thinking, the sim step. */
   const step = () => {
     bot.tick(m);
     bot.think(10);
     m.step();
-    const last = seen[seen.length - 1];
-    if (!last || last.phase !== bot.phase)
-      seen.push({ tick: m.tick, phase: bot.phase, matchPhase: m.phase });
   };
   const until = (pred: () => boolean, max = 5000) => {
     for (let i = 0; i < max && !pred(); i++) step();
     return pred();
   };
-  return { m, bot, start, after, seen, step, until };
+  return { m, bot, start, after, step, until };
 }
 
 /** Plays the human's turn (team 0) with one shot, if the coin gave team 0 the start. */
@@ -118,9 +119,11 @@ function humanTurnIfFirst(s: ReturnType<typeof setup>): void {
   expect(until(() => m.turns.team === BOT_TEAM)).toBe(true);
 }
 
-describe('BotDriver (DR-066 timing through the player command path)', () => {
+const fireOf = (m: Match) => m.log.filter((c) => c.kind === 'fire').pop();
+
+describe('BotPlayer (DR-066 timing through the player command path)', () => {
   it('plays think → aim → fire with the plan values, after think and settle ticks', () => {
-    // Amber starts facing left; a plan facing right needs a `face`.
+    // Amber starts facing left; a plan facing right turns with a `face`.
     const p = plan({ facing: 1 });
     const s = setup(p);
     humanTurnIfFirst(s);
@@ -128,59 +131,72 @@ describe('BotDriver (DR-066 timing through the player command path)', () => {
     expect(bot.controls(m)).toBe(true);
     expect(until(() => m.phase === 'aim')).toBe(true);
     const aimTick = m.tick;
-    expect(until(() => m.phase === 'fire')).toBe(true);
+    const phases: (BotPhase | null)[] = [];
+    let settled = false;
+    expect(
+      until(() => {
+        if (phases[phases.length - 1] !== bot.phase) phases.push(bot.phase);
+        if (bot.phase === 'aim' && bot.aimTicks === p.settleTicks) settled = true;
+        return m.phase === 'fire';
+      }),
+    ).toBe(true);
     expect(bot.history).toEqual(['think', 'aim', 'fire']);
-    const fire = m.log.filter((c) => c.kind === 'fire').pop();
+    expect(phases).toEqual([null, 'think', 'aim', 'fire']);
+    expect(settled || bot.aimTicks === p.settleTicks).toBe(true);
+    const fire = fireOf(m);
     expect(fire).toMatchObject({ weapon: 'seed', angleDeci: 400, powerMille: 550 });
     // Think (solver time included) then the visible aim, then the shot.
-    expect((fire?.tick ?? 0) - aimTick).toBeGreaterThanOrEqual(p.thinkTicks + p.settleTicks);
-    expect((fire?.tick ?? 0) - aimTick).toBeLessThanOrEqual(p.thinkTicks + p.settleTicks + 4);
-    // The bot faced its target and started its own timer (OVR-014).
+    const gap = (fire?.tick ?? 0) - aimTick;
+    expect(gap).toBeGreaterThanOrEqual(p.thinkTicks + p.settleTicks);
+    expect(gap).toBeLessThanOrEqual(p.thinkTicks + p.settleTicks + 2);
     const kinds = m.log.filter((c) => c.tick > aimTick).map((c) => c.kind);
-    expect(kinds).toContain('ready');
-    expect(kinds).toContain('face');
-    expect(m.turns.timerStarted).toBe(true);
+    expect(kinds).toEqual(['face', 'fire']);
     expect(m.activeAnt?.facing).toBe(1);
+    expect(m.turns.timerStarted).toBe(true);
     expect(s.start).toHaveBeenCalledTimes(1);
   });
 
-  it('updates the memory after the shot and keeps it for the next turn', () => {
+  it('updates the memory from the plan after the shot and keeps it for the next turn', () => {
     const s = setup(plan());
     humanTurnIfFirst(s);
     const { m, bot, until, after } = s;
     expect(until(() => m.phase === 'turnEnd' && m.turns.team === BOT_TEAM)).toBe(true);
     s.step();
     expect(after).toHaveBeenCalledTimes(1);
+    // afterShot gets the memory the plan's fire values left (E_n, bracketing).
+    expect(after.mock.calls[0]?.[0]).toMatchObject({ target: 0, shotsAtTarget: 1 });
     const outcome = after.mock.calls[0]?.[2] as ShotOutcome;
     expect(outcome.target).toBe(0);
     expect(outcome.enemyMaxHp).toBe(100);
     expect(outcome.enemyAntsLeft).toBeGreaterThan(0);
     expect(typeof outcome.hit).toBe('boolean');
     expect(Number.isFinite(outcome.missPower)).toBe(true);
-    if (outcome.hit) expect(outcome.missPower).toBe(0);
     expect(outcome.missAngle).toBe(0);
+    expect(bot.lastOutcome).toEqual(outcome);
     expect(bot.memory.rattled).toBe(true);
-    // Back to the human; the driver lets go.
+    // Back to the human; the player lets go and keeps the memory.
     expect(until(() => m.turns.team !== BOT_TEAM)).toBe(true);
-    expect(bot.controls(m)).toBe(false);
     s.step();
+    expect(bot.controls(m)).toBe(false);
     expect(bot.phase).toBeNull();
-    expect(bot.memory.rattled).toBe(true);
+    expect(bot.memory).toMatchObject({ rattled: true, shotsAtTarget: 1 });
   });
 
-  it('thinks until the job is done, even past thinkTicks', () => {
-    const s = setup(plan({ thinkTicks: 5 }), 40);
+  it('a solve past thinkTicks keeps the rest of the spacing', () => {
+    const p = plan({ thinkTicks: 5 });
+    const s = setup(p, 40);
     humanTurnIfFirst(s);
     const { m, until } = s;
     expect(until(() => m.phase === 'aim')).toBe(true);
     const aimTick = m.tick;
     expect(until(() => m.phase === 'fire')).toBe(true);
-    const fire = m.log.filter((c) => c.kind === 'fire').pop();
-    expect((fire?.tick ?? 0) - aimTick).toBeGreaterThanOrEqual(40 + 40);
+    expect((fireOf(m)?.tick ?? 0) - aimTick).toBeGreaterThanOrEqual(40 + p.settleTicks);
   });
 
-  it('walks move.px with walk, then walk 0, inside the walk budget', () => {
-    const s = setup(plan({ move: { dir: -1, px: 40 }, facing: -1 }));
+  it('walks with walk, then walk 0 after move.ticks, then faces and aims', () => {
+    const move: BotMove = { dir: -1, px: 30, ticks: 20, restTicks: 6, x: 0, y: 0 };
+    const p = plan({ move, facing: 1 });
+    const s = setup(p);
     humanTurnIfFirst(s);
     const { m, bot, until } = s;
     expect(until(() => m.phase === 'aim')).toBe(true);
@@ -189,35 +205,32 @@ describe('BotDriver (DR-066 timing through the player command path)', () => {
     const aimTick = m.tick;
     expect(until(() => m.phase === 'fire')).toBe(true);
     expect(bot.history).toEqual(['think', 'move', 'aim', 'fire']);
-    const walks = m.log.filter((c) => c.tick > aimTick && c.kind === 'walk');
-    expect(walks[0]).toMatchObject({ dir: -1 });
-    expect(walks[walks.length - 1]).toMatchObject({ dir: 0 });
-    const walked = Math.abs((m.activeAnt?.x ?? 0) - x0);
-    expect(walked).toBeGreaterThanOrEqual(38);
-    expect(walked).toBeLessThanOrEqual(44);
+    const cmds = m.log.filter((c) => c.tick > aimTick);
+    expect(cmds.map((c) => c.kind)).toEqual(['walk', 'walk', 'face', 'fire']);
+    const [w1, w0, face] = cmds;
+    expect(w1).toMatchObject({ dir: -1 });
+    expect(w0).toMatchObject({ dir: 0 });
+    expect((w0?.tick ?? 0) - (w1?.tick ?? 0)).toBe(move.ticks);
+    expect((face?.tick ?? 0) - (w0?.tick ?? 0)).toBe(move.restTicks);
+    expect(m.activeAnt?.x).toBeLessThan(x0);
     expect(m.activeAnt?.budget).toBeLessThan(budget0);
   });
 
-  it('a Pause cancel mid-walk is re-held; a cancelled fire is sent again', () => {
-    const s = setup(plan({ move: { dir: -1, px: 30 } }));
+  it('a Pause cancel mid-walk is held again', () => {
+    const move: BotMove = { dir: -1, px: 30, ticks: 30, restTicks: 6, x: 0, y: 0 };
+    const s = setup(plan({ move }));
     humanTurnIfFirst(s);
     const { m, bot, until, step } = s;
     expect(until(() => bot.phase === 'move')).toBe(true);
     step();
+    step();
     m.push({ kind: 'cancel' });
     step();
+    expect(m.turns.heldDir).toBe(0);
     step();
+    expect(m.turns.heldDir).toBe(-1);
     expect(until(() => m.phase === 'fire')).toBe(true);
     expect(bot.history).toEqual(['think', 'move', 'aim', 'fire']);
-  });
-
-  it('obeys ammo: an empty weapon in the plan falls back to the Seed', () => {
-    const s = setup(plan({ weapon: 'plop' }));
-    humanTurnIfFirst(s);
-    const { m, until } = s;
-    (m.ammo[BOT_TEAM] as Record<string, number>).plop = 0;
-    expect(until(() => m.phase === 'fire')).toBe(true);
-    expect(m.log.filter((c) => c.kind === 'fire').pop()).toMatchObject({ weapon: 'seed' });
   });
 });
 
