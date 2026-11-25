@@ -13,10 +13,13 @@
  * arena that never steps and has no HUD (the stage 4 checks); `?mem` prints
  * texture memory (DR-014); `?seed=N` fixes the match seed; `?hand=left`
  * mirrors the HUD (Settings arrive in stage 7); `?assist=1` turns on the
- * 1.0 s aim preview.
+ * 1.0 s aim preview; `?bot=N` (and `&boss=1`) makes Amber a bot at AI level
+ * N (proposed OVR-020, until the stage 7 menus).
  */
 import * as Phaser from 'phaser';
+import { BOT_SIMS_PER_FRAME } from '../ai/bot';
 import {
+  ANT_SIDE,
   ATLASES,
   MAX_RESIDENT_PAGES,
   TERRAIN_PALETTE_PLACEHOLDER,
@@ -24,6 +27,9 @@ import {
 } from '../assets/manifest';
 import { applyLogicalCamera, REG_RENDER_SCALE } from '../boot/config';
 import type { RenderScale } from '../boot/renderScale';
+import { shownAim } from '../game/botAim';
+import { botSetup, parseBotConfig } from '../game/botConfig';
+import { type BotPhase, BotPlayer, SimBudget } from '../game/botPlayer';
 import { versusMatch } from '../game/twoPlayer';
 import type { AimPreview, BattleLink } from '../hud/link';
 import { AimMemory } from '../input/aim';
@@ -51,6 +57,12 @@ import { HUD_KEY, type Hud } from './Hud';
 import { PAUSE_KEY, type Pause } from './Pause';
 
 export const BATTLE_KEY = 'battle';
+
+/** DR-129 bot crosshair (r 18, 4 ticks) and power bar (16x72), placeholder art. */
+const BOT_CROSS = { r: 18, stroke: 4, outline: 2, tickIn: 10, tickOut: 26 } as const;
+const BOT_BAR = { w: 16, h: 72, outline: 3 } as const;
+/** Solver sims per tick when a test steps the sim through the hook (no frames run between). */
+const HOOK_SIMS = BOT_SIMS_PER_FRAME;
 
 export interface BattleHook {
   ready: boolean;
@@ -89,6 +101,36 @@ export interface BattleHook {
     world: { x: number; y: number; w: number; h: number },
     rgb: number,
   ): Promise<{ bad: number; checked: number; samples: number[][] }>;
+  /** The `?bot` driver (proposed OVR-020), or null in a hot-seat match. */
+  bot(): BotHook | null;
+}
+
+export interface BotHook {
+  team: number;
+  level: number;
+  boss: boolean;
+  /** The driver's phase this turn; null outside the bot's turn (DR-066). */
+  phase: BotPhase | null;
+  /** The phases of the current or last bot turn, in order. */
+  history: BotPhase[];
+  plan: {
+    weapon: string;
+    facing: number;
+    angleDeci: number;
+    powerMille: number;
+    target: number;
+    thinkTicks: number;
+    settleTicks: number;
+    wobbleDeci: number;
+    move: { dir: number; px: number } | null;
+  } | null;
+  /** What the crosshair, bar and HUD mirror show now (DR-129), or null. */
+  shown: { angleDeci: number; powerMille: number } | null;
+  /** The crosshair and the power bar are on screen. */
+  crosshair: boolean;
+  bar: boolean;
+  memory: Record<string, number | boolean>;
+  lastOutcome: Record<string, number | boolean> | null;
 }
 
 declare global {
@@ -142,9 +184,23 @@ export class Battle extends Phaser.Scene {
   private nav: Nav | null = null;
   /** Focus was lost during Resume's ready delay: land on Pause again (DR-171). */
   private interrupted = false;
+  /** `?bot` (proposed OVR-020): the driver of the bot team, or null. */
+  private bot: BotPlayer | null = null;
+  private simBudget = new SimBudget(4, 0.1, BOT_SIMS_PER_FRAME);
+  /** DR-129 bot aim: the crosshair in place of the ring, and the power bar behind the ant. */
+  private crosshair!: Phaser.GameObjects.Graphics;
+  private powerBar!: Phaser.GameObjects.Graphics;
+  private botShown: { angleDeci: number; powerMille: number } | null = null;
 
   constructor() {
     super(BATTLE_KEY);
+  }
+
+  init(): void {
+    // Phaser reuses the scene instance on restart: reset the per-run bot state.
+    this.bot = null;
+    this.simBudget = new SimBudget(4, 0.1, BOT_SIMS_PER_FRAME);
+    this.botShown = null;
   }
 
   preload(): void {
@@ -156,11 +212,16 @@ export class Battle extends Phaser.Scene {
     const params = new URLSearchParams(location.search);
     this.staticMode = params.get('static') === '1';
     // Until the stage 7 Setup screen: dev switches for the two new options (OVR-014, OVR-015).
-    this.setup = {
-      ...defaultTwoPlayer(),
-      passPhone: params.get('pass') === '1',
-      hitOwnTeam: params.get('ff') === '1',
-    };
+    const botCfg = this.staticMode ? null : parseBotConfig(location.search);
+    this.bot = botCfg ? new BotPlayer(botCfg) : null;
+    this.setup = botSetup(
+      {
+        ...defaultTwoPlayer(),
+        passPhone: params.get('pass') === '1',
+        hitOwnTeam: params.get('ff') === '1',
+      },
+      botCfg,
+    );
     this.ants = [];
     this.eventIndex = 0;
     this.prev = null;
@@ -204,6 +265,9 @@ export class Battle extends Phaser.Scene {
     // Aim preview dots and ring, in the world layer below the HUD (DR-129).
     for (let i = 0; i < 16; i++) this.dots.push(image(this, 0, 0, 'fx.aim.dot').setVisible(false));
     this.ring = image(this, 0, 0, 'fx.aim.ring').setVisible(false);
+    this.crosshair = this.add.graphics().setVisible(false);
+    this.powerBar = this.add.graphics().setVisible(false);
+    this.drawBotArt();
     this.cam = new CameraDirector(reducedMotion() || this.staticMode);
     this.draw();
 
@@ -240,9 +304,11 @@ export class Battle extends Phaser.Scene {
       aims: new AimMemory(),
       weapon: ['seed', 'seed'],
       preview: null,
+      bot: this.bot ? { team: this.bot.team, level: this.bot.level, turn: false, aim: null } : null,
       view: () => this.applied,
       cam: this.cam,
-      push: (cmd) => this.match.push(cmd),
+      // During the bot's turn the player's commands are ignored (Pause still works).
+      push: (cmd) => (this.bot?.controls(this.match) ? false : this.match.push(cmd)),
       paused: false,
       openPause: () => this.openPause(),
       resumePlay: () => this.resumePlay(),
@@ -330,7 +396,9 @@ export class Battle extends Phaser.Scene {
 
   /** DR-047: the versus slot is written at every TurnEnd and cleared at the end. */
   private saveAtTurnEnd(): void {
-    if (!this.store || this.staticMode) return;
+    // A bot match is not saved: the versus slot is the hot seat's, and a resume would have to
+    // run the bot again to replay its `ai` stream draws (stage 7 decides the bot slots).
+    if (!this.store || this.staticMode || this.bot) return;
     if (this.match.over || this.match.result) {
       clearSlot(this.store, 'versus');
       return;
@@ -345,16 +413,20 @@ export class Battle extends Phaser.Scene {
     );
   }
 
-  /** DR-129: 8 dots at 0.06 s, then a ring at 0.48 s; assist 16 dots to 1.0 s. Wind is ignored. */
-  private drawPreview(p: AimPreview | null): void {
+  /**
+   * DR-129: 8 dots at 0.06 s, then a ring at 0.48 s; assist 16 dots to 1.0 s. Wind is ignored.
+   * A bot's preview (`bot`) has the same 8 dots and a crosshair in place of the ring.
+   */
+  private drawPreview(p: AimPreview | null, bot = false): void {
     const show = p !== null && !modalOpen();
     const a = show ? this.match.ants[p.ant] : undefined;
+    this.crosshair.setVisible(false);
     if (!show || !a) {
       for (const d of this.dots) d.setVisible(false);
       this.ring.setVisible(false);
       return;
     }
-    const assist = this.link?.assist ?? false;
+    const assist = !bot && (this.link?.assist ?? false);
     const n = assist ? 16 : tokens.component.aimPreview.dots;
     const span = assist
       ? tokens.component.aimPreview.assistS
@@ -397,17 +469,126 @@ export class Battle extends Phaser.Scene {
         if (grid.solidAt(Math.round(x), Math.round(y))) end = { x, y };
       }
       if (!end) {
-        this.ring.setVisible(true).setPosition(q.x, q.y).setScale(0.5);
+        if (bot) this.showCrosshair(q.x, q.y);
+        else this.ring.setVisible(true).setPosition(q.x, q.y).setScale(0.5);
         return;
       }
     }
-    // At terrain the ring squashes to 14x6 (DR-129).
-    this.ring.setVisible(true).setPosition(end.x, end.y).setDisplaySize(28, 12);
+    // At terrain the ring squashes to 14x6 (DR-129); the crosshair stays round.
+    if (bot) this.showCrosshair(end.x, end.y);
+    else this.ring.setVisible(true).setPosition(end.x, end.y).setDisplaySize(28, 12);
   }
 
-  private stepSim(n: number): void {
+  private showCrosshair(x: number, y: number): void {
+    this.ring.setVisible(false);
+    this.crosshair.setVisible(true).setPosition(x, y);
+  }
+
+  /**
+   * Placeholder art for the bot aim (DR-129): a crosshair r 18 with 4 ticks, amber with a
+   * plum outline, and a 16x72 power bar frame. Colours are theme tokens (DR-088).
+   */
+  private drawBotArt(): void {
+    const g = this.crosshair;
+    const R = BOT_CROSS.r;
+    const ticks = (w: number, c: number) => {
+      g.lineStyle(w, c, 1).strokeCircle(0, 0, R);
+      for (const [dx, dy] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ] as const) {
+        g.lineBetween(
+          dx * BOT_CROSS.tickIn,
+          dy * BOT_CROSS.tickIn,
+          dx * BOT_CROSS.tickOut,
+          dy * BOT_CROSS.tickOut,
+        );
+      }
+    };
+    g.clear();
+    ticks(BOT_CROSS.stroke + 2 * BOT_CROSS.outline, color.ink);
+    ticks(BOT_CROSS.stroke, color['team-b']);
+  }
+
+  /** The bot's power bar behind its ant (DR-129): 16x72, filled bottom up. */
+  private drawPowerBar(antIndex: number, powerMille: number): void {
+    const a = this.match.ants[antIndex];
+    const g = this.powerBar;
+    if (!a) {
+      g.setVisible(false);
+      return;
+    }
+    const { w, h, outline } = BOT_BAR;
+    const x = a.x - a.facing * (ANT_SIDE.w / 2 + 4) - w / 2;
+    const y = a.y - h;
+    const inner = h - 2 * outline;
+    const fill = Math.round(inner * Math.min(1, Math.max(0, powerMille / 1000)));
+    g.clear().setVisible(true);
+    g.fillStyle(color.ink, 1).fillRect(x, y, w, h);
+    g.fillStyle(color.panel, 1).fillRect(x + outline, y + outline, w - 2 * outline, inner);
+    if (fill > 0)
+      g.fillStyle(color['team-b'], 1).fillRect(
+        x + outline,
+        y + outline + inner - fill,
+        w - 2 * outline,
+        fill,
+      );
+  }
+
+  /**
+   * DR-129 bot aim, and what the HUD mirrors (the link's `bot.aim`). Returns
+   * true while it is the bot's turn (the player's preview is off then).
+   */
+  private drawBot(): boolean {
+    const bot = this.bot;
+    const m = this.match;
+    const view = this.link?.bot;
+    if (!bot) return false;
+    const turn = bot.controls(m);
+    const plan = bot.plan;
+    let shown: { angleDeci: number; powerMille: number } | null = null;
+    if (turn && plan && (bot.phase === 'aim' || bot.phase === 'fire')) {
+      shown =
+        bot.phase === 'aim'
+          ? shownAim(plan, Math.min(plan.settleTicks, bot.aimTicks + this.alpha), reducedMotion())
+          : { angleDeci: plan.angleDeci, powerMille: plan.powerMille };
+    }
+    this.botShown = shown;
+    // The weapon button shows what the bot is about to fire.
+    if (shown && plan && this.link) this.link.weapon[bot.team] = plan.weapon;
+    if (view) {
+      view.turn = turn;
+      view.aim = shown;
+    }
+    const aiming = shown !== null && m.phase === 'aim' && bot.phase !== null;
+    if (aiming && shown && plan) {
+      this.drawPreview(
+        {
+          ant: m.turns.ant,
+          weapon: plan.weapon,
+          angleDeci: shown.angleDeci,
+          powerMille: shown.powerMille,
+        },
+        true,
+      );
+      this.drawPowerBar(m.turns.ant, shown.powerMille);
+    } else {
+      this.powerBar.setVisible(false);
+      if (turn) this.drawPreview(null);
+    }
+    return turn;
+  }
+
+  /** `hookSims`: tests step the bot's solver this much per tick (no frames run in between). */
+  private stepSim(n: number, hookSims = 0): void {
     for (let i = 0; i < n; i++) {
       this.prev = snapshot(this.match.ants, this.match.shot?.bodies ?? []);
+      if (this.bot) {
+        this.bot.tick(this.match);
+        if (hookSims > 0) this.bot.think(hookSims);
+      }
       this.match.step();
       this.consumeEvents(this.time.now);
     }
@@ -438,11 +619,22 @@ export class Battle extends Phaser.Scene {
     }
   }
 
+  /** One frame of the bot's solver, its budget picked from measured cost (DR-060: ≤ 4 ms). */
+  private thinkBot(): void {
+    const bot = this.bot;
+    if (!bot?.thinking || this.link?.paused) return;
+    const n = this.simBudget.next();
+    const t0 = performance.now();
+    const used = bot.think(n);
+    this.simBudget.record(used, performance.now() - t0);
+  }
+
   override update(time: number, delta: number): void {
     if (!this.staticMode && !this.cam.hitStopping(time)) {
       const { steps, alpha } = this.loop.advance(delta);
       this.stepSim(steps);
       this.alpha = alpha;
+      this.thinkBot();
     }
     this.draw(time, delta);
   }
@@ -487,7 +679,7 @@ export class Battle extends Phaser.Scene {
     c.centerOn(view.cx, view.cy);
     // What the HUD converts world points with (tags, edges, the sling).
     this.applied = { cx: view.cx, cy: view.cy, zoom: view.zoom };
-    this.drawPreview(this.link?.preview ?? null);
+    if (!this.drawBot()) this.drawPreview(this.link?.preview ?? null);
 
     if (this.memText) {
       // DR-014 `?mem`, plus the median frame time for the S=2 phone check (DR-013).
@@ -565,7 +757,7 @@ export class Battle extends Phaser.Scene {
       phase: () => this.match.phase,
       push: (cmd) => this.match.push(cmd),
       stepTicks: (n) => {
-        this.stepSim(n);
+        this.stepSim(n, HOOK_SIMS);
         this.alpha = 1;
         this.draw(this.time.now, 0);
       },
@@ -600,6 +792,36 @@ export class Battle extends Phaser.Scene {
         this.draw(this.time.now, 0);
       },
       seamCheck: (world, rgb) => this.seamCheck(world, rgb),
+      bot: () => {
+        const b = this.bot;
+        if (!b) return null;
+        const p = b.plan;
+        return {
+          team: b.team,
+          level: b.level,
+          boss: b.boss,
+          phase: b.controls(this.match) ? b.phase : null,
+          history: [...b.history],
+          plan: p
+            ? {
+                weapon: p.weapon,
+                facing: p.facing,
+                angleDeci: p.angleDeci,
+                powerMille: p.powerMille,
+                target: p.target,
+                thinkTicks: p.thinkTicks,
+                settleTicks: p.settleTicks,
+                wobbleDeci: p.wobbleDeci,
+                move: p.move ? { ...p.move } : null,
+              }
+            : null,
+          shown: this.botShown ? { ...this.botShown } : null,
+          crosshair: this.crosshair.visible,
+          bar: this.powerBar.visible,
+          memory: { ...b.memory },
+          lastOutcome: b.lastOutcome ? { ...b.lastOutcome } : null,
+        };
+      },
     };
   }
 }
