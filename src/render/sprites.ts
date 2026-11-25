@@ -1,11 +1,11 @@
 /**
  * Sprites for ants, projectiles and pickups, drawn from manifest keys
  * (DR-195). Positions are interpolated between the last two sim states
- * (PLAN §1). Placeholder art only (DR-007a): every ant pose maps to the same
- * cut-out until the final rig exists.
+ * (PLAN §1). Ants show the final side-pose frame for their state (R-03):
+ * idle, a two-frame walk cycle, aim, hop, flip (back-flip) and ko.
  */
 import * as Phaser from 'phaser';
-import { ANT_SIDE, antSideKey, asset, RASTER } from '../assets/manifest';
+import { ANT_SIDE, antSideKey, asset, RASTER, type SidePose } from '../assets/manifest';
 import type { Ant } from '../sim/movement';
 import type { Pickup } from '../sim/pickups';
 import type { Body } from '../sim/weapons/index';
@@ -24,11 +24,24 @@ export function snapshot(ants: readonly Ant[], bodies: readonly Body[]): Snapsho
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-type Pose = 'idle' | 'aim' | 'hop' | 'ko' | 'walk' | 'flip';
+/** Walk cycle: the step frame and the stand frame swap every this many px walked. */
+const WALK_STRIDE = 8;
+
+/** The side frame for an ant's state. Exported for tests. */
+export function antPose(a: Ant, prevX: number | undefined, aiming: boolean): SidePose {
+  if (a.state === 'ko') return 'ko';
+  // A back-flip travels away from the way the ant faces (DR-036).
+  if (a.state === 'air') return a.vx * a.facing < 0 ? 'flip' : 'hop';
+  if (aiming) return 'aim';
+  if (prevX !== undefined && Math.abs(a.x - prevX) > 0.01) {
+    return Math.floor(a.x / WALK_STRIDE) % 2 === 0 ? 'walk' : 'idle';
+  }
+  return 'idle';
+}
 
 export class AntSprite {
   readonly image: Phaser.GameObjects.Image;
-  private pose: Pose | null = null;
+  private pose: SidePose | null = null;
   private wasAir = false;
 
   constructor(
@@ -42,7 +55,7 @@ export class AntSprite {
     this.setPose('idle');
   }
 
-  private setPose(pose: Pose): void {
+  private setPose(pose: SidePose): void {
     if (pose === this.pose) return;
     this.pose = pose;
     const e = asset(antSideKey(this.team, pose));
@@ -54,9 +67,9 @@ export class AntSprite {
     const x = prev ? lerp(prev.x, a.x, alpha) : a.x;
     const y = prev ? lerp(prev.y, a.y, alpha) : a.y;
     this.image.setPosition(x, y);
-    // The cut-out faces right; mirror for left (DR-027).
+    // The art faces right; mirror for left (DR-027).
     this.image.setFlipX(a.facing < 0);
-    this.setPose(a.state === 'ko' ? 'ko' : a.state === 'air' ? 'hop' : aiming ? 'aim' : 'idle');
+    this.setPose(antPose(a, prev?.x, aiming));
     if (this.wasAir && a.state === 'ground') landSquash(this.scene, this.image);
     this.wasAir = a.state === 'air';
     // Knocked-out ants leave the field (the stretcher animation is a later stage).

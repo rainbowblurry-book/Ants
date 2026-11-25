@@ -31,6 +31,11 @@ export const color = {
   'heal': 0xc8f27a,
   'scrim': 0x2e1a47,
   'letterbox': 0x2e1a47,
+  'ant-body': 0xb4532a,
+  'ant-shade': 0x7a3418,
+  'ant-mouth': 0x5a1e2a,
+  'ant-tongue': 0xe8456b,
+  'ant-sweat': 0x9ad9f2,
 } as const;
 
 /** Semantic colours as #RRGGBB strings, for canvas 2D, Phaser Text and config. */
@@ -61,6 +66,11 @@ export const cssColor = {
   'heal': '#C8F27A',
   'scrim': '#2E1A47',
   'letterbox': '#2E1A47',
+  'ant-body': '#B4532A',
+  'ant-shade': '#7A3418',
+  'ant-mouth': '#5A1E2A',
+  'ant-tongue': '#E8456B',
+  'ant-sweat': '#9AD9F2',
 } as const;
 
 /** Alpha of the semantic colours that are not opaque. */
