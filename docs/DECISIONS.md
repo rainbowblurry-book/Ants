@@ -2907,6 +2907,15 @@ Logged by the builder. Tier T is applied at once. Tier G waits for the user's ap
 - **Status:** approved by the owner 2026-11-24 (L01 A). Applied in stage 5b.
 - **Revert plan:** set W to 960 and restore the DR-120 specs in `hudLayout`.
 
+## OVR-020 · A URL switch for a bot match until the stage 7 menus
+- **Overrides:** none (stage 7 owns the Setup and level flow that starts bot matches; this is a stand-in entry point).
+- **Reason:** stage 6 needs a playable, testable bot match before the menus exist.
+- **Change:** on the M1 hot-seat battle, `?bot=N` makes team 1 (Amber) a bot at AI level N (a whole number, clamped to 0..100; anything else means no bot); `&boss=1` makes it a boss. A bot match has no pass-the-phone gate and is not saved to the versus slot (its replay needs the bot re-run, see stage 7). During the bot's turn the player's commands are ignored (Pause still works) and the HUD dial and slider mirror the bot at 55% (DR-129). Without the parameter nothing changes.
+- **Impact:** `src/game/botConfig.ts`, `src/game/botPlayer.ts`, `src/game/botAim.ts`, `src/scenes/Battle.ts`, `src/scenes/Hud.ts`, `src/hud/link.ts`, `tests/bot-player.test.ts`, `e2e/bot.spec.ts`.
+- **Tier:** T (a developer entry point; no player-facing screen changes).
+- **Status:** applied 2026-11-25.
+- **Revert plan:** stage 7 removes the `parseBotConfig` call in `Battle.create`; the Setup and level screens create the bot from their config, and bot-match saves get their own slot.
+
 ## OVR-021 · The bot's solve may run past 25 frames on a phone
 - **Overrides:** DR-060 "the solver must finish in ≤ 25 frames" at 4 ms a frame (PLAN §9 caps).
 - **Reason:** DR-060 is not feasible as written: its own estimate (about 0.5 s of CPU on a phone) cannot fit in 25 × 4 ms = 100 ms. Measured in stage 6: about 430–505 sims and 67 ms per turn on desktop node (0.144 ms per sim); a phone at about 4× slower needs about 270 ms, about 67 frames at 4 ms. DR-060's "Revisit if" names this case.
